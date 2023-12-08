@@ -10,13 +10,15 @@ use crate::{
 pub struct Object<'a> {
     shape: ShapeRef<'a>,
     transform: Mat4,
+    inverse_transform: Mat4,
 }
 
 impl<'a> Object<'a> {
     pub fn new(shape: ShapeRef<'a>) -> Self {
         Self {
             shape,
-            transform: Mat4::IDENTITY
+            transform: Mat4::IDENTITY,
+            inverse_transform: Mat4::IDENTITY
         }
     }
 
@@ -26,10 +28,11 @@ impl<'a> Object<'a> {
 
     pub fn set_transform(&mut self, mat: &Mat4) {
         self.transform = *mat;
+        self.inverse_transform = mat.inverse();
     }
 
     pub fn intersect(&self, ray: &Ray) -> Intersections {
-        let transformed_ray = ray.transform(&self.transform);
+        let transformed_ray = ray.transform(&self.inverse_transform);
         let ts = self.shape.intersect(&transformed_ray);
         let mut xs = Intersections::with_capacity(ts.len());
         for t in ts {

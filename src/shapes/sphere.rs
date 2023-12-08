@@ -132,12 +132,28 @@ mod tests {
     #[test]
     fn intersecting_a_scaled_sphere_with_a_ray() {
         let r = Ray::new(
-            &Vec3::new(0.0, 0.0, 5.0), 
+            &Vec3::new(0.0, 0.0, -5.0), 
             &Vec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
         let mut o = Object::new(ShapeRef::Sphere(&s));
         o.set_transform(&Mat4::from_scale(Vec3::new(2.0, 2.0, 2.0)));
         let xs = o.intersect(&r);
+        assert_eq!(xs.count(), 2);
+        assert_eq!(xs.get(0).unwrap().t(), 3.0);
+        assert_eq!(xs.get(1).unwrap().t(), 7.0);
+    } 
+
+    #[test]
+    fn intersecting_a_translated_sphere_with_a_ray() {
+        let r = Ray::new(
+            &Vec3::new(0.0, 0.0, -5.0), 
+            &Vec3::new(0.0, 0.0, 1.0)
+        );
+        let s = Sphere::default();
+        let mut o = Object::new(ShapeRef::Sphere(&s));
+        o.set_transform(&Mat4::from_translation(Vec3::new(5.0, 0.0, 0.0)));
+        let xs = o.intersect(&r);
+        assert_eq!(xs.count(), 0);
     } 
 }
