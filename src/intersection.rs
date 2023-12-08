@@ -59,6 +59,7 @@ mod tests {
         assert_eq!(i.object, ShapeRef::Sphere(&s));
     }
 
+    #[test]
     fn aggregating_intersections() {
         let s = Sphere::default();
         let i1 = Intersection::new(1.0, ShapeRef::Sphere(&s));
