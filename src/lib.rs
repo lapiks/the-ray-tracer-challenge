@@ -5,3 +5,4 @@ pub mod shapes {
 
 mod ray;
 mod intersection;
+mod object;

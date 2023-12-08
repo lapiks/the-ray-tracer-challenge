@@ -108,4 +108,10 @@ mod tests {
         assert_eq!(xs[0], -6.0);
         assert_eq!(xs[1], -4.0);
     }
+
+    #[test]
+    fn a_sphere_default_transformation() {
+        let s = Sphere::default();
+        
+    }
 }
