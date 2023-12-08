@@ -6,3 +6,5 @@ pub mod shapes {
 mod ray;
 mod intersection;
 mod object;
+mod canvas;
+mod color;
