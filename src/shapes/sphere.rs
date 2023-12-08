@@ -1,21 +1,15 @@
 use glam::Vec3;
-
 use crate::ray::Ray;
+use super::shape::Shape;
 
+#[derive(Debug, PartialEq)]
 pub struct Sphere {
     pub position: Vec3,
     pub radius: f32
 }
 
-impl Sphere {
-    pub fn new(position: &Vec3, radius: f32) -> Self {
-        Self {
-            position: *position,
-            radius
-        }
-    }
-
-    pub fn intersect(&self, ray: &Ray) -> Vec<f32> {
+impl Shape for Sphere {
+    fn intersect(&self, ray: &Ray) -> Vec<f32> {
         let sphere_to_ray = ray.origin - self.position;
         let a = ray.direction.dot(ray.direction);
         let b = 2.0 * ray.direction.dot(sphere_to_ray);
@@ -31,6 +25,24 @@ impl Sphere {
             (-b - sqrt_disc) / denom,
             (-b + sqrt_disc) / denom,
         ]
+    }
+}
+
+impl Default for Sphere {
+    fn default() -> Self {
+        Self { 
+            position: Vec3::ZERO, 
+            radius: 1.0 
+        }
+    }
+}
+
+impl Sphere {
+    pub fn new(position: &Vec3, radius: f32) -> Self {
+        Self {
+            position: *position,
+            radius
+        }
     }
 }
 
