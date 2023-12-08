@@ -9,3 +9,11 @@ pub enum ShapeRef<'a> {
 pub trait Shape {
     fn intersect(&self, ray: &Ray) -> Vec<f32>;
 }
+
+impl Shape for ShapeRef<'_> {
+    fn intersect(&self, ray: &Ray) -> Vec<f32> {
+        match self {
+            ShapeRef::Sphere(s) => s.intersect(ray),
+        }
+    }
+}

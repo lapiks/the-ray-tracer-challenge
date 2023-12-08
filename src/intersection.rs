@@ -1,20 +1,28 @@
 use std::cmp::Ordering;
 
-use crate::shapes::shape::ShapeRef;
+use crate::object::Object;
 
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Intersection<'a> {
     t: f32,
-    object: ShapeRef<'a>
+    object: &'a Object<'a>
 }
 
 impl<'a> Intersection<'a> {
-    pub fn new(t: f32, object: ShapeRef<'a>) -> Self {
+    pub fn new(t: f32, object: &'a Object<'a>) -> Self {
         Self {
             t,
-            object,
+            object
         }
+    }
+
+    pub fn t(&self) -> f32 {
+        self.t
+    }
+
+    pub fn object(&self) -> &Object {
+        &self.object
     }
 }
 
@@ -45,10 +53,26 @@ pub struct Intersections<'a> {
 }
 
 impl<'a> Intersections<'a> {
+    pub fn new_empty() -> Self {
+        Self {
+            intersections: Vec::default()
+        }
+    }
+
     pub fn new(intersections: Vec<Intersection<'a>>) -> Self {
         Self {  
-            intersections
+            intersections: intersections
         }
+    }
+
+    pub fn with_capacity(size: usize) -> Self {
+        Self {
+            intersections: Vec::with_capacity(size)
+        }
+    }
+
+    pub fn push(&mut self, intersection: &Intersection<'a>) {
+        self.intersections.push(intersection.clone());
     }
 
     pub fn sort(mut self) -> Self {
@@ -71,7 +95,7 @@ impl<'a> Intersections<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::shapes::sphere::Sphere;
+    use crate::shapes::{sphere::Sphere, shape::ShapeRef};
 
     use super::*;
 
@@ -79,17 +103,19 @@ mod tests {
     #[test]
     fn new_intersection() {
         let s = Sphere::default();
-        let i = Intersection::new(3.5, ShapeRef::Sphere(&s));
+        let o = Object::new(ShapeRef::Sphere(&s));
+        let i = Intersection::new(3.5, &o);
         assert_eq!(i.t, 3.5);
-        assert_eq!(i.object, ShapeRef::Sphere(&s));
+        assert_eq!(i.object, &o);
     }
 
     #[test]
     fn aggregating_intersections() {
         let s = Sphere::default();
-        let i1 = Intersection::new(1.0, ShapeRef::Sphere(&s));
-        let i2 = Intersection::new(2.0, ShapeRef::Sphere(&s));
-        let xs = Intersections::new(vec![i1, i2]);
+        let o: Object<'_> = Object::new(ShapeRef::Sphere(&s));
+        let i1 = Intersection::new(1.0, &o);
+        let i2 = Intersection::new(2.0, &o);
+        let xs = Intersections::new(vec![i1.clone(), i2.clone()]);
         assert_eq!(xs.count(), 2);
         assert_eq!(xs.get(0), Some(&i1));
         assert_eq!(xs.get(1), Some(&i2));
@@ -98,9 +124,10 @@ mod tests {
     #[test]
     fn hit_when_all_intersections_have_positive_t() {
         let s = Sphere::default();
-        let i1 = Intersection::new(1.0, ShapeRef::Sphere(&s));
-        let i2 = Intersection::new(2.0, ShapeRef::Sphere(&s));
-        let xs = Intersections::new(vec![i2, i1]).sort();
+        let o: Object<'_> = Object::new(ShapeRef::Sphere(&s));
+        let i1 = Intersection::new(1.0, &o);
+        let i2 = Intersection::new(2.0, &o);
+        let xs = Intersections::new(vec![i1.clone(), i2.clone()]).sort();
         let i = xs.hit();
         assert_eq!(i, Some(&i1));
     }
@@ -108,9 +135,10 @@ mod tests {
     #[test]
     fn hit_when_some_intersections_have_negative_t() {
         let s = Sphere::default();
-        let i1 = Intersection::new(-1.0, ShapeRef::Sphere(&s));
-        let i2 = Intersection::new(1.0, ShapeRef::Sphere(&s));
-        let xs = Intersections::new(vec![i2, i1]).sort();
+        let o: Object<'_> = Object::new(ShapeRef::Sphere(&s));
+        let i1 = Intersection::new(-1.0, &o);
+        let i2 = Intersection::new(1.0, &o);
+        let xs = Intersections::new(vec![i1.clone(), i2.clone()]).sort();
         let i = xs.hit();
         assert_eq!(i, Some(&i2));
     }
@@ -118,9 +146,10 @@ mod tests {
     #[test]
     fn hit_when_all_intersections_have_negative_t() {
         let s = Sphere::default();
-        let i1 = Intersection::new(-2.0, ShapeRef::Sphere(&s));
-        let i2 = Intersection::new(-1.0, ShapeRef::Sphere(&s));
-        let xs = Intersections::new(vec![i2, i1]).sort();
+        let o: Object<'_> = Object::new(ShapeRef::Sphere(&s));
+        let i1 = Intersection::new(-2.0, &o);
+        let i2 = Intersection::new(-1.0, &o);
+        let xs = Intersections::new(vec![i1.clone(), i2.clone()]).sort();
         let i = xs.hit();
         assert_eq!(i, None);
     }
@@ -128,11 +157,12 @@ mod tests {
     #[test]
     fn hit_is_always_the_lowest_nonnegative_intersection() {
         let s = Sphere::default();
-        let i1 = Intersection::new(5.0, ShapeRef::Sphere(&s));
-        let i2 = Intersection::new(7.0, ShapeRef::Sphere(&s));
-        let i3 = Intersection::new(-3.0, ShapeRef::Sphere(&s));
-        let i4 = Intersection::new(2.0, ShapeRef::Sphere(&s));
-        let xs = Intersections::new(vec![i1, i2, i3, i4]).sort();
+        let o: Object<'_> = Object::new(ShapeRef::Sphere(&s));
+        let i1 = Intersection::new(5.0, &o);
+        let i2 = Intersection::new(7.0, &o);
+        let i3 = Intersection::new(-3.0, &o);
+        let i4 = Intersection::new(2.0, &o);
+        let xs = Intersections::new(vec![i1.clone(), i2.clone(), i3.clone(), i4.clone()]).sort();
         let i = xs.hit();
         assert_eq!(i, Some(&i4));
     }

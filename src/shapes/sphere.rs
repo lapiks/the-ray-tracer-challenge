@@ -20,10 +20,11 @@ impl Shape for Sphere {
         } 
 
         let sqrt_disc = discriminant.sqrt();
-        let denom = 2.0 * a;
+        let inv_denom = 1.0 / (2.0 * a);
+
         vec![
-            (-b - sqrt_disc) / denom,
-            (-b + sqrt_disc) / denom,
+            (-b - sqrt_disc) * inv_denom,
+            (-b + sqrt_disc) * inv_denom
         ]
     }
 }
@@ -49,6 +50,10 @@ impl Sphere {
 
 #[cfg(test)]
 mod tests {
+    use glam::Mat4;
+
+    use crate::{object::Object, shapes::shape::ShapeRef};
+
     use super::*;
 
     // Creating a sphere
@@ -63,7 +68,10 @@ mod tests {
 
     #[test]
     fn a_ray_intersects_a_sphere_at_two_points() {
-        let r = Ray::new(&Vec3::new(0.0, 0.0, -5.0), &Vec3::new(0.0, 0.0, 1.0));
+        let r = Ray::new(
+            &Vec3::new(0.0, 0.0, -5.0), 
+            &Vec3::new(0.0, 0.0, 1.0)
+        );
         let s = Sphere::new(&Vec3::new(0.0, 0.0, 0.0), 1.0);
         let xs = s.intersect(&r);
         assert_eq!(xs.len(), 2);
@@ -73,7 +81,10 @@ mod tests {
 
     #[test]
     fn a_ray_intersects_a_sphere_at_a_tangent() {
-        let r = Ray::new(&Vec3::new(0.0, 1.0, -5.0), &Vec3::new(0.0, 0.0, 1.0));
+        let r = Ray::new(
+            &Vec3::new(0.0, 1.0, -5.0), 
+            &Vec3::new(0.0, 0.0, 1.0)
+        );
         let s = Sphere::new(&Vec3::new(0.0, 0.0, 0.0), 1.0);
         let xs = s.intersect(&r);
         assert_eq!(xs.len(), 2);
@@ -83,7 +94,10 @@ mod tests {
 
     #[test]
     fn a_ray_misses_a_sphere() {
-        let r = Ray::new(&Vec3::new(0.0, 2.0, -5.0), &Vec3::new(0.0, 0.0, 1.0));
+        let r = Ray::new(
+            &Vec3::new(0.0, 2.0, -5.0), 
+            &Vec3::new(0.0, 0.0, 1.0)
+        );
         let s = Sphere::new(&Vec3::new(0.0, 0.0, 0.0), 1.0);
         let xs = s.intersect(&r);
         assert_eq!(xs.len(), 0);
@@ -91,7 +105,10 @@ mod tests {
     
     #[test]
     fn a_ray_originates_inside_a_sphere() {
-        let r = Ray::new(&Vec3::new(0.0, 0.0, 0.0), &Vec3::new(0.0, 0.0, 1.0));
+        let r = Ray::new(
+            &Vec3::new(0.0, 0.0, 0.0), 
+            &Vec3::new(0.0, 0.0, 1.0)
+        );
         let s = Sphere::new(&Vec3::new(0.0, 0.0, 0.0), 1.0);
         let xs = s.intersect(&r);
         assert_eq!(xs.len(), 2);
@@ -101,11 +118,26 @@ mod tests {
 
     #[test]
     fn a_sphere_is_behind_a_ray() {
-        let r = Ray::new(&Vec3::new(0.0, 0.0, 5.0), &Vec3::new(0.0, 0.0, 1.0));
+        let r = Ray::new(
+            &Vec3::new(0.0, 0.0, 5.0), 
+            &Vec3::new(0.0, 0.0, 1.0)
+        );
         let s = Sphere::new(&Vec3::new(0.0, 0.0, 0.0), 1.0);
         let xs = s.intersect(&r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0], -6.0);
         assert_eq!(xs[1], -4.0);
     }
+
+    #[test]
+    fn intersecting_a_scaled_sphere_with_a_ray() {
+        let r = Ray::new(
+            &Vec3::new(0.0, 0.0, 5.0), 
+            &Vec3::new(0.0, 0.0, 1.0)
+        );
+        let s = Sphere::default();
+        let mut o = Object::new(ShapeRef::Sphere(&s));
+        o.set_transform(&Mat4::from_scale(Vec3::new(2.0, 2.0, 2.0)));
+        let xs = o.intersect(&r);
+    } 
 }

@@ -1,7 +1,12 @@
 use glam::Mat4;
 
-use crate::shapes::shape::ShapeRef;
+use crate::{
+    shapes::shape::{ShapeRef, Shape}, 
+    ray::Ray, 
+    intersection::{Intersections, Intersection}
+};
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct Object<'a> {
     shape: ShapeRef<'a>,
     transform: Mat4,
@@ -21,6 +26,22 @@ impl<'a> Object<'a> {
 
     pub fn set_transform(&mut self, mat: &Mat4) {
         self.transform = *mat;
+    }
+
+    pub fn intersect(&self, ray: &Ray) -> Intersections {
+        let transformed_ray = ray.transform(&self.transform);
+        let ts = self.shape.intersect(&transformed_ray);
+        let mut xs = Intersections::with_capacity(ts.len());
+        for t in ts {
+            xs.push(
+                &Intersection::new(
+                    t,
+                    &self
+                )
+            )
+        }
+
+        xs
     }
 }
 
