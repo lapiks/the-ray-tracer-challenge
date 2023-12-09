@@ -1,4 +1,4 @@
-use glam::Mat4;
+use glam::{Mat4, Vec3};
 
 use crate::{
     shapes::shape::{Shape, Hittable}, 
@@ -20,6 +20,18 @@ impl Object {
             transform: Mat4::IDENTITY,
             inverse_transform: Mat4::IDENTITY
         }
+    }
+
+    pub fn with_translation(mut self, x: f32, y: f32, z: f32) -> Self {
+        self.transform *= Mat4::from_translation(Vec3::new(x, y, z));
+        self.inverse_transform = self.transform.inverse();
+        self
+    }
+
+    pub fn with_scale(mut self, x: f32, y: f32, z: f32) -> Self {
+        self.transform *= Mat4::from_scale(Vec3::new(x, y, z));
+        self.inverse_transform = self.transform.inverse();
+        self
     }
 
     pub fn get_transform(&self) -> &Mat4 {

@@ -1,6 +1,6 @@
 use glam::{Vec2, Vec3, Mat4};
 
-use crate::{Canvas, Color, ray::Ray, World};
+use crate::{Canvas, ray::Ray, World};
 
 pub struct Camera {
     width: usize,
