@@ -6,11 +6,11 @@ use crate::object::Object;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Intersection<'a> {
     t: f32,
-    object: &'a Object<'a>
+    object: &'a Object
 }
 
 impl<'a> Intersection<'a> {
-    pub fn new(t: f32, object: &'a Object<'a>) -> Self {
+    pub fn new(t: f32, object: &'a Object) -> Self {
         Self {
             t,
             object
@@ -95,7 +95,7 @@ impl<'a> Intersections<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::shapes::{sphere::Sphere, shape::ShapeRef};
+    use crate::shapes::{sphere::Sphere, shape::Shape};
 
     use super::*;
 
@@ -103,7 +103,7 @@ mod tests {
     #[test]
     fn new_intersection() {
         let s = Sphere::default();
-        let o = Object::new(ShapeRef::Sphere(&s));
+        let o = Object::new(Shape::Sphere(s));
         let i = Intersection::new(3.5, &o);
         assert_eq!(i.t, 3.5);
         assert_eq!(i.object, &o);
@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn aggregating_intersections() {
         let s = Sphere::default();
-        let o: Object<'_> = Object::new(ShapeRef::Sphere(&s));
+        let o = Object::new(Shape::Sphere(s));
         let i1 = Intersection::new(1.0, &o);
         let i2 = Intersection::new(2.0, &o);
         let xs = Intersections::new(vec![i1.clone(), i2.clone()]);
@@ -124,7 +124,7 @@ mod tests {
     #[test]
     fn hit_when_all_intersections_have_positive_t() {
         let s = Sphere::default();
-        let o: Object<'_> = Object::new(ShapeRef::Sphere(&s));
+        let o = Object::new(Shape::Sphere(s));
         let i1 = Intersection::new(1.0, &o);
         let i2 = Intersection::new(2.0, &o);
         let xs = Intersections::new(vec![i1.clone(), i2.clone()]).sort();
@@ -135,7 +135,7 @@ mod tests {
     #[test]
     fn hit_when_some_intersections_have_negative_t() {
         let s = Sphere::default();
-        let o: Object<'_> = Object::new(ShapeRef::Sphere(&s));
+        let o = Object::new(Shape::Sphere(s));
         let i1 = Intersection::new(-1.0, &o);
         let i2 = Intersection::new(1.0, &o);
         let xs = Intersections::new(vec![i1.clone(), i2.clone()]).sort();
@@ -146,7 +146,7 @@ mod tests {
     #[test]
     fn hit_when_all_intersections_have_negative_t() {
         let s = Sphere::default();
-        let o: Object<'_> = Object::new(ShapeRef::Sphere(&s));
+        let o = Object::new(Shape::Sphere(s));
         let i1 = Intersection::new(-2.0, &o);
         let i2 = Intersection::new(-1.0, &o);
         let xs = Intersections::new(vec![i1.clone(), i2.clone()]).sort();
@@ -157,7 +157,7 @@ mod tests {
     #[test]
     fn hit_is_always_the_lowest_nonnegative_intersection() {
         let s = Sphere::default();
-        let o: Object<'_> = Object::new(ShapeRef::Sphere(&s));
+        let o = Object::new(Shape::Sphere(s));
         let i1 = Intersection::new(5.0, &o);
         let i2 = Intersection::new(7.0, &o);
         let i3 = Intersection::new(-3.0, &o);

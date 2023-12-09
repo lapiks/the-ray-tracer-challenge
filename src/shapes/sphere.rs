@@ -1,19 +1,16 @@
-use glam::Vec3;
 use crate::ray::Ray;
-use super::shape::Shape;
+use super::shape::Hittable;
 
-#[derive(Debug, PartialEq)]
-pub struct Sphere {
-    pub position: Vec3,
-    pub radius: f32
-}
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Sphere {}
 
-impl Shape for Sphere {
+impl Hittable for Sphere {
     fn intersect(&self, ray: &Ray) -> Vec<f32> {
-        let sphere_to_ray = ray.origin - self.position;
+        let sphere_to_ray = ray.origin;
         let a = ray.direction.dot(ray.direction);
         let b = 2.0 * ray.direction.dot(sphere_to_ray);
-        let c = sphere_to_ray.dot(sphere_to_ray) - self.radius * self.radius;
+        // -1.0 for radius*radius with radius = 1
+        let c = sphere_to_ray.dot(sphere_to_ray) - 1.0;
         let discriminant = b*b - 4.0 * a * c;
         if discriminant < 0.0 {
             return Vec::default();
@@ -31,40 +28,24 @@ impl Shape for Sphere {
 
 impl Default for Sphere {
     fn default() -> Self {
-        Self { 
-            position: Vec3::ZERO, 
-            radius: 1.0 
-        }
+        Self {}
     }
 }
 
 impl Sphere {
-    pub fn new(position: &Vec3, radius: f32) -> Self {
-        Self {
-            position: *position,
-            radius
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 
 
 #[cfg(test)]
 mod tests {
-    use glam::Mat4;
+    use glam::{Mat4, Vec3};
 
-    use crate::{object::Object, shapes::shape::ShapeRef};
+    use crate::{object::Object, shapes::shape::Shape};
 
     use super::*;
-
-    // Creating a sphere
-    #[test]
-    fn new_sphere() {
-        let position = Vec3::new(1.0, 2.0, 3.0);
-        let radius = 1.0;
-        let s = Sphere::new(&position, radius);
-        assert_eq!(s.position, position);
-        assert_eq!(s.radius, radius);
-    }
 
     #[test]
     fn a_ray_intersects_a_sphere_at_two_points() {
@@ -72,7 +53,7 @@ mod tests {
             &Vec3::new(0.0, 0.0, -5.0), 
             &Vec3::new(0.0, 0.0, 1.0)
         );
-        let s = Sphere::new(&Vec3::new(0.0, 0.0, 0.0), 1.0);
+        let s = Sphere::default();
         let xs = s.intersect(&r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0], 4.0);
@@ -85,7 +66,7 @@ mod tests {
             &Vec3::new(0.0, 1.0, -5.0), 
             &Vec3::new(0.0, 0.0, 1.0)
         );
-        let s = Sphere::new(&Vec3::new(0.0, 0.0, 0.0), 1.0);
+        let s = Sphere::default();
         let xs = s.intersect(&r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0], 5.0);
@@ -98,7 +79,7 @@ mod tests {
             &Vec3::new(0.0, 2.0, -5.0), 
             &Vec3::new(0.0, 0.0, 1.0)
         );
-        let s = Sphere::new(&Vec3::new(0.0, 0.0, 0.0), 1.0);
+        let s = Sphere::default();
         let xs = s.intersect(&r);
         assert_eq!(xs.len(), 0);
     }
@@ -109,7 +90,7 @@ mod tests {
             &Vec3::new(0.0, 0.0, 0.0), 
             &Vec3::new(0.0, 0.0, 1.0)
         );
-        let s = Sphere::new(&Vec3::new(0.0, 0.0, 0.0), 1.0);
+        let s = Sphere::default();
         let xs = s.intersect(&r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0], -1.0);
@@ -122,7 +103,7 @@ mod tests {
             &Vec3::new(0.0, 0.0, 5.0), 
             &Vec3::new(0.0, 0.0, 1.0)
         );
-        let s = Sphere::new(&Vec3::new(0.0, 0.0, 0.0), 1.0);
+        let s = Sphere::default();
         let xs = s.intersect(&r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0], -6.0);
@@ -136,7 +117,7 @@ mod tests {
             &Vec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
-        let mut o = Object::new(ShapeRef::Sphere(&s));
+        let mut o = Object::new(Shape::Sphere(s));
         o.set_transform(&Mat4::from_scale(Vec3::new(2.0, 2.0, 2.0)));
         let xs = o.intersect(&r);
         assert_eq!(xs.count(), 2);
@@ -151,7 +132,7 @@ mod tests {
             &Vec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
-        let mut o = Object::new(ShapeRef::Sphere(&s));
+        let mut o = Object::new(Shape::Sphere(s));
         o.set_transform(&Mat4::from_translation(Vec3::new(5.0, 0.0, 0.0)));
         let xs = o.intersect(&r);
         assert_eq!(xs.count(), 0);

@@ -1,20 +1,20 @@
 use glam::Mat4;
 
 use crate::{
-    shapes::shape::{ShapeRef, Shape}, 
+    shapes::shape::{Shape, Hittable}, 
     ray::Ray, 
     intersection::{Intersections, Intersection}
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Object<'a> {
-    shape: ShapeRef<'a>,
+pub struct Object {
+    shape: Shape,
     transform: Mat4,
     inverse_transform: Mat4,
 }
 
-impl<'a> Object<'a> {
-    pub fn new(shape: ShapeRef<'a>) -> Self {
+impl Object {
+    pub fn new(shape: Shape) -> Self {
         Self {
             shape,
             transform: Mat4::IDENTITY,
@@ -58,14 +58,14 @@ mod tests {
     #[test]
     fn a_sphere_default_transformation() {
         let s = Sphere::default();
-        let o = Object::new(ShapeRef::Sphere(&s));
+        let o = Object::new(Shape::Sphere(s));
         assert_eq!(o.transform, Mat4::IDENTITY);
     }
 
     #[test]
     fn changing_a_sphere_transformation() {
         let s = Sphere::default();
-        let mut o = Object::new(ShapeRef::Sphere(&s));
+        let mut o = Object::new(Shape::Sphere(s));
         let t = Mat4::from_translation(Vec3::new(2.0, 3.0, 4.0));
         o.set_transform(&t);
         assert_eq!(o.transform, t);

@@ -33,7 +33,7 @@ impl Camera {
                 let uv = pixel_pos * inv_canvas_size * viewport.y - 1.0;
                 let uvw = Vec3::new(uv.x, uv.y, self.focal_length) * ratio;
             
-                let ray = Ray::new(&Vec3::new(0.0, 0.0, -5.0), &uvw);
+                let ray: Ray = Ray::new(&Vec3::new(0.0, 0.0, -5.0), &uvw);
                 canvas[row][col] = Color::red();
             }
         }

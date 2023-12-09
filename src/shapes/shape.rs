@@ -2,18 +2,18 @@ use crate::ray::Ray;
 use super::sphere::Sphere;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum ShapeRef<'a> {
-    Sphere(&'a Sphere),
+pub enum Shape {
+    Sphere(Sphere),
 }
 
-pub trait Shape {
+pub trait Hittable {
     fn intersect(&self, ray: &Ray) -> Vec<f32>;
 }
 
-impl Shape for ShapeRef<'_> {
+impl Hittable for Shape {
     fn intersect(&self, ray: &Ray) -> Vec<f32> {
         match self {
-            ShapeRef::Sphere(s) => s.intersect(ray),
+            Shape::Sphere(s) => s.intersect(ray),
         }
     }
 }
