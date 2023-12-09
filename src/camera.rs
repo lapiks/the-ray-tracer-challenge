@@ -19,6 +19,11 @@ impl Camera {
         }
     }
 
+    pub fn with_translation(mut self, x: f32, y: f32, z: f32) -> Self {
+        self.transform = Mat4::from_translation(Vec3::new(x, y, z));
+        self
+    }
+
     pub fn render(&self, world: &World) -> Canvas {
         let mut canvas = Canvas::new(self.width, self.height);
 
@@ -27,6 +32,8 @@ impl Camera {
         let ratio = canvas_size.x / canvas_size.y;
         let viewport = Vec2::new(2.0 * ratio, 2.0);
 
+        let camera_position = self.transform.col(3);
+
         for row in 0..self.height-1 {
             for col in 0..self.width-1 {
                 let pixel_pos = Vec2::new(col as f32, row as f32);
@@ -34,8 +41,8 @@ impl Camera {
                 let mut uvw = Vec3::new(uv.x, uv.y, self.focal_length);
                 uvw.x *= ratio;
             
-                let ray: Ray = Ray::new(&Vec3::new(0.0, 0.0, -5.0), &uvw);
-                canvas[row][col] = world.color_at(&ray);;
+                let ray: Ray = Ray::new(&Vec3::new(camera_position.x, camera_position.y, camera_position.z), &uvw);
+                canvas[row][col] = world.color_at(&ray);
             }
         }
 

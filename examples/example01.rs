@@ -1,7 +1,8 @@
 use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}};
 
 fn main() {
-    let camera = Camera::new(800, 600);
+    let camera = Camera::new(800, 600)
+        .with_translation(0.0, 0.0, -5.0);
 
     let s = Sphere::default();
     let o = Object::new(Shape::Sphere(s))
