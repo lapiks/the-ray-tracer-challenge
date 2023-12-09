@@ -3,6 +3,7 @@ pub mod shapes {
     pub mod sphere;
 }
 
+pub use camera::Camera;
 pub use canvas::Canvas;
 pub use color::Color;
 
@@ -11,3 +12,4 @@ mod intersection;
 mod object;
 pub mod canvas;
 pub mod color;
+pub mod camera;
