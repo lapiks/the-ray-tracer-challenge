@@ -3,8 +3,11 @@ pub mod shapes {
     pub mod sphere;
 }
 
+pub use canvas::Canvas;
+pub use color::Color;
+
 mod ray;
 mod intersection;
 mod object;
-mod canvas;
-mod color;
+pub mod canvas;
+pub mod color;

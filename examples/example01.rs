@@ -1,3 +1,6 @@
+use ray_tracer::Canvas;
+
 fn main() {
-    println!("Hello, world!");
+    let canvas = Canvas::new(800, 600);
+    canvas.export("examples/example01.png").unwrap();
 }
