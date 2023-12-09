@@ -1,6 +1,6 @@
 use glam::{Vec2, Vec3, Mat4};
 
-use crate::{Canvas, Color, ray::Ray};
+use crate::{Canvas, Color, ray::Ray, World};
 
 pub struct Camera {
     width: usize,
@@ -19,7 +19,7 @@ impl Camera {
         }
     }
 
-    pub fn render(&self) -> Canvas {
+    pub fn render(&self, world: &World) -> Canvas {
         let mut canvas = Canvas::new(self.width, self.height);
 
         let canvas_size = Vec2::new(self.width as f32, self.height as f32);
@@ -31,10 +31,11 @@ impl Camera {
             for col in 0..self.width-1 {
                 let pixel_pos = Vec2::new(col as f32, row as f32);
                 let uv = pixel_pos * inv_canvas_size * viewport.y - 1.0;
-                let uvw = Vec3::new(uv.x, uv.y, self.focal_length) * ratio;
+                let mut uvw = Vec3::new(uv.x, uv.y, self.focal_length);
+                uvw.x *= ratio;
             
                 let ray: Ray = Ray::new(&Vec3::new(0.0, 0.0, -5.0), &uvw);
-                canvas[row][col] = Color::red();
+                canvas[row][col] = world.color_at(&ray);;
             }
         }
 
