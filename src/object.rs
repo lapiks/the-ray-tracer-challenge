@@ -34,6 +34,24 @@ impl Object {
         self
     }
 
+    pub fn with_rotation_x(mut self, angle: f32) -> Self {
+        self.transform *= Mat4::from_rotation_x(angle);
+        self.inverse_transform = self.transform.inverse();
+        self
+    }
+
+    pub fn with_rotation_y(mut self, angle: f32) -> Self {
+        self.transform *= Mat4::from_rotation_y(angle);
+        self.inverse_transform = self.transform.inverse();
+        self
+    }
+
+    pub fn with_rotation_z(mut self, angle: f32) -> Self {
+        self.transform *= Mat4::from_rotation_z(angle);
+        self.inverse_transform = self.transform.inverse();
+        self
+    }
+
     pub fn get_transform(&self) -> &Mat4 {
         &self.transform
     }
@@ -57,6 +75,15 @@ impl Object {
         }
 
         xs
+    }
+
+    pub fn normal_at(&self, world_point: &Vec3) -> Vec3 {
+        let object_normal = self.shape.normal_at(&self.inverse_transform.transform_point3(*world_point));
+        self.transform
+            .inverse()
+            .transpose()
+            .transform_vector3(object_normal)
+            .normalize()
     }
 }
 

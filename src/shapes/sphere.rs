@@ -26,6 +26,11 @@ impl Hittable for Sphere {
             (-b + sqrt_disc) * inv_denom
         ]
     }
+
+    fn normal_at(&self, point: &Vec3) -> Vec3 {
+        // for a unit sphere at 0,0,0
+        point.normalize()
+    }
 }
 
 impl Default for Sphere {
@@ -38,23 +43,20 @@ impl Sphere {
     pub fn new() -> Self {
         Self::default()
     }
-
-    pub fn normal_at(&self, point: &Vec3) -> Vec3 {
-        // for a unit sphere at 0,0,0
-        point.normalize()
-    }
 }
 
 
 #[cfg(test)]
 mod tests {
+    use std::f32::consts::PI;
+
     use glam::{Mat4, Vec3};
 
     use crate::{object::Object, shapes::shape::Shape};
 
     use super::*;
 
-    const EPSILON: f32 = 0.0000001;
+    const EPSILON: f32 = 0.00001;
 
     #[test]
     fn a_ray_intersects_a_sphere_at_two_points() {
@@ -180,5 +182,23 @@ mod tests {
         let s = Sphere::default();
         let n = s.normal_at(&Vec3::new(3.3_f32.sqrt() / 3.0, 3.3_f32.sqrt()/3.0, 3.3_f32.sqrt()/3.0));
         assert!(n.abs_diff_eq(n.normalize(), EPSILON));
+    } 
+
+    #[test]
+    fn computing_normal_on_a_translated_sphere() {
+        let o = Object::new(Shape::Sphere(Sphere::default()))
+            .with_translation(0.0, 1.0, 0.0);
+        let n = o.normal_at(&Vec3::new(0.0, 1.70711, -0.70711));
+        assert!(n.abs_diff_eq(Vec3::new(0.0, 0.70711, -0.70711), EPSILON));
+    } 
+
+    #[test]
+    fn computing_normal_on_a_transformed_sphere() {
+        let o = Object::new(Shape::Sphere(Sphere::default()))
+            .with_scale(1.0, 0.5, 1.0)
+            .with_rotation_z(PI / 5.0);
+            
+        let n = o.normal_at(&Vec3::new(0.0, 2.0_f32.sqrt() / 2.0, -2.0_f32.sqrt() / 2.0));
+        assert!(n.abs_diff_eq(Vec3::new(0.0, 0.97014, -0.24254), EPSILON));
     } 
 }
