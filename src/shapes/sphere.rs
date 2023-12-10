@@ -1,3 +1,5 @@
+use glam::Vec3;
+
 use crate::ray::Ray;
 use super::shape::Hittable;
 
@@ -36,6 +38,11 @@ impl Sphere {
     pub fn new() -> Self {
         Self::default()
     }
+
+    pub fn normal_at(&self, point: &Vec3) -> Vec3 {
+        // for a unit sphere at 0,0,0
+        point.normalize()
+    }
 }
 
 
@@ -46,6 +53,8 @@ mod tests {
     use crate::{object::Object, shapes::shape::Shape};
 
     use super::*;
+
+    const EPSILON: f32 = 0.0000001;
 
     #[test]
     fn a_ray_intersects_a_sphere_at_two_points() {
@@ -136,5 +145,40 @@ mod tests {
         o.set_transform(&Mat4::from_translation(Vec3::new(5.0, 0.0, 0.0)));
         let xs = o.intersect(&r);
         assert_eq!(xs.count(), 0);
+    } 
+
+    #[test]
+    fn normal_on_x_axis() {
+        let s = Sphere::default();
+        let n = s.normal_at(&Vec3::new(1.0, 0.0, 0.0));
+        assert_eq!(n, Vec3::new(1.0, 0.0, 0.0));
+    } 
+
+    #[test]
+    fn normal_on_y_axis() {
+        let s = Sphere::default();
+        let n = s.normal_at(&Vec3::new(0.0, 1.0, 0.0));
+        assert_eq!(n, Vec3::new(0.0, 1.0, 0.0));
+    } 
+
+    #[test]
+    fn normal_on_z_axis() {
+        let s = Sphere::default();
+        let n = s.normal_at(&Vec3::new(0.0, 0.0, 1.0));
+        assert_eq!(n, Vec3::new(0.0, 0.0, 1.0));
+    } 
+
+    #[test]
+    fn normal_at_nonaxial_point() {
+        let s = Sphere::default();
+        let n = s.normal_at(&Vec3::new(3.0_f32.sqrt() / 3.0, 3.0_f32.sqrt() / 3.0, 3.0_f32.sqrt()/3.0));
+        assert!(n.abs_diff_eq(Vec3::new(3.0_f32.sqrt() / 3.0, 3.0_f32.sqrt() / 3.0, 3.0_f32.sqrt() / 3.0), EPSILON));
+    } 
+
+    #[test]
+    fn the_normal_is_normalized() {
+        let s = Sphere::default();
+        let n = s.normal_at(&Vec3::new(3.3_f32.sqrt() / 3.0, 3.3_f32.sqrt()/3.0, 3.3_f32.sqrt()/3.0));
+        assert!(n.abs_diff_eq(n.normalize(), EPSILON));
     } 
 }
