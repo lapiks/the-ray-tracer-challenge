@@ -14,6 +14,14 @@ impl PointLight {
             intensity: *intensity
         }
     }
+
+    pub fn position(&self) -> &Vec3 {
+        &self.position
+    }
+
+    pub fn intensity(&self) -> &Color {
+        &self.intensity
+    }
 }
 
 #[cfg(test)]
