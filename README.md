@@ -1,2 +1,2 @@
 # The Ray Tracer Challenge
-Implementation in Rust of the Ray Tracing Challenge book by Jamis Buck.
+Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge" book by Jamis Buck.
