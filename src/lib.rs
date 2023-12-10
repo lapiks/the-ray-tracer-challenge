@@ -16,6 +16,7 @@ mod ray;
 mod intersection;
 pub mod object;
 pub mod light;
+pub mod material;
 pub mod world;
 pub mod canvas;
 pub mod color;

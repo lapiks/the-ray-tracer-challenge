@@ -3,12 +3,13 @@ use glam::{Mat4, Vec3};
 use crate::{
     shapes::shape::{Shape, Hittable}, 
     ray::Ray, 
-    intersection::{Intersections, Intersection}
+    intersection::{Intersections, Intersection}, material::Material
 };
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Object {
     shape: Shape,
+    material: Material,
     transform: Mat4,
     inverse_transform: Mat4,
 }
@@ -17,6 +18,7 @@ impl Object {
     pub fn new(shape: Shape) -> Self {
         Self {
             shape,
+            material: Material::default(),
             transform: Mat4::IDENTITY,
             inverse_transform: Mat4::IDENTITY
         }
@@ -50,6 +52,10 @@ impl Object {
         self.transform *= Mat4::from_rotation_z(angle);
         self.inverse_transform = self.transform.inverse();
         self
+    }
+
+    pub fn get_material(&self) -> &Material {
+        &self.material
     }
 
     pub fn get_transform(&self) -> &Mat4 {
