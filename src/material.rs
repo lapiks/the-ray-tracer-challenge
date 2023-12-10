@@ -16,6 +16,11 @@ impl Material {
         Self::default()
     }
 
+    pub fn with_color(mut self, color: &Color) -> Self {
+        self.color = *color;
+        self
+    }
+
     pub fn lighting(&self, light: &PointLight, point: &Vec3, eyev: &Vec3, normal: &Vec3) -> Color {
         let effective_color = self.color * *light.intensity();
         let lightv = (*light.position() - *point).normalize();

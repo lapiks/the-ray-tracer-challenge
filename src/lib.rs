@@ -8,6 +8,8 @@ pub mod shapes {
 
 pub use object::Object;
 pub use world::World;
+pub use light::PointLight;
+pub use material::Material;
 pub use camera::Camera;
 pub use canvas::Canvas;
 pub use color::Color;

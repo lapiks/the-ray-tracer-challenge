@@ -41,8 +41,8 @@ impl Camera {
                 let mut uvw = Vec3::new(uv.x, uv.y, self.focal_length);
                 uvw.x *= ratio;
             
-                let ray: Ray = Ray::new(&Vec3::new(camera_position.x, camera_position.y, camera_position.z), &uvw);
-                canvas[row][col] = world.color_at(&ray);
+                let ray: Ray = Ray::new(&Vec3::new(camera_position.x, camera_position.y, camera_position.z), &uvw.normalize());
+                canvas[self.height - 1 - row][col] = world.color_at(&ray);
             }
         }
 
