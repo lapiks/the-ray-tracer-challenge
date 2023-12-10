@@ -38,5 +38,14 @@ mod tests {
         let o = Object::new(Shape::Sphere(Sphere::default()));
         assert_eq!(*o.get_material(), Material::default());
     }
+
+    #[test]
+    fn a_sphere_may_be_assigned_a_material() {
+        let mut o = Object::new(Shape::Sphere(Sphere::default()));
+        let mut m = Material::default();
+        m.ambient = 1.0;
+        o.set_material(&m);
+        assert_eq!(*o.get_material(), m);
+    }
 }
 

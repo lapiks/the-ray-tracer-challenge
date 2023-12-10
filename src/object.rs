@@ -24,6 +24,11 @@ impl Object {
         }
     }
 
+    pub fn with_material(mut self, material: Material) -> Self {
+        self.material = material;
+        self
+    }
+
     pub fn with_translation(mut self, x: f32, y: f32, z: f32) -> Self {
         self.transform *= Mat4::from_translation(Vec3::new(x, y, z));
         self.inverse_transform = self.transform.inverse();
@@ -56,6 +61,10 @@ impl Object {
 
     pub fn get_material(&self) -> &Material {
         &self.material
+    }
+
+    pub fn set_material(&mut self, material: &Material) {
+        self.material = material.clone();
     }
 
     pub fn get_transform(&self) -> &Mat4 {
