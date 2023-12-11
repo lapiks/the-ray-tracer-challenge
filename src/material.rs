@@ -21,6 +21,26 @@ impl Material {
         self
     }
 
+    pub fn with_ambient(mut self, ambient: f32) -> Self {
+        self.ambient = ambient;
+        self
+    }
+
+    pub fn with_diffuse(mut self, diffuse: f32) -> Self {
+        self.diffuse = diffuse;
+        self
+    }
+
+    pub fn with_specular(mut self, specular: f32) -> Self {
+        self.specular = specular;
+        self
+    }
+
+    pub fn with_shininess(mut self, shininess: f32) -> Self {
+        self.shininess = shininess;
+        self
+    }
+
     pub fn lighting(&self, light: &PointLight, point: &Vec3, eyev: &Vec3, normal: &Vec3) -> Color {
         let effective_color = self.color * *light.intensity();
         let lightv = (*light.position() - *point).normalize();

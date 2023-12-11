@@ -75,6 +75,10 @@ impl<'a> Intersections<'a> {
         self.intersections.push(intersection.clone());
     }
 
+    pub fn append(&mut self, other: Intersections<'a>) {
+        self.intersections.append(&mut other.get_all());
+    }
+
     pub fn sort(mut self) -> Self {
         self.intersections.sort();
         self
@@ -90,6 +94,10 @@ impl<'a> Intersections<'a> {
 
     pub fn get(&self, index: usize) -> Option<&Intersection> {
         self.intersections.get(index)
+    }
+
+    pub fn get_all(self) -> Vec<Intersection<'a>> {
+        self.intersections
     }
 }
 

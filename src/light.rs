@@ -2,6 +2,7 @@ use glam::Vec3;
 
 use crate::Color;
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PointLight {
     position: Vec3,
     intensity: Color,
