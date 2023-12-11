@@ -57,7 +57,7 @@ impl World {
         let mut color = Color::black();
         for light in &self.lights {
             color += infos.object
-                .get_material()
+                .material()
                 .lighting(
                     &light, 
                     &infos.point, 
@@ -198,5 +198,29 @@ mod tests {
         );
         let c = w.color_at(&r);
         assert_eq!(c, Color::new(0.38066, 0.47583, 0.2855));
+    }
+
+    #[test]
+    fn the_color_with_an_intersection_behind_the_ray() {
+        let outer = Object::new(Shape::Sphere(Sphere::default()))
+            .with_material(
+                Material::new()
+                    .with_ambient(1.0)
+            );
+        let inner = Object::new(Shape::Sphere(Sphere::default()))
+            .with_material(
+                Material::new()
+                    .with_ambient(1.0)
+            );
+        let w = World {
+            objects: vec![inner.clone(), outer],
+            ..default_world()  
+        };
+        let r = Ray::new(
+            &vec3(0.0, 0.0, 0.75),
+            &vec3(0.0, 0.0, -1.0)
+        );
+        let c = w.color_at(&r);
+        assert_eq!(c, *inner.material().color());
     }
 }

@@ -41,6 +41,25 @@ impl Material {
         self
     }
 
+    pub fn color(&self) -> &Color {
+        &self.color
+    }
+
+    pub fn ambient(&self) -> f32 {
+        self.ambient
+    }
+
+    pub fn diffuse(&self) -> f32 {
+        self.diffuse
+    }
+
+    pub fn specular(&self) -> f32 {
+        self.specular
+    }
+    pub fn shininess(&self) -> f32 {
+        self.shininess
+    }
+
     pub fn lighting(&self, light: &PointLight, point: &Vec3, eyev: &Vec3, normal: &Vec3) -> Color {
         let effective_color = self.color * *light.intensity();
         let lightv = (*light.position() - *point).normalize();
@@ -85,7 +104,7 @@ mod tests {
     #[test]
     fn a_sphere_has_a_default_material() {
         let o = Object::new(Shape::Sphere(Sphere::default()));
-        assert_eq!(*o.get_material(), Material::default());
+        assert_eq!(*o.material(), Material::default());
     }
 
     #[test]
@@ -94,7 +113,7 @@ mod tests {
         let mut m = Material::default();
         m.ambient = 1.0;
         o.set_material(&m);
-        assert_eq!(*o.get_material(), m);
+        assert_eq!(*o.material(), m);
     }
 
     #[test]

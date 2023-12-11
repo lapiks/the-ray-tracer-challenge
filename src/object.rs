@@ -59,7 +59,7 @@ impl Object {
         self
     }
 
-    pub fn get_material(&self) -> &Material {
+    pub fn material(&self) -> &Material {
         &self.material
     }
 
