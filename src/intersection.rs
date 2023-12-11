@@ -108,19 +108,28 @@ pub struct IntersectionInfos<'a> {
     object: &'a Object,
     point: Vec3,
     eyev: Vec3,
-    normalv: Vec3
+    normalv: Vec3,
+    inside: bool,
 }
 
 impl<'a> IntersectionInfos<'a> {
     pub fn new(intersection: &Intersection<'a>, ray: &Ray) -> Self {
         let point = ray.at(intersection.t);
         let object = intersection.object;
+        let eyev = -ray.direction;
+        let mut normalv = object.normal_at(&point);
+        let mut inside = false;
+        if normalv.dot(eyev) < 0.0 {
+            inside = true;
+            normalv = -normalv;
+        }
         Self {
             t: intersection.t,
-            object: object,
-            point:  point,
-            eyev: -ray.direction,
-            normalv: object.normal_at(&point),
+            object,
+            point,
+            eyev,
+            normalv,
+            inside,
         }
     }
 }
@@ -214,6 +223,35 @@ mod tests {
         assert_eq!(comps.object, i.object);
         assert_eq!(comps.point, vec3(0.0, 0.0, -1.0));
         assert_eq!(comps.eyev, vec3(0.0, 0.0, -1.0));
+        assert_eq!(comps.normalv, vec3(0.0, 0.0, -1.0));
+    }
+
+    #[test]
+    fn the_hit_when_an_intersection_occurs_on_the_outsize() {
+        let r = Ray::new(
+            &vec3(0.0, 0.0, -5.0),
+            &vec3(0.0, 0.0, 1.0)
+        );
+        let o = Object::new(Shape::Sphere(Sphere::default()));
+        let i = Intersection::new(4.0,&o);
+        let comps = IntersectionInfos::new(&i, &r);
+        assert_eq!(comps.inside, false);
+    }
+
+    #[test]
+    fn the_hit_when_an_intersection_occurs_on_the_inside() {
+        let r = Ray::new(
+            &vec3(0.0, 0.0, 0.0),
+            &vec3(0.0, 0.0, 1.0)
+        );
+        let o = Object::new(Shape::Sphere(Sphere::default()));
+        let i = Intersection::new(1.0,&o);
+        let comps = IntersectionInfos::new(&i, &r);
+        assert_eq!(comps.t, i.t);
+        assert_eq!(comps.object, i.object);
+        assert_eq!(comps.point, vec3(0.0, 0.0, 1.0));
+        assert_eq!(comps.eyev, vec3(0.0, 0.0, -1.0));
+        assert_eq!(comps.inside, true);
         assert_eq!(comps.normalv, vec3(0.0, 0.0, -1.0));
     }
 }
