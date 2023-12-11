@@ -30,17 +30,12 @@ impl World {
     }
 
     pub fn color_at(&self, ray: &Ray) -> Color {
-        let intersections = self.intersects(ray);
-
-        for object in &self.objects {
-            if let Some(hit) = intersections.hit() {
-                for light in &self.lights {
-                    let hit_point = ray.at(hit.t());
-                    let normal = object.normal_at(&hit_point);
-                    return object.get_material().lighting(&light, &hit_point, &-ray.direction, &normal);
-                }   
+        if let Some(intersection) = self
+            .intersects(ray)
+            .hit() {
+                let infos = IntersectionInfos::new(&intersection, &ray);
+                return self.shade_hit(&infos);
             }
-        }
 
         Color::black()
     }
@@ -61,7 +56,14 @@ impl World {
     fn shade_hit(&self, infos: &IntersectionInfos) -> Color {
         let mut color = Color::black();
         for light in &self.lights {
-            color += infos.object.get_material().lighting(&light, &infos.point, &infos.eyev, &infos.normalv);
+            color += infos.object
+                .get_material()
+                .lighting(
+                    &light, 
+                    &infos.point, 
+                    &infos.eyev, 
+                    &infos.normalv
+                );
         }
 
         color
