@@ -5,7 +5,15 @@ fn main() {
     let camera = Camera::new(1920, 1080)
         .with_translation(0.0, 0.0, -2.0);
 
-    let l = PointLight::new(&Vec3::new(-10.0, 10.0, -10.0), &Color::white());
+    let l1 = PointLight::new(
+        &Vec3::new(-10.0, 10.0, -10.0), 
+        &Color::white()
+    );
+
+    let l2 = PointLight::new(
+        &Vec3::new(10.0, 10.0, 10.0), 
+        &Color::white()
+    );
 
     let m = Material::default()
         .with_color(&Color::new(1.0, 0.2, 1.0));
@@ -18,7 +26,7 @@ fn main() {
 
     let world = World::new()
         .with_objects(vec![o])
-        .with_lights(vec![l]);
+        .with_lights(vec![l1, l2]);
 
     let canvas = camera.render(&world);
     canvas.export("examples/example01.png").unwrap();
