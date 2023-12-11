@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Mul, Sub, AddAssign, SubAssign, MulAssign};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Color {
@@ -55,6 +55,14 @@ impl Add for Color {
     }
 }
 
+impl AddAssign for Color {
+    fn add_assign(&mut self, rhs: Self) {
+        self.r += rhs.r;
+        self.g += rhs.g;
+        self.b += rhs.b;
+    }
+}
+
 impl Sub for Color {
     type Output = Color;
 
@@ -64,6 +72,14 @@ impl Sub for Color {
             g: self.g - rhs.g,
             b: self.b - rhs.b
         }
+    }
+}
+
+impl SubAssign for Color {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.r -= rhs.r;
+        self.g -= rhs.g;
+        self.b -= rhs.b;
     }
 }
 
@@ -79,6 +95,15 @@ impl Mul for Color {
     }
 }
 
+impl MulAssign for Color {
+
+    fn mul_assign(&mut self, rhs: Self) {
+        self.r *= rhs.r;
+        self.g *= rhs.g;
+        self.b *= rhs.b;
+    }
+}
+
 impl Mul<f32> for Color {
     type Output = Color;
 
@@ -88,6 +113,14 @@ impl Mul<f32> for Color {
             g: self.g * rhs,
             b: self.b * rhs
         }
+    }
+}
+
+impl MulAssign<f32> for Color {
+    fn mul_assign(&mut self, rhs: f32) {
+        self.r *= rhs;
+        self.g *= rhs;
+        self.b *= rhs;
     }
 }
 
@@ -112,11 +145,27 @@ mod tests {
     }
 
     #[test]
+    fn add_assign_colors() {
+        let mut c1 = Color::new(0.9, 0.6, 0.75);
+        let c2 = Color::new(0.7, 0.1, 0.25);
+        c1 += c2;
+        assert_eq!(c1, Color::new(1.6, 0.7, 1.0));
+    }
+
+    #[test]
     fn substracting_colors() {
         let c1 = Color::new(0.9, 0.6, 0.75);
         let c2 = Color::new(0.7, 0.1, 0.25);
         let c3 = c1 - c2;
         assert_eq!(c3, Color::new(0.2, 0.5, 0.5));
+    }
+
+    #[test]
+    fn sub_assign_colors() {
+        let mut c1 = Color::new(0.9, 0.6, 0.75);
+        let c2 = Color::new(0.7, 0.1, 0.25);
+        c1 -= c2;
+        assert_eq!(c1, Color::new(0.2, 0.5, 0.5));
     }
 
     #[test]
@@ -127,10 +176,25 @@ mod tests {
     }
 
     #[test]
+    fn mul_assign_color_by_a_scalar() {
+        let mut c = Color::new(0.2, 0.3, 0.4);
+        c *= 2.0;
+        assert_eq!(c, Color::new(0.4, 0.6, 0.8));
+    }
+
+    #[test]
     fn multiplying_colors() {
         let c1 = Color::new(1.0, 0.2, 0.4);
         let c2 = Color::new(0.9, 1.0, 0.1);
         let c3 = c1 * c2;
         assert_eq!(c3, Color::new(0.9, 0.2, 0.04));
+    }
+
+    #[test]
+    fn mul_assign_colors() {
+        let mut c1 = Color::new(1.0, 0.2, 0.4);
+        let c2 = Color::new(0.9, 1.0, 0.1);
+        c1 *= c2;
+        assert_eq!(c1, Color::new(0.9, 0.2, 0.04));
     }
 }
