@@ -177,4 +177,26 @@ mod tests {
         let c = w.shade_hit(&comps);
         assert_eq!(c, Color::new(0.90498, 0.90498, 0.90498));
     }
+
+    #[test]
+    fn the_color_when_a_ray_misses() {
+        let w = default_world();
+        let r = Ray::new(
+            &vec3(0.0, 0.0, -5.0),
+            &vec3(0.0, 1.0, 0.0)
+        );
+        let c = w.color_at(&r);
+        assert_eq!(c, Color::black());
+    }
+
+    #[test]
+    fn the_color_when_a_ray_hits() {
+        let w = default_world();
+        let r = Ray::new(
+            &vec3(0.0, 0.0, -5.0),
+            &vec3(0.0, 0.0, 1.0)
+        );
+        let c = w.color_at(&r);
+        assert_eq!(c, Color::new(0.38066, 0.47583, 0.2855));
+    }
 }
