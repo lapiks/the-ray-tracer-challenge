@@ -104,12 +104,12 @@ impl<'a> Intersections<'a> {
 }
 
 pub struct IntersectionInfos<'a> {
-    t: f32,
-    object: &'a Object,
-    point: Vec3,
-    eyev: Vec3,
-    normalv: Vec3,
-    inside: bool,
+    pub t: f32,
+    pub object: &'a Object,
+    pub point: Vec3,
+    pub eyev: Vec3,
+    pub normalv: Vec3,
+    pub inside: bool,
 }
 
 impl<'a> IntersectionInfos<'a> {
