@@ -29,6 +29,12 @@ impl Object {
         self
     }
 
+    pub fn with_transform(mut self, transform: &Mat4) -> Self {
+        self.transform = *transform;
+        self.inverse_transform = transform.inverse();
+        self
+    }
+
     pub fn with_translation(mut self, x: f32, y: f32, z: f32) -> Self {
         self.transform *= Mat4::from_translation(Vec3::new(x, y, z));
         self.inverse_transform = self.transform.inverse();
@@ -65,11 +71,6 @@ impl Object {
 
     pub fn get_transform(&self) -> &Mat4 {
         &self.transform
-    }
-
-    pub fn set_transform(&mut self, mat: &Mat4) {
-        self.transform = *mat;
-        self.inverse_transform = mat.inverse();
     }
 
     pub fn intersect(&self, ray: &Ray) -> Intersections {
@@ -115,9 +116,10 @@ mod tests {
     #[test]
     fn changing_a_sphere_transformation() {
         let s = Sphere::default();
-        let mut o = Object::new(Shape::Sphere(s));
         let t = Mat4::from_translation(Vec3::new(2.0, 3.0, 4.0));
-        o.set_transform(&t);
+        let mut o = Object::new(Shape::Sphere(s))
+            .with_transform(&t);
+        
         assert_eq!(o.transform, t);
     }
 }

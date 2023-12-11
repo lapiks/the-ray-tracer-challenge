@@ -128,8 +128,8 @@ mod tests {
             &Vec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
-        let mut o = Object::new(Shape::Sphere(s));
-        o.set_transform(&Mat4::from_scale(Vec3::new(2.0, 2.0, 2.0)));
+        let o = Object::new(Shape::Sphere(s))
+            .with_scale(2.0, 2.0, 2.0);
         let xs = o.intersect(&r);
         assert_eq!(xs.count(), 2);
         assert_eq!(xs.get(0).unwrap().t(), 3.0);
@@ -143,8 +143,8 @@ mod tests {
             &Vec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
-        let mut o = Object::new(Shape::Sphere(s));
-        o.set_transform(&Mat4::from_translation(Vec3::new(5.0, 0.0, 0.0)));
+        let o = Object::new(Shape::Sphere(s))
+            .with_translation(5.0, 0.0, 0.0);
         let xs = o.intersect(&r);
         assert_eq!(xs.count(), 0);
     } 
