@@ -1,6 +1,8 @@
 use std::cmp::Ordering;
 
-use crate::object::Object;
+use glam::Vec3;
+
+use crate::{object::Object, ray::Ray};
 
 
 #[derive(Debug, Clone, PartialEq)]
@@ -101,9 +103,33 @@ impl<'a> Intersections<'a> {
     }
 }
 
+pub struct IntersectionInfos<'a> {
+    t: f32,
+    object: &'a Object,
+    point: Vec3,
+    eyev: Vec3,
+    normalv: Vec3
+}
+
+impl<'a> IntersectionInfos<'a> {
+    pub fn new(intersection: &Intersection<'a>, ray: &Ray) -> Self {
+        let point = ray.at(intersection.t);
+        let object = intersection.object;
+        Self {
+            t: intersection.t,
+            object: object,
+            point:  point,
+            eyev: -ray.direction,
+            normalv: object.normal_at(&point),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::shapes::{sphere::Sphere, shape::Shape};
+    use glam::vec3;
+
+    use crate::{shapes::{sphere::Sphere, shape::Shape}, ray::Ray};
 
     use super::*;
 
@@ -173,5 +199,21 @@ mod tests {
         let xs = Intersections::new(vec![i1.clone(), i2.clone(), i3.clone(), i4.clone()]).sort();
         let i = xs.hit();
         assert_eq!(i, Some(&i4));
+    }
+
+    #[test]
+    fn precomputing_the_state_of_an_intersection() {
+        let r = Ray::new(
+            &vec3(0.0, 0.0, -5.0),
+            &vec3(0.0, 0.0, 1.0)
+        );
+        let o = Object::new(Shape::Sphere(Sphere::default()));
+        let i = Intersection::new(4.0,&o);
+        let comps = IntersectionInfos::new(&i, &r);
+        assert_eq!(comps.t, i.t);
+        assert_eq!(comps.object, i.object);
+        assert_eq!(comps.point, vec3(0.0, 0.0, -1.0));
+        assert_eq!(comps.eyev, vec3(0.0, 0.0, -1.0));
+        assert_eq!(comps.normalv, vec3(0.0, 0.0, -1.0));
     }
 }
