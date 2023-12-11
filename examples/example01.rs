@@ -15,17 +15,23 @@ fn main() {
         &Color::white()
     );
 
-    let m = Material::default()
-        .with_color(&Color::new(1.0, 0.2, 1.0));
-
     let s = Sphere::default();
-    let o = Object::new(Shape::Sphere(s))
-        //.with_scale(1.0, 0.5, 1.0)
-        //.with_translation(2.0, 0.0, 0.0)
-        .with_material(m);
+    let o1 = Object::new(Shape::Sphere(s))
+        .with_scale(0.75, 0.75, 0.75)
+        .with_translation(1.0, 0.0, 0.0)
+        .with_material(
+            Material::default()
+                .with_color(&Color::new(1.0, 0.2, 1.0))
+        );
+
+    let o2 = Object::new(Shape::Sphere(s))
+        .with_translation(-1.0, 0.0, 0.0)
+        .with_material(
+            Material::default()
+                .with_color(&Color::new(0.2, 1.0, 1.0)));
 
     let world = World::new()
-        .with_objects(vec![o])
+        .with_objects(vec![o1, o2])
         .with_lights(vec![l1, l2]);
 
     let canvas = camera.render(&world);
