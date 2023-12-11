@@ -63,10 +63,6 @@ impl Object {
         &self.material
     }
 
-    pub fn set_material(&mut self, material: &Material) {
-        self.material = material.clone();
-    }
-
     pub fn get_transform(&self) -> &Mat4 {
         &self.transform
     }

@@ -109,10 +109,10 @@ mod tests {
 
     #[test]
     fn a_sphere_may_be_assigned_a_material() {
-        let mut o = Object::new(Shape::Sphere(Sphere::default()));
-        let mut m = Material::default();
-        m.ambient = 1.0;
-        o.set_material(&m);
+        let m = Material::default()
+            .with_ambient(1.0);
+        let o = Object::new(Shape::Sphere(Sphere::default()))
+            .with_material(m.clone());
         assert_eq!(*o.material(), m);
     }
 
