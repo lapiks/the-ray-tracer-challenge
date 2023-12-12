@@ -1,4 +1,4 @@
-use glam::{Vec2, Vec3, Mat4};
+use glam::{Vec2, Vec3, Mat4, vec3};
 
 use crate::{Canvas, ray::Ray, World};
 
@@ -6,8 +6,8 @@ pub struct Camera {
     width: usize,
     height: usize,
     fov: f32,
-    focal_length: f32,
     transform: Mat4,
+    transform_inverse: Mat4,
     pixel_size: f32,
     half_width: f32,
     half_height: f32,
@@ -35,12 +35,18 @@ impl Camera {
             width,
             height,
             fov,
-            focal_length: 1.0,
             transform: Mat4::IDENTITY,
+            transform_inverse: Mat4::IDENTITY,
             pixel_size,
             half_width,
             half_height,
         }
+    }
+
+    pub fn with_transform(mut self, transform: Mat4) -> Self {
+        self.transform = transform;
+        self.transform_inverse = transform.inverse();
+        self
     }
 
     pub fn with_translation(mut self, x: f32, y: f32, z: f32) -> Self {
@@ -62,7 +68,7 @@ impl Camera {
             for col in 0..self.width-1 {
                 let pixel_pos = Vec2::new(col as f32, row as f32);
                 let uv = pixel_pos * inv_canvas_size * viewport.y - 1.0;
-                let mut uvw = Vec3::new(uv.x, uv.y, self.focal_length);
+                let mut uvw = Vec3::new(uv.x, uv.y, 1.0);
                 uvw.x *= ratio;
             
                 let ray: Ray = Ray::new(
@@ -75,6 +81,18 @@ impl Camera {
 
         canvas
     }
+
+    fn ray_for_pixel(&self, x: usize, y: usize) -> Ray {
+        let world_x = self.half_width - (x as f32 + 0.5) * self.pixel_size;
+        let world_y = self.half_height - (y as f32 + 0.5) * self.pixel_size;
+        let pixel = self.transform_inverse.transform_point3(vec3(world_x, world_y, -1.0));
+        let origin = self.transform_inverse.transform_point3(Vec3::ZERO);
+        let direction = (pixel - origin).normalize();
+        Ray {
+            origin,
+            direction
+        }
+    }
 }
 
 
@@ -82,7 +100,11 @@ impl Camera {
 mod tests {
     use std::f32::consts::PI;
 
+    use glam::vec3;
+
     use super::*;
+
+    const EPSILON: f32 = 0.00001;
 
     #[test]
     fn creating_a_camera() {
@@ -115,5 +137,41 @@ mod tests {
             PI / 2.0,
         );
         assert_eq!(c.pixel_size, 0.01);
+    }
+
+    #[test]
+    fn constructing_a_ray_through_the_center_of_the_canvas() {
+        let c = Camera::new(
+            201,
+            101, 
+            PI / 2.0,
+        );
+        let r = c.ray_for_pixel(100, 50);
+        assert!(r.origin.abs_diff_eq(vec3(0.0, 0.0, 0.0), EPSILON));
+        assert!(r.direction.abs_diff_eq(vec3(0.0, 0.0, -1.0), EPSILON));
+    }
+
+    #[test]
+    fn constructing_a_ray_through_a_corner_of_the_canvas() {
+        let c = Camera::new(
+            201,
+            101, 
+            PI / 2.0,
+        );
+        let r = c.ray_for_pixel(0, 0);
+        assert!(r.origin.abs_diff_eq(vec3(0.0, 0.0, 0.0), EPSILON));
+        assert!(r.direction.abs_diff_eq(vec3(0.66519, 0.33259, -0.66851), EPSILON));
+    }
+
+    #[test]
+    fn constructing_a_ray_when_the_camera_is_transformed() {
+        let c = Camera::new(201,101,PI / 2.0,)
+            .with_transform(
+                Mat4::from_rotation_y(PI / 4.0) 
+              * Mat4::from_translation(vec3(0.0, -2.0, 5.0))
+            );
+        let r = c.ray_for_pixel(100, 50);
+        assert!(r.origin.abs_diff_eq(vec3(0.0, 2.0, -5.0), EPSILON));
+        assert!(r.direction.abs_diff_eq(vec3(2.0_f32.sqrt() / 2.0, 0.0, -2.0_f32.sqrt() / 2.0), EPSILON));
     }
 }
