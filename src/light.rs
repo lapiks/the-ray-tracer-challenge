@@ -9,10 +9,10 @@ pub struct PointLight {
 }
 
 impl PointLight {
-    pub fn new(position: Vec3, intensity: &Color) -> Self {
+    pub fn new(position: Vec3, intensity: Color) -> Self {
         Self {
-            position: position,
-            intensity: *intensity
+            position,
+            intensity
         }
     }
 
@@ -20,8 +20,8 @@ impl PointLight {
         self.position
     }
 
-    pub fn intensity(&self) -> &Color {
-        &self.intensity
+    pub fn intensity(&self) -> Color {
+        self.intensity
     }
 }
 
@@ -31,7 +31,7 @@ mod tests {
 
     #[test]
     fn a_point_light_as_a_position_and_intensity() {
-        let l = PointLight::new(Vec3::ZERO, &Color::white());
+        let l = PointLight::new(Vec3::ZERO, Color::white());
         assert_eq!(l.position, Vec3::ZERO);
         assert_eq!(l.intensity, Color::white());
     }

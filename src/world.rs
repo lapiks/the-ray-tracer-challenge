@@ -88,10 +88,10 @@ mod tests {
     pub fn default_world() -> World {
         let l = PointLight::new(
             Vec3::new(-10.0, 10.0, -10.0), 
-            &Color::white()
+            Color::white()
         );
         let m = Material::new()
-            .with_color(&Color::new(0.8, 1.0, 0.6))
+            .with_color(Color::new(0.8, 1.0, 0.6))
             .with_diffuse(0.7)
             .with_specular(0.2);
         let s1 = Object::new(Shape::Sphere(Sphere::default()))
@@ -109,10 +109,10 @@ mod tests {
 
         let l = PointLight::new(
             Vec3::new(-10.0, 10.0, -10.0), 
-            &Color::white()
+            Color::white()
         );
         let m = Material::new()
-            .with_color(&Color::new(0.8, 1.0, 0.6))
+            .with_color(Color::new(0.8, 1.0, 0.6))
             .with_diffuse(0.7)
             .with_specular(0.2);
         let s1 = Object::new(Shape::Sphere(Sphere::default()))
@@ -162,7 +162,7 @@ mod tests {
             lights: vec![
                 PointLight::new(
                     vec3(0.0, 0.25, 0.0), 
-                    &Color::white()
+                    Color::white()
                 )
             ],
             ..default_world()
@@ -221,6 +221,6 @@ mod tests {
             vec3(0.0, 0.0, -1.0)
         );
         let c = w.color_at(&r);
-        assert_eq!(c, *inner.material().color());
+        assert_eq!(c, inner.material().color());
     }
 }

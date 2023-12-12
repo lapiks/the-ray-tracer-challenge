@@ -16,8 +16,8 @@ impl Material {
         Self::default()
     }
 
-    pub fn with_color(mut self, color: &Color) -> Self {
-        self.color = *color;
+    pub fn with_color(mut self, color: Color) -> Self {
+        self.color = color;
         self
     }
 
@@ -41,8 +41,8 @@ impl Material {
         self
     }
 
-    pub fn color(&self) -> &Color {
-        &self.color
+    pub fn color(&self) -> Color {
+        self.color
     }
 
     pub fn ambient(&self) -> f32 {
@@ -61,7 +61,7 @@ impl Material {
     }
 
     pub fn lighting(&self, light: &PointLight, point: Vec3, eyev: Vec3, normal: Vec3) -> Color {
-        let effective_color = self.color * *light.intensity();
+        let effective_color = self.color * light.intensity();
         let lightv = (light.position() - point).normalize();
 
         let ambient = effective_color * self.ambient;
@@ -73,7 +73,7 @@ impl Material {
             let reflectv = -lightv - normal * 2.0 * -lightv.dot(normal);
             let r_dot_e = reflectv.dot(eyev);
             if r_dot_e > 0.0 {
-                specular = *light.intensity() * self.specular * r_dot_e.powf(self.shininess);
+                specular = light.intensity() * self.specular * r_dot_e.powf(self.shininess);
             }
         }
 
@@ -124,7 +124,7 @@ mod tests {
         let normalv = vec3(0.0, 0.0, -1.0);
         let l = PointLight::new(
             vec3(0.0, 0.0, -10.0),
-            &Color::white()
+            Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv), Color::new(1.9, 1.9, 1.9));
     }
@@ -137,7 +137,7 @@ mod tests {
         let normalv = vec3(0.0, 0.0, -1.0);
         let l = PointLight::new(
             vec3(0.0, 0.0, -10.0),
-            &Color::white()
+            Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv), Color::new(1.0, 1.0, 1.0));
     }
@@ -150,7 +150,7 @@ mod tests {
         let normalv = vec3(0.0, 0.0, -1.0);
         let l = PointLight::new(
             vec3(0.0, 10.0, -10.0),
-            &Color::white()
+            Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv), Color::new(0.7364, 0.7364, 0.7364));
     }
@@ -163,7 +163,7 @@ mod tests {
         let normalv = vec3(0.0, 0.0, -1.0);
         let l = PointLight::new(
             vec3(0.0, 10.0, -10.0),
-            &Color::white()
+            Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv), Color::new(1.6364, 1.6364, 1.6364));
     }
@@ -176,7 +176,7 @@ mod tests {
         let normalv = vec3(0.0, 0.0, -1.0);
         let l = PointLight::new(
             vec3(0.0, 0.0, 10.0),
-            &Color::white()
+            Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv), Color::new(0.1, 0.1, 0.1));
     }

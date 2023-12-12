@@ -2,7 +2,7 @@ use std::path::Path;
 
 use crate::color::Color;
 
-fn scale_color(color: &Color) -> (u8, u8, u8) {
+fn scale_color(color: Color) -> (u8, u8, u8) {
     (
         scale_color_component(color.r),
         scale_color_component(color.g),
@@ -41,8 +41,7 @@ impl Canvas {
         let mut img = image::ImageBuffer::new(self.width as u32, self.height as u32);
 
         for (x, y, pixel) in img.enumerate_pixels_mut() {
-            let color = &self[y as usize][x as usize];
-            let (r, g, b) = scale_color(color);
+            let (r, g, b) = scale_color(self[y as usize][x as usize]);
             *pixel = image::Rgb([r, g, b]);
         }
 
