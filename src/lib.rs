@@ -16,6 +16,7 @@ pub use color::Color;
 
 mod ray;
 mod intersection;
+mod transformations;
 pub mod object;
 pub mod light;
 pub mod material;

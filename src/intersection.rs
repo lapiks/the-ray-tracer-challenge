@@ -136,7 +136,7 @@ impl<'a> IntersectionInfos<'a> {
 
 #[cfg(test)]
 mod tests {
-    use glam::vec3;
+    use glam::{vec3, Mat4};
 
     use crate::{shapes::{sphere::Sphere, shape::Shape}, ray::Ray};
 

@@ -117,7 +117,7 @@ mod tests {
     fn changing_a_sphere_transformation() {
         let s = Sphere::default();
         let t = Mat4::from_translation(Vec3::new(2.0, 3.0, 4.0));
-        let mut o = Object::new(Shape::Sphere(s))
+        let o = Object::new(Shape::Sphere(s))
             .with_transform(&t);
         
         assert_eq!(o.transform, t);
