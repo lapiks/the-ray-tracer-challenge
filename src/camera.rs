@@ -5,17 +5,38 @@ use crate::{Canvas, ray::Ray, World};
 pub struct Camera {
     width: usize,
     height: usize,
+    fov: f32,
     focal_length: f32,
     transform: Mat4,
+    pixel_size: f32,
+    half_width: f32,
+    half_height: f32,
 }
 
 impl Camera {
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new(width: usize, height: usize, fov: f32) -> Self {
+        let half_view = f32::tan(fov / 2.0);
+        let aspect = width / height;
+        let mut half_width = 0.0;
+        let mut half_height = 0.0;
+        if aspect >= 1 {
+            half_width = half_view;
+            half_height = half_view / aspect as f32;
+        } else {
+            half_width = half_view * aspect as f32;
+            half_height = half_view;
+        }
+        let pixel_size = (half_width * 2.0) / width as f32;
+
         Self {
             width,
             height,
+            fov,
             focal_length: 1.0,
             transform: Mat4::IDENTITY,
+            pixel_size,
+            half_width,
+            half_height,
         }
     }
 
@@ -50,5 +71,46 @@ impl Camera {
         }
 
         canvas
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use std::f32::consts::PI;
+
+    use super::*;
+
+    #[test]
+    fn creating_a_camera() {
+        let c = Camera::new(
+            160,
+            120, 
+            PI / 2.0,
+        );
+        assert_eq!(c.width, 160);
+        assert_eq!(c.height, 120);
+        assert_eq!(c.fov, PI / 2.0);
+        assert_eq!(c.transform, Mat4::IDENTITY);
+    }
+
+    #[test]
+    fn the_pixel_size_for_a_horizontal_canvas() {
+        let c = Camera::new(
+            200,
+            125, 
+            PI / 2.0,
+        );
+        assert_eq!(c.pixel_size, 0.01);
+    }
+
+    #[test]
+    fn the_pixel_size_for_a_vertical_canvas() {
+        let c = Camera::new(
+            125,
+            200, 
+            PI / 2.0,
+        );
+        assert_eq!(c.pixel_size, 0.01);
     }
 }
