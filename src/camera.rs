@@ -16,15 +16,15 @@ pub struct Camera {
 impl Camera {
     pub fn new(width: usize, height: usize, fov: f32) -> Self {
         let half_view = f32::tan(fov / 2.0);
-        let aspect = width / height;
+        let aspect = width as f32 / height as f32;
         let half_width = 
-            if aspect >= 1 { 
+            if aspect >= 1.0 { 
                 half_view 
             } else { 
                 half_view * aspect as f32 
             };
         let half_height = 
-            if aspect >= 1 { 
+            if aspect >= 1.0 { 
                 half_view / aspect as f32 
             } else { 
                 half_view 
