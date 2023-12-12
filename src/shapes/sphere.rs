@@ -50,7 +50,7 @@ impl Sphere {
 mod tests {
     use std::f32::consts::PI;
 
-    use glam::{Mat4, Vec3};
+    use glam::Vec3;
 
     use crate::{object::Object, shapes::shape::Shape};
 
