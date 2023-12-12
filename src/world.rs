@@ -60,9 +60,9 @@ impl World {
                 .material()
                 .lighting(
                     &light, 
-                    &infos.point, 
-                    &infos.eyev, 
-                    &infos.normalv
+                    infos.point, 
+                    infos.eyev, 
+                    infos.normalv
                 );
         }
 
@@ -87,7 +87,7 @@ mod tests {
 
     pub fn default_world() -> World {
         let l = PointLight::new(
-            &Vec3::new(-10.0, 10.0, -10.0), 
+            Vec3::new(-10.0, 10.0, -10.0), 
             &Color::white()
         );
         let m = Material::new()
@@ -108,7 +108,7 @@ mod tests {
         let w = default_world();
 
         let l = PointLight::new(
-            &Vec3::new(-10.0, 10.0, -10.0), 
+            Vec3::new(-10.0, 10.0, -10.0), 
             &Color::white()
         );
         let m = Material::new()
@@ -131,8 +131,8 @@ mod tests {
     fn intersect_a_world_with_a_ray() {
         let w = default_world();
         let r = Ray::new(
-            &vec3(0.0, 0.0, -5.0),
-            &vec3(0.0, 0.0, 1.0)
+            vec3(0.0, 0.0, -5.0),
+            vec3(0.0, 0.0, 1.0)
         );
         let xs = w.intersects(&r);
         assert_eq!(xs.count(), 4);
@@ -146,8 +146,8 @@ mod tests {
     fn shading_an_intersection() {
         let w = default_world();
         let r = Ray::new(
-            &vec3(0.0, 0.0, -5.0),
-            &vec3(0.0, 0.0, 1.0)
+            vec3(0.0, 0.0, -5.0),
+            vec3(0.0, 0.0, 1.0)
         );
         let s = w.objects.get(0).unwrap();
         let i = Intersection::new(4.0, s);
@@ -161,15 +161,15 @@ mod tests {
         let w = World {
             lights: vec![
                 PointLight::new(
-                    &vec3(0.0, 0.25, 0.0), 
+                    vec3(0.0, 0.25, 0.0), 
                     &Color::white()
                 )
             ],
             ..default_world()
         };
         let r = Ray::new(
-            &vec3(0.0, 0.0, 0.0),
-            &vec3(0.0, 0.0, 1.0)
+            vec3(0.0, 0.0, 0.0),
+            vec3(0.0, 0.0, 1.0)
         );
         let s = w.objects.get(1).unwrap();
         let i = Intersection::new(0.5, s);
@@ -182,8 +182,8 @@ mod tests {
     fn the_color_when_a_ray_misses() {
         let w = default_world();
         let r = Ray::new(
-            &vec3(0.0, 0.0, -5.0),
-            &vec3(0.0, 1.0, 0.0)
+            vec3(0.0, 0.0, -5.0),
+            vec3(0.0, 1.0, 0.0)
         );
         let c = w.color_at(&r);
         assert_eq!(c, Color::black());
@@ -193,8 +193,8 @@ mod tests {
     fn the_color_when_a_ray_hits() {
         let w = default_world();
         let r = Ray::new(
-            &vec3(0.0, 0.0, -5.0),
-            &vec3(0.0, 0.0, 1.0)
+            vec3(0.0, 0.0, -5.0),
+            vec3(0.0, 0.0, 1.0)
         );
         let c = w.color_at(&r);
         assert_eq!(c, Color::new(0.38066, 0.47583, 0.2855));
@@ -217,8 +217,8 @@ mod tests {
             ..default_world()  
         };
         let r = Ray::new(
-            &vec3(0.0, 0.0, 0.75),
-            &vec3(0.0, 0.0, -1.0)
+            vec3(0.0, 0.0, 0.75),
+            vec3(0.0, 0.0, -1.0)
         );
         let c = w.color_at(&r);
         assert_eq!(c, *inner.material().color());

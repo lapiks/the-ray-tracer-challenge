@@ -117,7 +117,7 @@ impl<'a> IntersectionInfos<'a> {
         let point = ray.at(intersection.t);
         let object = intersection.object;
         let eyev = -ray.direction;
-        let mut normalv = object.normal_at(&point);
+        let mut normalv = object.normal_at(point);
         let mut inside = false;
         if normalv.dot(eyev) < 0.0 {
             inside = true;
@@ -136,7 +136,7 @@ impl<'a> IntersectionInfos<'a> {
 
 #[cfg(test)]
 mod tests {
-    use glam::{vec3, Mat4};
+    use glam::vec3;
 
     use crate::{shapes::{sphere::Sphere, shape::Shape}, ray::Ray};
 
@@ -213,8 +213,8 @@ mod tests {
     #[test]
     fn precomputing_the_state_of_an_intersection() {
         let r = Ray::new(
-            &vec3(0.0, 0.0, -5.0),
-            &vec3(0.0, 0.0, 1.0)
+            vec3(0.0, 0.0, -5.0),
+            vec3(0.0, 0.0, 1.0)
         );
         let o = Object::new(Shape::Sphere(Sphere::default()));
         let i = Intersection::new(4.0,&o);
@@ -229,8 +229,8 @@ mod tests {
     #[test]
     fn the_hit_when_an_intersection_occurs_on_the_outsize() {
         let r = Ray::new(
-            &vec3(0.0, 0.0, -5.0),
-            &vec3(0.0, 0.0, 1.0)
+            vec3(0.0, 0.0, -5.0),
+            vec3(0.0, 0.0, 1.0)
         );
         let o = Object::new(Shape::Sphere(Sphere::default()));
         let i = Intersection::new(4.0,&o);
@@ -241,8 +241,8 @@ mod tests {
     #[test]
     fn the_hit_when_an_intersection_occurs_on_the_inside() {
         let r = Ray::new(
-            &vec3(0.0, 0.0, 0.0),
-            &vec3(0.0, 0.0, 1.0)
+            vec3(0.0, 0.0, 0.0),
+            vec3(0.0, 0.0, 1.0)
         );
         let o = Object::new(Shape::Sphere(Sphere::default()));
         let i = Intersection::new(1.0,&o);

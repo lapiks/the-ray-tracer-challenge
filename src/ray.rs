@@ -6,10 +6,10 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn new(origin: &Vec3, direction: &Vec3) -> Self {
+    pub fn new(origin: Vec3, direction: Vec3) -> Self {
         Self {
-            origin: *origin,
-            direction: *direction
+            origin,
+            direction
         }
     }
 
@@ -36,7 +36,7 @@ mod tests {
     fn new_ray() {
         let origin = Vec3::new(1.0, 2.0, 3.0);
         let direction = Vec3::new(4.0, 5.0, 6.0);
-        let r = Ray::new(&origin, &direction);
+        let r = Ray::new(origin, direction);
         assert_eq!(r.origin, origin);
         assert_eq!(r.direction, direction);
     }
@@ -45,8 +45,8 @@ mod tests {
     #[test]
     fn ray_at() {
         let r = Ray::new(
-            &Vec3::new(2.0, 3.0, 4.0), 
-            &Vec3::new(1.0, 0.0, 0.0)
+            Vec3::new(2.0, 3.0, 4.0), 
+            Vec3::new(1.0, 0.0, 0.0)
         );
         assert_eq!(r.at(0.0), Vec3::new(2.0, 3.0, 4.0));
         assert_eq!(r.at(1.0), Vec3::new(3.0, 3.0, 4.0));
@@ -57,8 +57,8 @@ mod tests {
     #[test]
     fn translating_a_ray() {
         let r = Ray::new(
-            &Vec3::new(1.0, 2.0, 3.0), 
-            &Vec3::new(0.0, 1.0, 0.0)
+            Vec3::new(1.0, 2.0, 3.0), 
+            Vec3::new(0.0, 1.0, 0.0)
         );
         let r2 = r.transform(&Mat4::from_translation(Vec3::new(3.0, 4.0, 5.0)));
         assert_eq!(r2.origin, Vec3::new(4.0, 6.0, 8.0));
@@ -68,8 +68,8 @@ mod tests {
     #[test]
     fn scaling_a_ray() {
         let r = Ray::new(
-            &Vec3::new(1.0, 2.0, 3.0), 
-            &Vec3::new(0.0, 1.0, 0.0)
+            Vec3::new(1.0, 2.0, 3.0), 
+            Vec3::new(0.0, 1.0, 0.0)
         );
         let r2 = r.transform(&Mat4::from_scale(Vec3::new(2.0, 3.0, 4.0)));
         assert_eq!(r2.origin, Vec3::new(2.0, 6.0, 12.0));

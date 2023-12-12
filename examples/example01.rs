@@ -6,12 +6,12 @@ fn main() {
         .with_translation(0.0, 0.0, -2.0);
 
     let l1 = PointLight::new(
-        &Vec3::new(-10.0, 10.0, -10.0), 
+        Vec3::new(-10.0, 10.0, -10.0), 
         &Color::white()
     );
 
     let l2 = PointLight::new(
-        &Vec3::new(10.0, 10.0, 10.0), 
+        Vec3::new(10.0, 10.0, 10.0), 
         &Color::white()
     );
 

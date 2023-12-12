@@ -10,7 +10,7 @@ pub enum Shape {
 
 pub trait Hittable {
     fn intersect(&self, ray: &Ray) -> Vec<f32>;
-    fn normal_at(&self, world_point: &Vec3) -> Vec3;
+    fn normal_at(&self, world_point: Vec3) -> Vec3;
 }
 
 impl Hittable for Shape {
@@ -20,7 +20,7 @@ impl Hittable for Shape {
         }
     }
 
-    fn normal_at(&self, point: &Vec3) -> Vec3 {
+    fn normal_at(&self, point: Vec3) -> Vec3 {
         match self {
             Shape::Sphere(s) => s.normal_at(point),
         }

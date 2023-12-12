@@ -89,8 +89,8 @@ impl Object {
         xs
     }
 
-    pub fn normal_at(&self, world_point: &Vec3) -> Vec3 {
-        let object_normal = self.shape.normal_at(&self.inverse_transform.transform_point3(*world_point));
+    pub fn normal_at(&self, world_point: Vec3) -> Vec3 {
+        let object_normal = self.shape.normal_at(self.inverse_transform.transform_point3(world_point));
         self.transform
             .inverse()
             .transpose()
