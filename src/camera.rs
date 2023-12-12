@@ -49,33 +49,13 @@ impl Camera {
         self
     }
 
-    pub fn with_translation(mut self, x: f32, y: f32, z: f32) -> Self {
-        self.transform = Mat4::from_translation(Vec3::new(x, y, z));
-        self
-    }
-
     pub fn render(&self, world: &World) -> Canvas {
         let mut canvas = Canvas::new(self.width, self.height);
 
-        let canvas_size = Vec2::new(self.width as f32, self.height as f32);
-        let inv_canvas_size = 1.0 / canvas_size;
-        let ratio = canvas_size.x / canvas_size.y;
-        let viewport = Vec2::new(2.0 * ratio, 2.0);
-
-        let camera_position = self.transform.col(3);
-
-        for row in 0..self.height-1 {
-            for col in 0..self.width-1 {
-                let pixel_pos = Vec2::new(col as f32, row as f32);
-                let uv = pixel_pos * inv_canvas_size * viewport.y - 1.0;
-                let mut uvw = Vec3::new(uv.x, uv.y, 1.0);
-                uvw.x *= ratio;
-            
-                let ray: Ray = Ray::new(
-                    Vec3::new(camera_position.x, camera_position.y, camera_position.z), 
-                    uvw.normalize()
-                );
-                canvas[self.height - 1 - row][col] = world.color_at(&ray);
+        for y in 0..self.height-1 {
+            for x in 0..self.width-1 {
+                let ray = self.ray_for_pixel(x, y);
+                canvas[y][x] = world.color_at(&ray);
             }
         }
 
@@ -102,17 +82,15 @@ mod tests {
 
     use glam::vec3;
 
+    use crate::{world::tests::default_world, transformations::view_transform, Color};
+
     use super::*;
 
     const EPSILON: f32 = 0.00001;
 
     #[test]
     fn creating_a_camera() {
-        let c = Camera::new(
-            160,
-            120, 
-            PI / 2.0,
-        );
+        let c = Camera::new(160, 120, PI / 2.0);
         assert_eq!(c.width, 160);
         assert_eq!(c.height, 120);
         assert_eq!(c.fov, PI / 2.0);
@@ -121,31 +99,19 @@ mod tests {
 
     #[test]
     fn the_pixel_size_for_a_horizontal_canvas() {
-        let c = Camera::new(
-            200,
-            125, 
-            PI / 2.0,
-        );
+        let c = Camera::new(200, 125, PI / 2.0);
         assert_eq!(c.pixel_size, 0.01);
     }
 
     #[test]
     fn the_pixel_size_for_a_vertical_canvas() {
-        let c = Camera::new(
-            125,
-            200, 
-            PI / 2.0,
-        );
+        let c = Camera::new(125, 200, PI / 2.0);
         assert_eq!(c.pixel_size, 0.01);
     }
 
     #[test]
     fn constructing_a_ray_through_the_center_of_the_canvas() {
-        let c = Camera::new(
-            201,
-            101, 
-            PI / 2.0,
-        );
+        let c = Camera::new(201, 101, PI / 2.0);
         let r = c.ray_for_pixel(100, 50);
         assert!(r.origin.abs_diff_eq(vec3(0.0, 0.0, 0.0), EPSILON));
         assert!(r.direction.abs_diff_eq(vec3(0.0, 0.0, -1.0), EPSILON));
@@ -153,11 +119,7 @@ mod tests {
 
     #[test]
     fn constructing_a_ray_through_a_corner_of_the_canvas() {
-        let c = Camera::new(
-            201,
-            101, 
-            PI / 2.0,
-        );
+        let c = Camera::new(201,101,PI / 2.0);
         let r = c.ray_for_pixel(0, 0);
         assert!(r.origin.abs_diff_eq(vec3(0.0, 0.0, 0.0), EPSILON));
         assert!(r.direction.abs_diff_eq(vec3(0.66519, 0.33259, -0.66851), EPSILON));
@@ -165,7 +127,7 @@ mod tests {
 
     #[test]
     fn constructing_a_ray_when_the_camera_is_transformed() {
-        let c = Camera::new(201,101,PI / 2.0,)
+        let c = Camera::new(201,101,PI / 2.0)
             .with_transform(
                 Mat4::from_rotation_y(PI / 4.0) 
               * Mat4::from_translation(vec3(0.0, -2.0, 5.0))
@@ -173,5 +135,20 @@ mod tests {
         let r = c.ray_for_pixel(100, 50);
         assert!(r.origin.abs_diff_eq(vec3(0.0, 2.0, -5.0), EPSILON));
         assert!(r.direction.abs_diff_eq(vec3(2.0_f32.sqrt() / 2.0, 0.0, -2.0_f32.sqrt() / 2.0), EPSILON));
+    }
+
+    #[test]
+    fn rendering_a_world_with_a_camera() {
+        let w = default_world();
+        let c = Camera::new(11,11,PI / 2.0)
+            .with_transform(
+                view_transform(
+                    vec3(0.0, 0.0, -5.0),
+                    vec3(0.0, 0.0, 0.0),
+                    vec3(0.0, 1.0, 0.0)    
+                )
+            );
+        let image = c.render(&w);
+        assert_eq!(image[5][5], Color::new(0.38066, 0.47583, 0.2855));
     }
 }

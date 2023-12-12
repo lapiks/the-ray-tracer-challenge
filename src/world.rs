@@ -71,7 +71,7 @@ impl World {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use glam::{Vec3, vec3};
 
     use crate::{shapes::{Sphere, Shape}, Material, intersection::{Intersection, IntersectionInfos}};
