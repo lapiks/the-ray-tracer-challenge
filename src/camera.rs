@@ -17,15 +17,18 @@ impl Camera {
     pub fn new(width: usize, height: usize, fov: f32) -> Self {
         let half_view = f32::tan(fov / 2.0);
         let aspect = width / height;
-        let mut half_width = 0.0;
-        let mut half_height = 0.0;
-        if aspect >= 1 {
-            half_width = half_view;
-            half_height = half_view / aspect as f32;
-        } else {
-            half_width = half_view * aspect as f32;
-            half_height = half_view;
-        }
+        let half_width = 
+            if aspect >= 1 { 
+                half_view 
+            } else { 
+                half_view * aspect as f32 
+            };
+        let half_height = 
+            if aspect >= 1 { 
+                half_view / aspect as f32 
+            } else { 
+                half_view 
+            };
         let pixel_size = (half_width * 2.0) / width as f32;
 
         Self {
