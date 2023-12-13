@@ -1,15 +1,14 @@
 use glam::DVec3;
 
-use crate::{Color, light::PointLight, Pattern, pattern::PlainPattern};
+use crate::{Color, light::PointLight, Pattern, pattern::{PlainPattern, PatternFunc}};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Material {
-    color: Color,
+    pattern: Pattern,
     ambient: f64,
     diffuse: f64,
     specular: f64,
     shininess: f64,
-    pattern: Pattern,
 }
 
 impl Material {
@@ -17,8 +16,8 @@ impl Material {
         Self::default()
     }
 
-    pub fn with_color(mut self, color: Color) -> Self {
-        self.color = color;
+    pub fn with_pattern(mut self, pattern: Pattern) -> Self {
+        self.pattern = pattern;
         self
     }
 
@@ -42,15 +41,6 @@ impl Material {
         self
     }
 
-    pub fn with_pattern(mut self, pattern: Pattern) -> Self {
-        self.pattern = pattern;
-        self
-    }
-
-    pub fn color(&self) -> Color {
-        self.color
-    }
-
     pub fn ambient(&self) -> f64 {
         self.ambient
     }
@@ -67,7 +57,7 @@ impl Material {
     }
 
     pub fn lighting(&self, light: &PointLight, point: DVec3, eyev: DVec3, normal: DVec3, is_in_shadow: bool) -> Color {
-        let effective_color = self.color * light.intensity();
+        let effective_color = self.pattern.color_at(point) * light.intensity();
         let ambient = effective_color * self.ambient;
         
         if is_in_shadow {
@@ -96,12 +86,11 @@ impl Material {
 impl Default for Material {
     fn default() -> Self {
         Self { 
-            color: Color::white(),
+            pattern: Pattern::PlainPattern(PlainPattern::new(Color::white())),
             ambient: 0.1,
             diffuse: 0.9,
             specular: 0.9,
             shininess: 200.0,
-            pattern: Pattern::PlainPattern(PlainPattern::new(Color::white())),
          }
     }
 }

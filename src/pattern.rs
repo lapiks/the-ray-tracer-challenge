@@ -12,6 +12,15 @@ pub trait PatternFunc {
     fn color_at(&self, point: DVec3) -> Color;
 }
 
+impl PatternFunc for Pattern {
+    fn color_at(&self, point: DVec3) -> Color {
+        match self {
+            Pattern::PlainPattern(p) => p.color_at(point),
+            Pattern::StrippedPattern(p) => p.color_at(point),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct PlainPattern {
     c: Color,
@@ -22,6 +31,16 @@ impl PlainPattern {
         Self {
             c
         }
+    }
+
+    pub fn color(&self) -> Color {
+        self.c
+    }
+}
+
+impl Default for PlainPattern {
+    fn default() -> Self {
+        Self::new(Color::white())
     }
 }
 
