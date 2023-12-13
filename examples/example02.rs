@@ -9,7 +9,7 @@ fn main() {
         Color::white()
     );
 
-    let m =  Material::default()
+    let m = Material::default()
         .with_color(Color::new(1.0, 0.9, 0.9))
         .with_specular(0.0);
 
@@ -31,7 +31,7 @@ fn main() {
         .with_rotation_y(PI/4.0)
         .with_translation(0.0, 0.0, 5.0);
 
-    let middle =  Object::new(Shape::Sphere(Sphere::default()))
+    let middle = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
             Material::default()
                 .with_color(Color::new(0.1, 1.0, 0.5))
@@ -40,7 +40,7 @@ fn main() {
         )
         .with_translation(-0.5, 1.0, 0.5);
 
-    let right =  Object::new(Shape::Sphere(Sphere::default()))
+    let right = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
             Material::default()
                 .with_color(Color::new(0.5, 1.0, 0.1))
@@ -50,7 +50,7 @@ fn main() {
         .with_scale(0.5, 0.5, 0.5)
         .with_translation(1.5, 0.5, -0.5);
 
-    let left =  Object::new(Shape::Sphere(Sphere::default()))
+    let left = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
             Material::default()
                 .with_color(Color::new(1.0, 0.8, 0.1))
