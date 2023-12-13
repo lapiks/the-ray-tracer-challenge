@@ -6,11 +6,11 @@ use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}, Color, Material
 fn main() {
     let l = PointLight::new(
         dvec3(-10.0, 10.0, -10.0), 
-        Color::white()
+        Color::white() / 2.0
     );
     let l2 = PointLight::new(
         dvec3(10.0, 10.0, -10.0), 
-        Color::white()
+        Color::white() / 2.0
     );
 
     let m = Material::default()
