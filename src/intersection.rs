@@ -4,6 +4,7 @@ use glam::Vec3;
 
 use crate::{object::Object, ray::Ray};
 
+const EPSILON: f32 = 0.00001;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Intersection<'a> {
@@ -107,6 +108,7 @@ pub struct IntersectionInfos<'a> {
     pub t: f32,
     pub object: &'a Object,
     pub point: Vec3,
+    pub over_point: Vec3,
     pub eyev: Vec3,
     pub normalv: Vec3,
     pub inside: bool,
@@ -123,10 +125,12 @@ impl<'a> IntersectionInfos<'a> {
             inside = true;
             normalv = -normalv;
         }
+        let over_point = point + normalv * EPSILON;
         Self {
             t: intersection.t,
             object,
             point,
+            over_point,
             eyev,
             normalv,
             inside,
@@ -253,5 +257,19 @@ mod tests {
         assert_eq!(comps.eyev, vec3(0.0, 0.0, -1.0));
         assert_eq!(comps.inside, true);
         assert_eq!(comps.normalv, vec3(0.0, 0.0, -1.0));
+    }
+
+    #[test]
+    fn the_hit_should_offset_the_point() {
+        let r = Ray::new(
+            vec3(0.0, 0.0, -5.0),
+            vec3(0.0, 0.0, 1.0)
+        );
+        let o = Object::new(Shape::Sphere(Sphere::default()))
+            .with_translation(0.0, 0.0, 1.0);
+        let i = Intersection::new(5.0,&o);
+        let comps = IntersectionInfos::new(&i, &r);
+        assert!(comps.over_point.z < -EPSILON/2.0);
+        assert!(comps.point.z > comps.over_point.z);
     }
 }
