@@ -62,16 +62,18 @@ impl Material {
 
     pub fn lighting(&self, light: &PointLight, point: DVec3, eyev: DVec3, normal: DVec3, is_in_shadow: bool) -> Color {
         let effective_color = self.color * light.intensity();
-        let lightv = (light.position() - point).normalize();
-
         let ambient = effective_color * self.ambient;
+        
         if is_in_shadow {
             return ambient;
         }
 
         let mut diffuse = Color::black();
         let mut specular = Color::black();
+
+        let lightv = (light.position() - point).normalize();
         let l_dot_n = lightv.dot(normal);
+
         if l_dot_n >= 0.0 {
             diffuse = effective_color * self.diffuse * l_dot_n;
             let reflectv = -lightv - normal * 2.0 * -lightv.dot(normal);
