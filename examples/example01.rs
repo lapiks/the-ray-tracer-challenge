@@ -1,23 +1,25 @@
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
-use glam::{Vec3, Mat4, vec3};
-use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}, Color, Material, PointLight};
+use glam::dvec3;
+use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}, Color, Material, PointLight, transformations};
 
 fn main() {
     let camera = Camera::new(1920, 1080, PI / 2.0)
         .with_transform(
-            Mat4::from_translation(
-                vec3(0.0, 0.0, -5.0)
+            transformations::view_transform(
+                dvec3(0.0, 1.5, -5.0),
+                dvec3(0.0, 1.0, 0.0),
+                dvec3(0.0, 1.0, 0.0)
             )
         );
 
     let l1 = PointLight::new(
-        Vec3::new(-10.0, 10.0, -10.0), 
+        dvec3(-10.0, 10.0, -10.0), 
         Color::white()
     );
 
     let l2 = PointLight::new(
-        Vec3::new(10.0, 10.0, 10.0), 
+        dvec3(10.0, 10.0, 10.0), 
         Color::white()
     );
 

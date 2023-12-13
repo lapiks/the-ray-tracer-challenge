@@ -1,4 +1,4 @@
-use glam::Vec3;
+use glam::DVec3;
 
 use crate::{object::Object, ray::Ray, Color, PointLight, intersection::{Intersections, IntersectionInfos}};
 
@@ -65,26 +65,22 @@ impl World {
                     infos.over_point, 
                     infos.eyev, 
                     infos.normalv,
-                    self.is_shadowed(infos.over_point)
+                    self.is_shadowed(infos.over_point, light.position())
                 );
         }
 
         color
     }
 
-    fn is_shadowed(&self, world_point: Vec3) -> bool {
-        for light in &self.lights {
-            let ray_dir = light.position() - world_point;
-            let distance = ray_dir.length();
-            let shadow_ray = Ray {
-                origin: world_point,
-                direction: ray_dir.normalize()
-            };
-            if let Some(hit) = self.intersects(&shadow_ray).hit() {
-                if hit.t() < distance {
-                    return true;
-                }
-            }
+    fn is_shadowed(&self, world_point: DVec3, light_pos: DVec3) -> bool {
+        let ray_dir = light_pos - world_point;
+        let distance = ray_dir.length();
+        let shadow_ray = Ray {
+            origin: world_point,
+            direction: ray_dir.normalize()
+        };
+        if let Some(hit) = self.intersects(&shadow_ray).hit() {
+            return hit.t() < distance;
         }
         false
     }
@@ -92,7 +88,7 @@ impl World {
 
 #[cfg(test)]
 pub mod tests {
-    use glam::{Vec3, vec3};
+    use glam::{DVec3, dvec3};
 
     use crate::{shapes::{Sphere, Shape}, Material, intersection::{Intersection, IntersectionInfos}};
 
@@ -107,7 +103,7 @@ pub mod tests {
 
     pub fn default_world() -> World {
         let l = PointLight::new(
-            Vec3::new(-10.0, 10.0, -10.0), 
+            DVec3::new(-10.0, 10.0, -10.0), 
             Color::white()
         );
         let m = Material::new()
@@ -128,7 +124,7 @@ pub mod tests {
         let w = default_world();
 
         let l = PointLight::new(
-            Vec3::new(-10.0, 10.0, -10.0), 
+            DVec3::new(-10.0, 10.0, -10.0), 
             Color::white()
         );
         let m = Material::new()
@@ -151,8 +147,8 @@ pub mod tests {
     fn intersect_a_world_with_a_ray() {
         let w = default_world();
         let r = Ray::new(
-            vec3(0.0, 0.0, -5.0),
-            vec3(0.0, 0.0, 1.0)
+            dvec3(0.0, 0.0, -5.0),
+            dvec3(0.0, 0.0, 1.0)
         );
         let xs = w.intersects(&r);
         assert_eq!(xs.count(), 4);
@@ -166,8 +162,8 @@ pub mod tests {
     fn shading_an_intersection() {
         let w = default_world();
         let r = Ray::new(
-            vec3(0.0, 0.0, -5.0),
-            vec3(0.0, 0.0, 1.0)
+            dvec3(0.0, 0.0, -5.0),
+            dvec3(0.0, 0.0, 1.0)
         );
         let s = w.objects.get(0).unwrap();
         let i = Intersection::new(4.0, s);
@@ -181,15 +177,15 @@ pub mod tests {
         let w = World {
             lights: vec![
                 PointLight::new(
-                    vec3(0.0, 0.25, 0.0), 
+                    dvec3(0.0, 0.25, 0.0), 
                     Color::white()
                 )
             ],
             ..default_world()
         };
         let r = Ray::new(
-            vec3(0.0, 0.0, 0.0),
-            vec3(0.0, 0.0, 1.0)
+            dvec3(0.0, 0.0, 0.0),
+            dvec3(0.0, 0.0, 1.0)
         );
         let s = w.objects.get(1).unwrap();
         let i = Intersection::new(0.5, s);
@@ -208,7 +204,7 @@ pub mod tests {
             .with_lights(
                 vec![
                     PointLight::new(
-                        vec3(0.0, 0.0, -10.0), 
+                        dvec3(0.0, 0.0, -10.0), 
                         Color::white()
                     )
                 ]
@@ -216,8 +212,8 @@ pub mod tests {
             .with_objects(vec![s1, s2.clone()]);
 
         let r = Ray::new(
-            vec3(0.0, 0.0, 5.0),
-            vec3(0.0, 0.0, 1.0)
+            dvec3(0.0, 0.0, 5.0),
+            dvec3(0.0, 0.0, 1.0)
         );
 
         let i = Intersection::new(4.0, &s2);
@@ -230,8 +226,8 @@ pub mod tests {
     fn the_color_when_a_ray_misses() {
         let w = default_world();
         let r = Ray::new(
-            vec3(0.0, 0.0, -5.0),
-            vec3(0.0, 1.0, 0.0)
+            dvec3(0.0, 0.0, -5.0),
+            dvec3(0.0, 1.0, 0.0)
         );
         let c = w.color_at(&r);
         assert_eq!(c, Color::black());
@@ -241,8 +237,8 @@ pub mod tests {
     fn the_color_when_a_ray_hits() {
         let w = default_world();
         let r = Ray::new(
-            vec3(0.0, 0.0, -5.0),
-            vec3(0.0, 0.0, 1.0)
+            dvec3(0.0, 0.0, -5.0),
+            dvec3(0.0, 0.0, 1.0)
         );
         let c = w.color_at(&r);
         assert_eq!(c, Color::new(0.38066, 0.47583, 0.2855));
@@ -265,8 +261,8 @@ pub mod tests {
             ..default_world()  
         };
         let r = Ray::new(
-            vec3(0.0, 0.0, 0.75),
-            vec3(0.0, 0.0, -1.0)
+            dvec3(0.0, 0.0, 0.75),
+            dvec3(0.0, 0.0, -1.0)
         );
         let c = w.color_at(&r);
         assert_eq!(c, inner.material().color());
@@ -275,24 +271,24 @@ pub mod tests {
     #[test]
     fn there_is_no_shadow_when_nothing_is_collinear_with_point_and_light() {
         let w = default_world();
-        assert_eq!(w.is_shadowed(vec3(0.0, 10.0, 0.0)), false);
+        assert_eq!(w.is_shadowed(dvec3(0.0, 10.0, 0.0), w.lights[0].position()), false);
     }
 
     #[test]
     fn the_shadow_when_an_object_is_between_the_point_and_the_light() {
         let w = default_world();
-        assert_eq!(w.is_shadowed(vec3(10.0, -10.0, 10.0)), true);
+        assert_eq!(w.is_shadowed(dvec3(10.0, -10.0, 10.0), w.lights[0].position()), true);
     }
 
     #[test]
     fn there_is_no_shadow_when_an_object_is_behind_the_light() {
         let w = default_world();
-        assert_eq!(w.is_shadowed(vec3(-20.0, 20.0, -20.0)), false);
+        assert_eq!(w.is_shadowed(dvec3(-20.0, 20.0, -20.0), w.lights[0].position()), false);
     }
 
     #[test]
     fn there_is_no_shadow_when_an_object_is_behind_the_point() {
         let w = default_world();
-        assert_eq!(w.is_shadowed(vec3(-2.0, 2.0, -2.0)), false);
+        assert_eq!(w.is_shadowed(dvec3(-2.0, 2.0, -2.0), w.lights[0].position()), false);
     }
 }

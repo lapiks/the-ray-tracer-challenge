@@ -1,11 +1,15 @@
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
-use glam::{Vec3, vec3};
+use glam::dvec3;
 use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}, Color, Material, PointLight, transformations};
 
 fn main() {
     let l = PointLight::new(
-        Vec3::new(-10.0, 10.0, -10.0), 
+        dvec3(-10.0, 10.0, -10.0), 
+        Color::white()
+    );
+    let l2 = PointLight::new(
+        dvec3(10.0, 10.0, -10.0), 
         Color::white()
     );
 
@@ -62,14 +66,14 @@ fn main() {
 
     let world = World::new()
         .with_objects(vec![floor, left_wall, right_wall, middle, right, left])
-        .with_lights(vec![l]);
+        .with_lights(vec![l, l2]);
 
     let camera = Camera::new(1920, 1080, PI / 3.0)
         .with_transform(
             transformations::view_transform(
-                vec3(0.0, 1.5, -5.0),
-                vec3(0.0, 1.0, 0.0),
-                vec3(0.0, 1.0, 0.0)
+                dvec3(0.0, 1.5, -5.0),
+                dvec3(0.0, 1.0, 0.0),
+                dvec3(0.0, 1.0, 0.0)
             )
         );
 

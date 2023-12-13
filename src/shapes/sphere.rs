@@ -1,4 +1,4 @@
-use glam::Vec3;
+use glam::DVec3;
 
 use crate::ray::Ray;
 use super::shape::Hittable;
@@ -7,7 +7,7 @@ use super::shape::Hittable;
 pub struct Sphere {}
 
 impl Hittable for Sphere {
-    fn intersect(&self, ray: &Ray) -> Vec<f32> {
+    fn intersect(&self, ray: &Ray) -> Vec<f64> {
         let sphere_to_ray = ray.origin;
         let a = ray.direction.dot(ray.direction);
         let b = 2.0 * ray.direction.dot(sphere_to_ray);
@@ -27,7 +27,7 @@ impl Hittable for Sphere {
         ]
     }
 
-    fn normal_at(&self, point: Vec3) -> Vec3 {
+    fn normal_at(&self, point: DVec3) -> DVec3 {
         // for a unit sphere at 0,0,0
         point.normalize()
     }
@@ -48,21 +48,21 @@ impl Sphere {
 
 #[cfg(test)]
 mod tests {
-    use std::f32::consts::PI;
+    use std::f64::consts::PI;
 
-    use glam::Vec3;
+    use glam::DVec3;
 
     use crate::{object::Object, shapes::shape::Shape};
 
     use super::*;
 
-    const EPSILON: f32 = 0.00001;
+    const EPSILON: f64 = 0.00001;
 
     #[test]
     fn a_ray_intersects_a_sphere_at_two_points() {
         let r = Ray::new(
-            Vec3::new(0.0, 0.0, -5.0), 
-            Vec3::new(0.0, 0.0, 1.0)
+            DVec3::new(0.0, 0.0, -5.0), 
+            DVec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
         let xs = s.intersect(&r);
@@ -74,8 +74,8 @@ mod tests {
     #[test]
     fn a_ray_intersects_a_sphere_at_a_tangent() {
         let r = Ray::new(
-            Vec3::new(0.0, 1.0, -5.0), 
-            Vec3::new(0.0, 0.0, 1.0)
+            DVec3::new(0.0, 1.0, -5.0), 
+            DVec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
         let xs = s.intersect(&r);
@@ -87,8 +87,8 @@ mod tests {
     #[test]
     fn a_ray_misses_a_sphere() {
         let r = Ray::new(
-            Vec3::new(0.0, 2.0, -5.0), 
-            Vec3::new(0.0, 0.0, 1.0)
+            DVec3::new(0.0, 2.0, -5.0), 
+            DVec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
         let xs = s.intersect(&r);
@@ -98,8 +98,8 @@ mod tests {
     #[test]
     fn a_ray_originates_inside_a_sphere() {
         let r = Ray::new(
-            Vec3::new(0.0, 0.0, 0.0), 
-            Vec3::new(0.0, 0.0, 1.0)
+            DVec3::new(0.0, 0.0, 0.0), 
+            DVec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
         let xs = s.intersect(&r);
@@ -111,8 +111,8 @@ mod tests {
     #[test]
     fn a_sphere_is_behind_a_ray() {
         let r = Ray::new(
-            Vec3::new(0.0, 0.0, 5.0), 
-            Vec3::new(0.0, 0.0, 1.0)
+            DVec3::new(0.0, 0.0, 5.0), 
+            DVec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
         let xs = s.intersect(&r);
@@ -124,8 +124,8 @@ mod tests {
     #[test]
     fn intersecting_a_scaled_sphere_with_a_ray() {
         let r = Ray::new(
-            Vec3::new(0.0, 0.0, -5.0), 
-            Vec3::new(0.0, 0.0, 1.0)
+            DVec3::new(0.0, 0.0, -5.0), 
+            DVec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
         let o = Object::new(Shape::Sphere(s))
@@ -139,8 +139,8 @@ mod tests {
     #[test]
     fn intersecting_a_translated_sphere_with_a_ray() {
         let r = Ray::new(
-            Vec3::new(0.0, 0.0, -5.0), 
-            Vec3::new(0.0, 0.0, 1.0)
+            DVec3::new(0.0, 0.0, -5.0), 
+            DVec3::new(0.0, 0.0, 1.0)
         );
         let s = Sphere::default();
         let o = Object::new(Shape::Sphere(s))
@@ -152,35 +152,35 @@ mod tests {
     #[test]
     fn normal_on_x_axis() {
         let s = Sphere::default();
-        let n = s.normal_at(Vec3::new(1.0, 0.0, 0.0));
-        assert_eq!(n, Vec3::new(1.0, 0.0, 0.0));
+        let n = s.normal_at(DVec3::new(1.0, 0.0, 0.0));
+        assert_eq!(n, DVec3::new(1.0, 0.0, 0.0));
     } 
 
     #[test]
     fn normal_on_y_axis() {
         let s = Sphere::default();
-        let n = s.normal_at(Vec3::new(0.0, 1.0, 0.0));
-        assert_eq!(n, Vec3::new(0.0, 1.0, 0.0));
+        let n = s.normal_at(DVec3::new(0.0, 1.0, 0.0));
+        assert_eq!(n, DVec3::new(0.0, 1.0, 0.0));
     } 
 
     #[test]
     fn normal_on_z_axis() {
         let s = Sphere::default();
-        let n = s.normal_at(Vec3::new(0.0, 0.0, 1.0));
-        assert_eq!(n, Vec3::new(0.0, 0.0, 1.0));
+        let n = s.normal_at(DVec3::new(0.0, 0.0, 1.0));
+        assert_eq!(n, DVec3::new(0.0, 0.0, 1.0));
     } 
 
     #[test]
     fn normal_at_nonaxial_point() {
         let s = Sphere::default();
-        let n = s.normal_at(Vec3::new(3.0_f32.sqrt() / 3.0, 3.0_f32.sqrt() / 3.0, 3.0_f32.sqrt()/3.0));
-        assert!(n.abs_diff_eq(Vec3::new(3.0_f32.sqrt() / 3.0, 3.0_f32.sqrt() / 3.0, 3.0_f32.sqrt() / 3.0), EPSILON));
+        let n = s.normal_at(DVec3::new(3.0_f64.sqrt() / 3.0, 3.0_f64.sqrt() / 3.0, 3.0_f64.sqrt()/3.0));
+        assert!(n.abs_diff_eq(DVec3::new(3.0_f64.sqrt() / 3.0, 3.0_f64.sqrt() / 3.0, 3.0_f64.sqrt() / 3.0), EPSILON));
     } 
 
     #[test]
     fn the_normal_is_normalized() {
         let s = Sphere::default();
-        let n = s.normal_at(Vec3::new(3.3_f32.sqrt() / 3.0, 3.3_f32.sqrt()/3.0, 3.3_f32.sqrt()/3.0));
+        let n = s.normal_at(DVec3::new(3.3_f64.sqrt() / 3.0, 3.3_f64.sqrt()/3.0, 3.3_f64.sqrt()/3.0));
         assert!(n.abs_diff_eq(n.normalize(), EPSILON));
     } 
 
@@ -188,8 +188,8 @@ mod tests {
     fn computing_normal_on_a_translated_sphere() {
         let o = Object::new(Shape::Sphere(Sphere::default()))
             .with_translation(0.0, 1.0, 0.0);
-        let n = o.normal_at(Vec3::new(0.0, 1.70711, -0.70711));
-        assert!(n.abs_diff_eq(Vec3::new(0.0, 0.70711, -0.70711), EPSILON));
+        let n = o.normal_at(DVec3::new(0.0, 1.70711, -0.70711));
+        assert!(n.abs_diff_eq(DVec3::new(0.0, 0.70711, -0.70711), EPSILON));
     } 
 
     #[test]
@@ -198,7 +198,7 @@ mod tests {
             .with_rotation_z(PI / 5.0)
             .with_scale(1.0, 0.5, 1.0);
             
-        let n = o.normal_at(Vec3::new(0.0, 2.0_f32.sqrt() / 2.0, -2.0_f32.sqrt() / 2.0));
-        assert!(n.abs_diff_eq(Vec3::new(0.0, 0.97014, -0.24254), EPSILON));
+        let n = o.normal_at(DVec3::new(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0));
+        assert!(n.abs_diff_eq(DVec3::new(0.0, 0.97014, -0.24254), EPSILON));
     } 
 }

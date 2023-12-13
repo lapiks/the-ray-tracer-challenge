@@ -1,14 +1,14 @@
-use glam::Vec3;
+use glam::DVec3;
 
 use crate::{Color, light::PointLight};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Material {
     color: Color,
-    ambient: f32,
-    diffuse: f32,
-    specular: f32,
-    shininess: f32
+    ambient: f64,
+    diffuse: f64,
+    specular: f64,
+    shininess: f64
 }
 
 impl Material {
@@ -21,22 +21,22 @@ impl Material {
         self
     }
 
-    pub fn with_ambient(mut self, ambient: f32) -> Self {
+    pub fn with_ambient(mut self, ambient: f64) -> Self {
         self.ambient = ambient;
         self
     }
 
-    pub fn with_diffuse(mut self, diffuse: f32) -> Self {
+    pub fn with_diffuse(mut self, diffuse: f64) -> Self {
         self.diffuse = diffuse;
         self
     }
 
-    pub fn with_specular(mut self, specular: f32) -> Self {
+    pub fn with_specular(mut self, specular: f64) -> Self {
         self.specular = specular;
         self
     }
 
-    pub fn with_shininess(mut self, shininess: f32) -> Self {
+    pub fn with_shininess(mut self, shininess: f64) -> Self {
         self.shininess = shininess;
         self
     }
@@ -45,22 +45,22 @@ impl Material {
         self.color
     }
 
-    pub fn ambient(&self) -> f32 {
+    pub fn ambient(&self) -> f64 {
         self.ambient
     }
 
-    pub fn diffuse(&self) -> f32 {
+    pub fn diffuse(&self) -> f64 {
         self.diffuse
     }
 
-    pub fn specular(&self) -> f32 {
+    pub fn specular(&self) -> f64 {
         self.specular
     }
-    pub fn shininess(&self) -> f32 {
+    pub fn shininess(&self) -> f64 {
         self.shininess
     }
 
-    pub fn lighting(&self, light: &PointLight, point: Vec3, eyev: Vec3, normal: Vec3, is_in_shadow: bool) -> Color {
+    pub fn lighting(&self, light: &PointLight, point: DVec3, eyev: DVec3, normal: DVec3, is_in_shadow: bool) -> Color {
         let effective_color = self.color * light.intensity();
         let lightv = (light.position() - point).normalize();
 
@@ -68,7 +68,7 @@ impl Material {
         if is_in_shadow {
             return ambient;
         }
-        
+
         let mut diffuse = Color::black();
         let mut specular = Color::black();
         let l_dot_n = lightv.dot(normal);
@@ -99,7 +99,7 @@ impl Default for Material {
 
 #[cfg(test)]
 mod tests {
-    use glam::vec3;
+    use glam::dvec3;
 
     use crate::{Object, shapes::{Sphere, Shape}, light::PointLight};
 
@@ -123,11 +123,11 @@ mod tests {
     #[test]
     fn lighting_with_the_eye_between_the_light_and_the_surface() {
         let m = Material::default();
-        let position = vec3(0.0, 0.0, 0.0);
-        let eyev = vec3(0.0, 0.0, -1.0);
-        let normalv = vec3(0.0, 0.0, -1.0);
+        let position = dvec3(0.0, 0.0, 0.0);
+        let eyev = dvec3(0.0, 0.0, -1.0);
+        let normalv = dvec3(0.0, 0.0, -1.0);
         let l = PointLight::new(
-            vec3(0.0, 0.0, -10.0),
+            dvec3(0.0, 0.0, -10.0),
             Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(1.9, 1.9, 1.9));
@@ -136,11 +136,11 @@ mod tests {
     #[test]
     fn lighting_with_the_eye_between_light_and_surface_eye_offset_45() {
         let m = Material::default();
-        let position = vec3(0.0, 0.0, 0.0);
-        let eyev = vec3(0.0, 2.0_f32.sqrt() / 2.0, -2.0_f32.sqrt() / 2.0);
-        let normalv = vec3(0.0, 0.0, -1.0);
+        let position = dvec3(0.0, 0.0, 0.0);
+        let eyev = dvec3(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0);
+        let normalv = dvec3(0.0, 0.0, -1.0);
         let l = PointLight::new(
-            vec3(0.0, 0.0, -10.0),
+            dvec3(0.0, 0.0, -10.0),
             Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(1.0, 1.0, 1.0));
@@ -149,11 +149,11 @@ mod tests {
     #[test]
     fn lighting_with_eye_opposite_surface_light_offset_45() {
         let m = Material::default();
-        let position = vec3(0.0, 0.0, 0.0);
-        let eyev = vec3(0.0, 0.0, -1.0);
-        let normalv = vec3(0.0, 0.0, -1.0);
+        let position = dvec3(0.0, 0.0, 0.0);
+        let eyev = dvec3(0.0, 0.0, -1.0);
+        let normalv = dvec3(0.0, 0.0, -1.0);
         let l = PointLight::new(
-            vec3(0.0, 10.0, -10.0),
+            dvec3(0.0, 10.0, -10.0),
             Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(0.7364, 0.7364, 0.7364));
@@ -162,11 +162,11 @@ mod tests {
     #[test]
     fn lighting_with_eye_in_the_path_of_the_reflection_vector() {
         let m = Material::default();
-        let position = vec3(0.0, 0.0, 0.0);
-        let eyev = vec3(0.0, -2.0_f32.sqrt() / 2.0, -2.0_f32.sqrt() / 2.0);
-        let normalv = vec3(0.0, 0.0, -1.0);
+        let position = dvec3(0.0, 0.0, 0.0);
+        let eyev = dvec3(0.0, -2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0);
+        let normalv = dvec3(0.0, 0.0, -1.0);
         let l = PointLight::new(
-            vec3(0.0, 10.0, -10.0),
+            dvec3(0.0, 10.0, -10.0),
             Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(1.6364, 1.6364, 1.6364));
@@ -175,11 +175,11 @@ mod tests {
     #[test]
     fn lighting_with_the_light_behind_the_surface() {
         let m = Material::default();
-        let position = vec3(0.0, 0.0, 0.0);
-        let eyev = vec3(0.0, 0.0, -1.0);
-        let normalv = vec3(0.0, 0.0, -1.0);
+        let position = dvec3(0.0, 0.0, 0.0);
+        let eyev = dvec3(0.0, 0.0, -1.0);
+        let normalv = dvec3(0.0, 0.0, -1.0);
         let l = PointLight::new(
-            vec3(0.0, 0.0, 10.0),
+            dvec3(0.0, 0.0, 10.0),
             Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(0.1, 0.1, 0.1));
@@ -188,11 +188,11 @@ mod tests {
     #[test]
     fn lighting_with_the_light_in_shadow() {
         let m = Material::default();
-        let position = vec3(0.0, 0.0, 0.0);
-        let eyev = vec3(0.0, 0.0, -1.0);
-        let normalv = vec3(0.0, 0.0, -1.0);
+        let position = dvec3(0.0, 0.0, 0.0);
+        let eyev = dvec3(0.0, 0.0, -1.0);
+        let normalv = dvec3(0.0, 0.0, -1.0);
         let l = PointLight::new(
-            vec3(0.0, 0.0, -10.0),
+            dvec3(0.0, 0.0, -10.0),
             Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv, true), Color::new(0.1, 0.1, 0.1));

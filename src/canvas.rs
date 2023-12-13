@@ -10,7 +10,7 @@ fn scale_color(color: Color) -> (u8, u8, u8) {
     )
 }
 
-fn scale_color_component(component: f32) -> u8 {
+fn scale_color_component(component: f64) -> u8 {
     let component = if component < 0.0 {
         0.0
     } else if component > 1.0 {

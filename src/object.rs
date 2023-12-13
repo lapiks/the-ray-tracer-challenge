@@ -1,4 +1,4 @@
-use glam::{Mat4, Vec3};
+use glam::{DMat4, DVec3};
 
 use crate::{
     shapes::shape::{Shape, Hittable}, 
@@ -10,8 +10,8 @@ use crate::{
 pub struct Object {
     shape: Shape,
     material: Material,
-    transform: Mat4,
-    inverse_transform: Mat4,
+    transform: DMat4,
+    inverse_transform: DMat4,
 }
 
 impl Object {
@@ -19,8 +19,8 @@ impl Object {
         Self {
             shape,
             material: Material::default(),
-            transform: Mat4::IDENTITY,
-            inverse_transform: Mat4::IDENTITY
+            transform: DMat4::IDENTITY,
+            inverse_transform: DMat4::IDENTITY
         }
     }
 
@@ -29,38 +29,38 @@ impl Object {
         self
     }
 
-    pub fn with_transform(mut self, transform: &Mat4) -> Self {
+    pub fn with_transform(mut self, transform: &DMat4) -> Self {
         self.transform = *transform;
         self.inverse_transform = transform.inverse();
         self
     }
 
-    pub fn with_translation(mut self, x: f32, y: f32, z: f32) -> Self {
-        self.transform = Mat4::from_translation(Vec3::new(x, y, z)) * self.transform;
+    pub fn with_translation(mut self, x: f64, y: f64, z: f64) -> Self {
+        self.transform = DMat4::from_translation(DVec3::new(x, y, z)) * self.transform;
         self.inverse_transform = self.transform.inverse();
         self
     }
 
-    pub fn with_scale(mut self, x: f32, y: f32, z: f32) -> Self {
-        self.transform = Mat4::from_scale(Vec3::new(x, y, z)) * self.transform;
+    pub fn with_scale(mut self, x: f64, y: f64, z: f64) -> Self {
+        self.transform = DMat4::from_scale(DVec3::new(x, y, z)) * self.transform;
         self.inverse_transform = self.transform.inverse();
         self
     }
 
-    pub fn with_rotation_x(mut self, angle: f32) -> Self {
-        self.transform = Mat4::from_rotation_x(angle) * self.transform;
+    pub fn with_rotation_x(mut self, angle: f64) -> Self {
+        self.transform = DMat4::from_rotation_x(angle) * self.transform;
         self.inverse_transform = self.transform.inverse();
         self
     }
 
-    pub fn with_rotation_y(mut self, angle: f32) -> Self {
-        self.transform = Mat4::from_rotation_y(angle) * self.transform;
+    pub fn with_rotation_y(mut self, angle: f64) -> Self {
+        self.transform = DMat4::from_rotation_y(angle) * self.transform;
         self.inverse_transform = self.transform.inverse();
         self
     }
 
-    pub fn with_rotation_z(mut self, angle: f32) -> Self {
-        self.transform = Mat4::from_rotation_z(angle) * self.transform;
+    pub fn with_rotation_z(mut self, angle: f64) -> Self {
+        self.transform = DMat4::from_rotation_z(angle) * self.transform;
         self.inverse_transform = self.transform.inverse();
         self
     }
@@ -69,7 +69,7 @@ impl Object {
         &self.material
     }
 
-    pub fn get_transform(&self) -> &Mat4 {
+    pub fn get_transform(&self) -> &DMat4 {
         &self.transform
     }
 
@@ -89,7 +89,7 @@ impl Object {
         xs
     }
 
-    pub fn normal_at(&self, world_point: Vec3) -> Vec3 {
+    pub fn normal_at(&self, world_point: DVec3) -> DVec3 {
         let object_normal = self.shape.normal_at(self.inverse_transform.transform_point3(world_point));
         self.transform
             .inverse()
@@ -101,7 +101,7 @@ impl Object {
 
 #[cfg(test)]
 mod tests {
-    use glam::Vec3;
+    use glam::DVec3;
 
     use crate::shapes::sphere::Sphere;
     use super::*;
@@ -110,13 +110,13 @@ mod tests {
     fn a_sphere_default_transformation() {
         let s = Sphere::default();
         let o = Object::new(Shape::Sphere(s));
-        assert_eq!(o.transform, Mat4::IDENTITY);
+        assert_eq!(o.transform, DMat4::IDENTITY);
     }
 
     #[test]
     fn changing_a_sphere_transformation() {
         let s = Sphere::default();
-        let t = Mat4::from_translation(Vec3::new(2.0, 3.0, 4.0));
+        let t = DMat4::from_translation(DVec3::new(2.0, 3.0, 4.0));
         let o = Object::new(Shape::Sphere(s))
             .with_transform(&t);
         

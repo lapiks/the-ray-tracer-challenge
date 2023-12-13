@@ -1,26 +1,26 @@
 use std::cmp::Ordering;
 
-use glam::Vec3;
+use glam::DVec3;
 
 use crate::{object::Object, ray::Ray};
 
-const EPSILON: f32 = 0.00001;
+const EPSILON: f64 = 0.00001;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Intersection<'a> {
-    t: f32,
+    t: f64,
     object: &'a Object
 }
 
 impl<'a> Intersection<'a> {
-    pub fn new(t: f32, object: &'a Object) -> Self {
+    pub fn new(t: f64, object: &'a Object) -> Self {
         Self {
             t,
             object
         }
     }
 
-    pub fn t(&self) -> f32 {
+    pub fn t(&self) -> f64 {
         self.t
     }
 
@@ -105,12 +105,12 @@ impl<'a> Intersections<'a> {
 }
 
 pub struct IntersectionInfos<'a> {
-    pub t: f32,
+    pub t: f64,
     pub object: &'a Object,
-    pub point: Vec3,
-    pub over_point: Vec3,
-    pub eyev: Vec3,
-    pub normalv: Vec3,
+    pub point: DVec3,
+    pub over_point: DVec3,
+    pub eyev: DVec3,
+    pub normalv: DVec3,
     pub inside: bool,
 }
 
@@ -140,7 +140,7 @@ impl<'a> IntersectionInfos<'a> {
 
 #[cfg(test)]
 mod tests {
-    use glam::vec3;
+    use glam::dvec3;
 
     use crate::{shapes::{sphere::Sphere, shape::Shape}, ray::Ray};
 
@@ -217,24 +217,24 @@ mod tests {
     #[test]
     fn precomputing_the_state_of_an_intersection() {
         let r = Ray::new(
-            vec3(0.0, 0.0, -5.0),
-            vec3(0.0, 0.0, 1.0)
+            dvec3(0.0, 0.0, -5.0),
+            dvec3(0.0, 0.0, 1.0)
         );
         let o = Object::new(Shape::Sphere(Sphere::default()));
         let i = Intersection::new(4.0,&o);
         let comps = IntersectionInfos::new(&i, &r);
         assert_eq!(comps.t, i.t);
         assert_eq!(comps.object, i.object);
-        assert_eq!(comps.point, vec3(0.0, 0.0, -1.0));
-        assert_eq!(comps.eyev, vec3(0.0, 0.0, -1.0));
-        assert_eq!(comps.normalv, vec3(0.0, 0.0, -1.0));
+        assert_eq!(comps.point, dvec3(0.0, 0.0, -1.0));
+        assert_eq!(comps.eyev, dvec3(0.0, 0.0, -1.0));
+        assert_eq!(comps.normalv, dvec3(0.0, 0.0, -1.0));
     }
 
     #[test]
     fn the_hit_when_an_intersection_occurs_on_the_outsize() {
         let r = Ray::new(
-            vec3(0.0, 0.0, -5.0),
-            vec3(0.0, 0.0, 1.0)
+            dvec3(0.0, 0.0, -5.0),
+            dvec3(0.0, 0.0, 1.0)
         );
         let o = Object::new(Shape::Sphere(Sphere::default()));
         let i = Intersection::new(4.0,&o);
@@ -245,25 +245,25 @@ mod tests {
     #[test]
     fn the_hit_when_an_intersection_occurs_on_the_inside() {
         let r = Ray::new(
-            vec3(0.0, 0.0, 0.0),
-            vec3(0.0, 0.0, 1.0)
+            dvec3(0.0, 0.0, 0.0),
+            dvec3(0.0, 0.0, 1.0)
         );
         let o = Object::new(Shape::Sphere(Sphere::default()));
         let i = Intersection::new(1.0,&o);
         let comps = IntersectionInfos::new(&i, &r);
         assert_eq!(comps.t, i.t);
         assert_eq!(comps.object, i.object);
-        assert_eq!(comps.point, vec3(0.0, 0.0, 1.0));
-        assert_eq!(comps.eyev, vec3(0.0, 0.0, -1.0));
+        assert_eq!(comps.point, dvec3(0.0, 0.0, 1.0));
+        assert_eq!(comps.eyev, dvec3(0.0, 0.0, -1.0));
         assert_eq!(comps.inside, true);
-        assert_eq!(comps.normalv, vec3(0.0, 0.0, -1.0));
+        assert_eq!(comps.normalv, dvec3(0.0, 0.0, -1.0));
     }
 
     #[test]
     fn the_hit_should_offset_the_point() {
         let r = Ray::new(
-            vec3(0.0, 0.0, -5.0),
-            vec3(0.0, 0.0, 1.0)
+            dvec3(0.0, 0.0, -5.0),
+            dvec3(0.0, 0.0, 1.0)
         );
         let o = Object::new(Shape::Sphere(Sphere::default()))
             .with_translation(0.0, 0.0, 1.0);
