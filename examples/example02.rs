@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 use glam::dvec3;
-use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}, Color, Material, PointLight, transformations};
+use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape, Plane}, Color, Material, PointLight, transformations};
 
 fn main() {
     let l1 = PointLight::new(
@@ -17,20 +17,17 @@ fn main() {
         .with_color(Color::new(1.0, 0.9, 0.9))
         .with_specular(0.0);
 
-    let floor = Object::new(Shape::Sphere(Sphere::default()))
-        .with_material(m.clone())
-        .with_scale(10.0, 0.01, 10.0);
+    let floor = Object::new(Shape::Plane(Plane::default()))
+        .with_material(m.clone());
 
-    let left_wall = Object::new(Shape::Sphere(Sphere::default()))
+    let left_wall = Object::new(Shape::Plane(Plane::default()))
         .with_material(m.clone())
-        .with_scale(10.0, 0.01, 10.0)
         .with_rotation_x(PI/2.0)
         .with_rotation_y(-PI/4.0)
         .with_translation(0.0, 0.0, 5.0);
 
-    let right_wall = Object::new(Shape::Sphere(Sphere::default()))
+    let right_wall = Object::new(Shape::Plane(Plane::default()))
         .with_material(m.clone())
-        .with_scale(10.0, 0.01, 10.0)
         .with_rotation_x(PI/2.0)
         .with_rotation_y(PI/4.0)
         .with_translation(0.0, 0.0, 5.0);

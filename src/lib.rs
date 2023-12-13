@@ -1,9 +1,11 @@
 pub mod shapes {
     pub use shape::Shape;
     pub use sphere::Sphere;
+    pub use plane::Plane;
 
     pub mod shape;
     pub mod sphere;
+    pub mod plane;
     mod test_shape;
 }
 
