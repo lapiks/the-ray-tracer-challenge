@@ -19,7 +19,7 @@ impl Hittable for Plane {
         ]
     }
 
-    fn normal_at(&self, point: DVec3) -> DVec3 {
+    fn normal_at(&self, _: DVec3) -> DVec3 {
         DVec3::new(0.0, 1.0, 0.0)
     }
 }

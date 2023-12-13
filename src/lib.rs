@@ -16,6 +16,7 @@ pub use material::Material;
 pub use camera::Camera;
 pub use canvas::Canvas;
 pub use color::Color;
+pub use pattern::Pattern;
 
 mod ray;
 mod intersection;
@@ -27,3 +28,4 @@ pub mod world;
 pub mod canvas;
 pub mod color;
 pub mod camera;
+pub mod pattern;
