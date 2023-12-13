@@ -107,19 +107,33 @@ mod tests {
     use super::*;
 
     #[test]
-    fn a_sphere_default_transformation() {
-        let s = Sphere::default();
-        let o = Object::new(Shape::Sphere(s));
+    fn the_default_transformation() {
+        let o = Object::new(Shape::Sphere(Sphere::default()));
         assert_eq!(o.transform, DMat4::IDENTITY);
     }
 
     #[test]
-    fn changing_a_sphere_transformation() {
-        let s = Sphere::default();
+    fn assigning_a_transformation() {
         let t = DMat4::from_translation(DVec3::new(2.0, 3.0, 4.0));
-        let o = Object::new(Shape::Sphere(s))
+        let o = Object::new(Shape::Sphere(Sphere::default()))
             .with_transform(&t);
         
         assert_eq!(o.transform, t);
+    }
+
+    #[test]
+    fn the_default_material() {
+        let o = Object::new(Shape::Sphere(Sphere::default()));
+        assert_eq!(o.material, Material::default());
+    }
+
+    #[test]
+    fn assigning_a_material() {
+        let m = Material::default()
+            .with_ambient(1.0);
+        let o = Object::new(Shape::Sphere(Sphere::default()))
+            .with_material(m.clone());
+        
+        assert_eq!(o.material, m);
     }
 }
