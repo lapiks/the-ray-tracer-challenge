@@ -1,6 +1,6 @@
 use glam::DVec3;
 
-use crate::{Color, light::PointLight};
+use crate::{Color, light::PointLight, Pattern, pattern::PlainPattern};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Material {
@@ -8,7 +8,8 @@ pub struct Material {
     ambient: f64,
     diffuse: f64,
     specular: f64,
-    shininess: f64
+    shininess: f64,
+    pattern: Pattern,
 }
 
 impl Material {
@@ -38,6 +39,11 @@ impl Material {
 
     pub fn with_shininess(mut self, shininess: f64) -> Self {
         self.shininess = shininess;
+        self
+    }
+
+    pub fn with_pattern(mut self, pattern: Pattern) -> Self {
+        self.pattern = pattern;
         self
     }
 
@@ -94,7 +100,8 @@ impl Default for Material {
             ambient: 0.1,
             diffuse: 0.9,
             specular: 0.9,
-            shininess: 200.0
+            shininess: 200.0,
+            pattern: Pattern::PlainPattern(PlainPattern::new(Color::white())),
          }
     }
 }
@@ -103,7 +110,7 @@ impl Default for Material {
 mod tests {
     use glam::dvec3;
 
-    use crate::{Object, shapes::{Sphere, Shape}, light::PointLight};
+    use crate::{Object, shapes::{Sphere, Shape}, light::PointLight, pattern::StrippedPattern};
 
     use super::*;
 
@@ -198,6 +205,26 @@ mod tests {
             Color::white()
         );
         assert_eq!(m.lighting(&l, position, eyev, normalv, true), Color::new(0.1, 0.1, 0.1));
+    }
+
+    #[test]
+    fn lighting_with_a_pattern_applied() {
+        let m = Material::default()
+            .with_pattern(
+                Pattern::StrippedPattern(StrippedPattern::new(Color::white(), Color::black()))
+            )
+            .with_ambient(1.0)
+            .with_diffuse(0.0)
+            .with_specular(0.0);
+
+        let eyev = dvec3(0.0, 0.0, -1.0);
+        let normalv = dvec3(0.0, 0.0, -1.0);
+        let l = PointLight::new(
+            dvec3(0.0, 0.0, -10.0),
+            Color::white()
+        );
+        assert_eq!(m.lighting(&l, dvec3(0.9, 0.0, 0.0), eyev, normalv, true), Color::white());
+        assert_eq!(m.lighting(&l, dvec3(1.1, 0.0, 0.0), eyev, normalv, true), Color::black());
     }
 }
 

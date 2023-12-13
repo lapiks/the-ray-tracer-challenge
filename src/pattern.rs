@@ -2,22 +2,36 @@ use glam::DVec3;
 
 use crate::Color;
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum Pattern {
+    PlainPattern(PlainPattern),
+    StrippedPattern(StrippedPattern),
+}
+
 pub trait PatternFunc {
     fn color_at(&self, point: DVec3) -> Color;
 }
 
-pub struct Pattern<T: PatternFunc> {
-    func: T,
+#[derive(Debug, Clone, PartialEq)]
+pub struct PlainPattern {
+    c: Color,
 }
 
-impl<T: PatternFunc> Pattern<T> {
-    pub fn new(func: T) -> Self {
+impl PlainPattern {
+    pub fn new( c: Color) -> Self {
         Self {
-            func
+            c
         }
     }
 }
 
+impl PatternFunc for PlainPattern {
+    fn color_at(&self, _: DVec3) -> Color {
+        self.c
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct StrippedPattern {
     c0: Color,
     c1: Color,
