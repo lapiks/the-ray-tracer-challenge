@@ -4,11 +4,11 @@ use glam::dvec3;
 use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}, Color, Material, PointLight, transformations};
 
 fn main() {
-    let camera = Camera::new(1920, 1080, PI / 2.0)
+    let camera = Camera::new(1920, 1080, PI / 3.0)
         .with_transform(
             transformations::view_transform(
                 dvec3(0.0, 1.5, -5.0),
-                dvec3(0.0, 1.0, 0.0),
+                dvec3(0.0, 0.0, 0.0),
                 dvec3(0.0, 1.0, 0.0)
             )
         );

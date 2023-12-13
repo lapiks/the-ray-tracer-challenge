@@ -4,13 +4,13 @@ use glam::dvec3;
 use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}, Color, Material, PointLight, transformations};
 
 fn main() {
-    let l = PointLight::new(
+    let l1 = PointLight::new(
         dvec3(-10.0, 10.0, -10.0), 
-        Color::white() / 2.0
+        Color::white() * 0.6
     );
     let l2 = PointLight::new(
         dvec3(10.0, 10.0, -10.0), 
-        Color::white() / 2.0
+        Color::white() * 0.4
     );
 
     let m = Material::default()
@@ -66,7 +66,7 @@ fn main() {
 
     let world = World::new()
         .with_objects(vec![floor, left_wall, right_wall, middle, right, left])
-        .with_lights(vec![l, l2]);
+        .with_lights(vec![l1, l2]);
 
     let camera = Camera::new(1920, 1080, PI / 3.0)
         .with_transform(
