@@ -4,6 +4,7 @@ pub mod shapes {
 
     pub mod shape;
     pub mod sphere;
+    mod test_shape;
 }
 
 pub use object::Object;

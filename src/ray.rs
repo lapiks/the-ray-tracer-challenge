@@ -1,5 +1,6 @@
 use glam::{DVec3, DMat4};
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Ray {
     pub origin: DVec3,
     pub direction: DVec3,
