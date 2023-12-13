@@ -62,7 +62,8 @@ impl World {
                     &light, 
                     infos.point, 
                     infos.eyev, 
-                    infos.normalv
+                    infos.normalv,
+                    false
                 );
         }
 

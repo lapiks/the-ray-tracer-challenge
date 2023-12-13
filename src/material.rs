@@ -60,11 +60,15 @@ impl Material {
         self.shininess
     }
 
-    pub fn lighting(&self, light: &PointLight, point: Vec3, eyev: Vec3, normal: Vec3) -> Color {
+    pub fn lighting(&self, light: &PointLight, point: Vec3, eyev: Vec3, normal: Vec3, is_in_shadow: bool) -> Color {
         let effective_color = self.color * light.intensity();
         let lightv = (light.position() - point).normalize();
 
         let ambient = effective_color * self.ambient;
+        if is_in_shadow {
+            return ambient;
+        }
+        
         let mut diffuse = Color::black();
         let mut specular = Color::black();
         let l_dot_n = lightv.dot(normal);
@@ -126,7 +130,7 @@ mod tests {
             vec3(0.0, 0.0, -10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, position, eyev, normalv), Color::new(1.9, 1.9, 1.9));
+        assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(1.9, 1.9, 1.9));
     }
 
     #[test]
@@ -139,7 +143,7 @@ mod tests {
             vec3(0.0, 0.0, -10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, position, eyev, normalv), Color::new(1.0, 1.0, 1.0));
+        assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(1.0, 1.0, 1.0));
     }
 
     #[test]
@@ -152,7 +156,7 @@ mod tests {
             vec3(0.0, 10.0, -10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, position, eyev, normalv), Color::new(0.7364, 0.7364, 0.7364));
+        assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(0.7364, 0.7364, 0.7364));
     }
     
     #[test]
@@ -165,7 +169,7 @@ mod tests {
             vec3(0.0, 10.0, -10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, position, eyev, normalv), Color::new(1.6364, 1.6364, 1.6364));
+        assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(1.6364, 1.6364, 1.6364));
     }
 
     #[test]
@@ -178,7 +182,20 @@ mod tests {
             vec3(0.0, 0.0, 10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, position, eyev, normalv), Color::new(0.1, 0.1, 0.1));
+        assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(0.1, 0.1, 0.1));
+    }
+
+    #[test]
+    fn lighting_with_the_light_in_shadow() {
+        let m = Material::default();
+        let position = vec3(0.0, 0.0, 0.0);
+        let eyev = vec3(0.0, 0.0, -1.0);
+        let normalv = vec3(0.0, 0.0, -1.0);
+        let l = PointLight::new(
+            vec3(0.0, 0.0, -10.0),
+            Color::white()
+        );
+        assert_eq!(m.lighting(&l, position, eyev, normalv, true), Color::new(0.1, 0.1, 0.1));
     }
 }
 
