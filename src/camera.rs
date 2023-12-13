@@ -1,4 +1,4 @@
-use glam::{Vec2, Vec3, Mat4, vec3};
+use glam::{Vec3, Mat4, vec3};
 
 use crate::{Canvas, ray::Ray, World};
 

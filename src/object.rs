@@ -36,31 +36,31 @@ impl Object {
     }
 
     pub fn with_translation(mut self, x: f32, y: f32, z: f32) -> Self {
-        self.transform *= Mat4::from_translation(Vec3::new(x, y, z));
+        self.transform = Mat4::from_translation(Vec3::new(x, y, z)) * self.transform;
         self.inverse_transform = self.transform.inverse();
         self
     }
 
     pub fn with_scale(mut self, x: f32, y: f32, z: f32) -> Self {
-        self.transform *= Mat4::from_scale(Vec3::new(x, y, z));
+        self.transform = Mat4::from_scale(Vec3::new(x, y, z)) * self.transform;
         self.inverse_transform = self.transform.inverse();
         self
     }
 
     pub fn with_rotation_x(mut self, angle: f32) -> Self {
-        self.transform *= Mat4::from_rotation_x(angle);
+        self.transform = Mat4::from_rotation_x(angle) * self.transform;
         self.inverse_transform = self.transform.inverse();
         self
     }
 
     pub fn with_rotation_y(mut self, angle: f32) -> Self {
-        self.transform *= Mat4::from_rotation_y(angle);
+        self.transform = Mat4::from_rotation_y(angle) * self.transform;
         self.inverse_transform = self.transform.inverse();
         self
     }
 
     pub fn with_rotation_z(mut self, angle: f32) -> Self {
-        self.transform *= Mat4::from_rotation_z(angle);
+        self.transform = Mat4::from_rotation_z(angle) * self.transform;
         self.inverse_transform = self.transform.inverse();
         self
     }
