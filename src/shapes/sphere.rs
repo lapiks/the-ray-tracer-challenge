@@ -195,8 +195,8 @@ mod tests {
     #[test]
     fn computing_normal_on_a_transformed_sphere() {
         let o = Object::new(Shape::Sphere(Sphere::default()))
-            .with_scale(1.0, 0.5, 1.0)
-            .with_rotation_z(PI / 5.0);
+            .with_rotation_z(PI / 5.0)
+            .with_scale(1.0, 0.5, 1.0);
             
         let n = o.normal_at(Vec3::new(0.0, 2.0_f32.sqrt() / 2.0, -2.0_f32.sqrt() / 2.0));
         assert!(n.abs_diff_eq(Vec3::new(0.0, 0.97014, -0.24254), EPSILON));
