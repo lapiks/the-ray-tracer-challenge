@@ -78,7 +78,7 @@ impl World {
                 );
         }
 
-        color
+        color + self.reflected_color(infos)
     }
 
     fn is_shadowed(&self, world_point: DVec3, light_pos: DVec3) -> bool {
