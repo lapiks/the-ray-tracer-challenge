@@ -86,7 +86,7 @@ impl Material {
 impl Default for Material {
     fn default() -> Self {
         Self { 
-            pattern: PatternObject::new(Pattern::PlainPattern(PlainPattern::new(Color::white()))),
+            pattern: PatternObject::new(Pattern::Plain(PlainPattern::new(Color::white()))),
             ambient: 0.1,
             diffuse: 0.9,
             specular: 0.9,
@@ -261,7 +261,7 @@ mod tests {
         let m = Material::default()
             .with_pattern(
                 PatternObject::new(
-                    Pattern::StrippedPattern(StrippedPattern::new(Color::white(), Color::black()))
+                    Pattern::Stripped(StrippedPattern::new(Color::white(), Color::black()))
                 )
             )
             .with_ambient(1.0)

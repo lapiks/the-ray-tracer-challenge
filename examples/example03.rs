@@ -16,7 +16,7 @@ fn main() {
     let m = Material::default()
         .with_pattern(
             PatternObject::new(
-                Pattern::StrippedPattern(
+                Pattern::Stripped(
                     StrippedPattern::new(Color::new(1.0, 0.9, 0.9), Color::new(1.0, 0.2, 0.2)))
                 )
             )
@@ -42,7 +42,7 @@ fn main() {
             Material::default()
                 .with_pattern(
                     PatternObject::new(
-                        Pattern::StrippedPattern(
+                        Pattern::Stripped(
                             StrippedPattern::new(Color::new(0.1, 1.0, 0.5), Color::new(0.5, 0.5, 1.0)))
                     )
                     .with_transform(
@@ -59,7 +59,7 @@ fn main() {
             Material::default()
                 .with_pattern(
                     PatternObject::new(
-                        Pattern::PlainPattern(PlainPattern::new(Color::new(0.5, 1.0, 0.1)))
+                        Pattern::Plain(PlainPattern::new(Color::new(0.5, 1.0, 0.1)))
                     )
                 )
                 .with_diffuse(0.7)
@@ -73,7 +73,7 @@ fn main() {
             Material::default()
                 .with_pattern(
                     PatternObject::new(
-                        Pattern::PlainPattern(PlainPattern::new(Color::new(1.0, 0.8, 0.1)))
+                        Pattern::Plain(PlainPattern::new(Color::new(1.0, 0.8, 0.1)))
                     )
                 )
                 .with_diffuse(0.7)

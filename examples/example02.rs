@@ -16,7 +16,7 @@ fn main() {
     let m = Material::default()
         .with_pattern(
             PatternObject::new(
-                Pattern::PlainPattern(PlainPattern::new(Color::new(1.0, 0.9, 0.9))))
+                Pattern::Plain(PlainPattern::new(Color::new(1.0, 0.9, 0.9))))
             )
         .with_specular(0.0);
     
@@ -40,7 +40,7 @@ fn main() {
             Material::default()
                 .with_pattern(
                     PatternObject::new(
-                        Pattern::PlainPattern(PlainPattern::new(Color::new(0.1, 1.0, 0.5)))
+                        Pattern::Plain(PlainPattern::new(Color::new(0.1, 1.0, 0.5)))
                     )
                 )
                 .with_diffuse(0.7)
@@ -53,7 +53,7 @@ fn main() {
             Material::default()
                 .with_pattern(
                     PatternObject::new(
-                        Pattern::PlainPattern(PlainPattern::new(Color::new(0.5, 1.0, 0.1)))
+                        Pattern::Plain(PlainPattern::new(Color::new(0.5, 1.0, 0.1)))
                     )
                 )
                 .with_diffuse(0.7)
@@ -67,7 +67,7 @@ fn main() {
             Material::default()
                 .with_pattern(
                     PatternObject::new(
-                        Pattern::PlainPattern(PlainPattern::new(Color::new(1.0, 0.8, 0.1)))
+                        Pattern::Plain(PlainPattern::new(Color::new(1.0, 0.8, 0.1)))
                     )
                 )
                 .with_diffuse(0.7)

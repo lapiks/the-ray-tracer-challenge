@@ -110,7 +110,7 @@ pub mod tests {
         let m = Material::new()
             .with_pattern(
                 PatternObject::new(
-                    Pattern::PlainPattern(
+                    Pattern::Plain(
                         PlainPattern::new(Color::new(0.8, 1.0, 0.6))
                     )
                 )
@@ -134,11 +134,11 @@ pub mod tests {
             DVec3::new(-10.0, 10.0, -10.0), 
             Color::white()
         );
-        
+
         let m = Material::new()
             .with_pattern(
                 PatternObject::new(
-                    Pattern::PlainPattern(
+                    Pattern::Plain(
                         PlainPattern::new(Color::new(0.8, 1.0, 0.6))  
                     )
                 )

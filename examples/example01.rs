@@ -31,7 +31,7 @@ fn main() {
             Material::default()
                 .with_pattern(
                     PatternObject::new(
-                        Pattern::PlainPattern(PlainPattern::new(Color::new(1.0, 0.2, 1.0)))
+                        Pattern::Plain(PlainPattern::new(Color::new(1.0, 0.2, 1.0)))
                     )
                 )
         );
@@ -42,7 +42,7 @@ fn main() {
             Material::default()
                 .with_pattern(
                     PatternObject::new(
-                        Pattern::PlainPattern(PlainPattern::new(Color::new(0.2, 1.0, 1.0)))
+                        Pattern::Plain(PlainPattern::new(Color::new(0.2, 1.0, 1.0)))
                     )
                 )
         );

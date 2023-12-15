@@ -33,7 +33,7 @@ impl PatternObject {
 impl Default for PatternObject {
     fn default() -> Self {
         Self { 
-            pattern: Pattern::PlainPattern(PlainPattern::new(Color::white())), 
+            pattern: Pattern::Plain(PlainPattern::new(Color::white())), 
             transform: Default::default(), 
             inverse_transform: Default::default() }
     }
@@ -41,8 +41,8 @@ impl Default for PatternObject {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Pattern {
-    PlainPattern(PlainPattern),
-    StrippedPattern(StrippedPattern),
+    Plain(PlainPattern),
+    Stripped(StrippedPattern),
 }
 
 pub trait PatternFunc {
@@ -52,8 +52,8 @@ pub trait PatternFunc {
 impl PatternFunc for Pattern {
     fn color_at(&self, point: DVec3) -> Color {
         match self {
-            Pattern::PlainPattern(p) => p.color_at(point),
-            Pattern::StrippedPattern(p) => p.color_at(point),
+            Pattern::Plain(p) => p.color_at(point),
+            Pattern::Stripped(p) => p.color_at(point),
         }
     }
 }
@@ -158,7 +158,7 @@ mod tests {
         let o = Object::new(Shape::Sphere(Sphere::default()))
             .with_scale(2.0, 2.0, 2.0);
         let pattern = PatternObject::new(
-            Pattern::StrippedPattern(
+            Pattern::Stripped(
                 StrippedPattern::new(Color::white(), Color::black())
             )
         );
@@ -169,7 +169,7 @@ mod tests {
     fn stripes_with_a_pattern_transformation() {
         let o = Object::new(Shape::Sphere(Sphere::default()));
         let pattern = PatternObject::new(
-            Pattern::StrippedPattern(
+            Pattern::Stripped(
                 StrippedPattern::new(Color::white(), Color::black())
             )
         )
@@ -183,7 +183,7 @@ mod tests {
         let o = Object::new(Shape::Sphere(Sphere::default()))
             .with_scale(2.0, 2.0, 2.0);
         let pattern = PatternObject::new(
-            Pattern::StrippedPattern(
+            Pattern::Stripped(
                 StrippedPattern::new(Color::white(), Color::black())
             )
         )
