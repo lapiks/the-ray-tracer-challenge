@@ -127,8 +127,8 @@ impl TestPattern {
 }
 
 impl PatternFunc for TestPattern {
-    fn color_at(&self, _: DVec3) -> Color {
-        Color::white()
+    fn color_at(&self, point: DVec3) -> Color {
+        Color::new(point.x, point.y, point.z)
     }
 }
 
@@ -186,6 +186,45 @@ mod tests {
         let pattern = PatternObject::new(Pattern::Test(TestPattern::new()))
             .with_transform(&DMat4::from_translation(dvec3(1.0, 2.0, 3.0)));
         assert_eq!(*pattern.transform(), DMat4::from_translation(dvec3(1.0, 2.0, 3.0)));
+    }
+
+    #[test]
+    fn a_pattern_with_an_object_transformation() {
+        let o = Object::new(Shape::Sphere(Sphere::default()))
+            .with_scale(2.0, 2.0, 2.0);
+        let pattern = PatternObject::new(
+            Pattern::Test(
+                TestPattern::new()
+            )
+        );
+        assert_eq!(pattern.color_at_object(&o, dvec3(2.0, 3.0, 4.0)), Color::new(1.0, 1.5, 2.0));
+    }
+
+    #[test]
+    fn a_pattern_with_a_pattern_transformation() {
+        let o = Object::new(Shape::Sphere(Sphere::default()));
+        let pattern = PatternObject::new(
+            Pattern::Test(
+                TestPattern::new()
+            )
+        )
+            .with_transform(&DMat4::from_scale(dvec3(2.0, 2.0, 2.0)));
+
+        assert_eq!(pattern.color_at_object(&o, dvec3(2.0, 3.0, 4.0)), Color::new(1.0, 1.5, 2.0));
+    }
+
+    #[test]
+    fn a_pattern_with_both_an_object_and_a_pattern_transformation() {
+        let o = Object::new(Shape::Sphere(Sphere::default()))
+            .with_scale(2.0, 2.0, 2.0);
+        let pattern = PatternObject::new(
+            Pattern::Test(
+                TestPattern::new()
+            )
+        )
+            .with_transform(&DMat4::from_translation(dvec3(0.5, 1.0, 1.5)));
+        
+        assert_eq!(pattern.color_at_object(&o, dvec3(2.5, 3.0, 3.5)), Color::new(0.75, 0.5, 0.25));
     }
 
     #[test]
