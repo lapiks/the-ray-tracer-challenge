@@ -69,8 +69,12 @@ impl Object {
         &self.material
     }
 
-    pub fn get_transform(&self) -> &DMat4 {
+    pub fn transform(&self) -> &DMat4 {
         &self.transform
+    }
+
+    pub fn inverse_transform(&self) -> &DMat4 {
+        &self.inverse_transform
     }
 
     pub fn intersect(&self, ray: &Ray) -> Intersections {

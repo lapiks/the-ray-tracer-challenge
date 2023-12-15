@@ -1,6 +1,42 @@
-use glam::DVec3;
+use glam::{DVec3, DMat4};
 
-use crate::Color;
+use crate::{Color, Object};
+
+pub struct PatternObject {
+    pattern: Pattern,
+    transform: DMat4,
+    inverse_transform: DMat4,
+}
+
+impl PatternObject {
+    pub fn new(pattern: Pattern) -> Self {
+        Self {
+            pattern,
+            ..Default::default()
+        }
+    }
+
+    pub fn with_transform(mut self, mat: &DMat4) -> Self {
+        self.transform = *mat;
+        self.inverse_transform = mat.inverse();
+        self
+    }
+
+    pub fn color_at_object(&self, object: &Object, world_point: DVec3) -> Color {
+        let object_point = object.inverse_transform().transform_point3(world_point);
+        let pattern_point = self.inverse_transform.transform_point3(object_point);
+        self.pattern.color_at(pattern_point)
+    }
+}
+
+impl Default for PatternObject {
+    fn default() -> Self {
+        Self { 
+            pattern: Pattern::PlainPattern(PlainPattern::new(Color::white())), 
+            transform: Default::default(), 
+            inverse_transform: Default::default() }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Pattern {
@@ -78,6 +114,8 @@ impl PatternFunc for StrippedPattern {
 mod tests {
     use glam::dvec3;
 
+    use crate::{Object, shapes::{Shape, Sphere}};
+
     use super::*;
 
     #[test]
@@ -112,5 +150,44 @@ mod tests {
         assert_eq!(pattern.color_at(dvec3(-0.1, 0.0, 0.0)), Color::black());
         assert_eq!(pattern.color_at(dvec3(-1.0, 0.0, 0.0)), Color::black());
         assert_eq!(pattern.color_at(dvec3(-1.1, 0.0, 0.0)), Color::white());
+    }
+
+    #[test]
+    fn stripes_with_an_object_transformation() {
+        let o = Object::new(Shape::Sphere(Sphere::default()))
+            .with_scale(2.0, 2.0, 2.0);
+        let pattern = PatternObject::new(
+            Pattern::StrippedPattern(
+                StrippedPattern::new(Color::white(), Color::black())
+            )
+        );
+        assert_eq!(pattern.color_at_object(&o, dvec3(1.5, 0.0, 0.0)), Color::white());
+    }
+
+    #[test]
+    fn stripes_with_a_pattern_transformation() {
+        let o = Object::new(Shape::Sphere(Sphere::default()));
+        let pattern = PatternObject::new(
+            Pattern::StrippedPattern(
+                StrippedPattern::new(Color::white(), Color::black())
+            )
+        )
+            .with_transform(&DMat4::from_scale(dvec3(2.0, 2.0, 2.0)));
+
+        assert_eq!(pattern.color_at_object(&o, dvec3(1.5, 0.0, 0.0)), Color::white());
+    }
+
+    #[test]
+    fn stripes_with_both_an_object_and_a_pattern_transformation() {
+        let o = Object::new(Shape::Sphere(Sphere::default()))
+            .with_scale(2.0, 2.0, 2.0);
+        let pattern = PatternObject::new(
+            Pattern::StrippedPattern(
+                StrippedPattern::new(Color::white(), Color::black())
+            )
+        )
+            .with_transform(&DMat4::from_translation(dvec3(0.5, 0.0, 0.0)));
+        
+        assert_eq!(pattern.color_at_object(&o, dvec3(2.5, 0.0, 0.0)), Color::white());
     }
 }
