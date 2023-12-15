@@ -31,6 +31,14 @@ impl World {
         self
     }
 
+    pub fn push_object(&mut self, object: Object) {
+        self.objects.push(object)
+    }
+
+    pub fn object(&self, index: usize) -> Option<&Object> {
+        self.objects.get(index)
+    }
+
     pub fn color_at(&self, ray: &Ray) -> Color {
         if let Some(intersection) = self
             .intersects(ray)
@@ -87,11 +95,17 @@ impl World {
     }
 
     fn reflected_color(&self, infos: &IntersectionInfos) -> Color {
-        if infos.object.material().reflective() == 0.0 {
+        let reflective = infos.object.material().reflective();
+        if reflective == 0.0 {
             return Color::black();
         }
 
-        Color::white()
+        self.color_at(
+            &Ray::new(
+                infos.over_point, 
+                infos.reflectv
+            )
+        ) * reflective
     }
 }
 
@@ -99,7 +113,7 @@ impl World {
 pub mod tests {
     use glam::{DVec3, dvec3};
 
-    use crate::{shapes::{Sphere, Shape}, Material, intersection::{Intersection, IntersectionInfos}, Pattern, pattern::{PlainPattern, PatternObject}, object};
+    use crate::{shapes::{Sphere, Shape, Plane}, Material, intersection::{Intersection, IntersectionInfos}, Pattern, pattern::{PlainPattern, PatternObject}, object};
 
     use super::*;
 
@@ -330,5 +344,26 @@ pub mod tests {
         let i = Intersection::new(1.0, &s);
         let comps = IntersectionInfos::new(&i, &r); 
         assert_eq!(w.reflected_color(&comps), Color::black());
+    }
+
+    #[test]
+    fn the_reflected_color_for_a_reflective_material() {
+        let mut w = default_world();
+        w.push_object(
+            Object::new(Shape::Plane(Plane::default()))
+                .with_material(
+                    Material::default()
+                        .with_reflective(0.5)
+                )
+                .with_translation(0.0, -1.0, 0.0)
+        );
+        let o = w.object(2).unwrap();
+        let r = Ray::new(
+            dvec3(0.0, 0.0, -3.0),
+            dvec3(0.0, -2.0_f64.sqrt()/2.0, 2.0_f64.sqrt()/2.0)
+        );
+        let i = Intersection::new(2.0_f64.sqrt(), &o);
+        let comps = IntersectionInfos::new(&i, &r); 
+        assert_eq!(w.reflected_color(&comps), Color::new(0.19032, 0.2379, 0.14274));
     }
 }
