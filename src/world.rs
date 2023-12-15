@@ -85,13 +85,21 @@ impl World {
         }
         false
     }
+
+    fn reflected_color(&self, infos: &IntersectionInfos) -> Color {
+        if infos.object.material().reflective() == 0.0 {
+            return Color::black();
+        }
+
+        Color::white()
+    }
 }
 
 #[cfg(test)]
 pub mod tests {
     use glam::{DVec3, dvec3};
 
-    use crate::{shapes::{Sphere, Shape}, Material, intersection::{Intersection, IntersectionInfos}, Pattern, pattern::{PlainPattern, PatternObject}};
+    use crate::{shapes::{Sphere, Shape}, Material, intersection::{Intersection, IntersectionInfos}, Pattern, pattern::{PlainPattern, PatternObject}, object};
 
     use super::*;
 
@@ -305,5 +313,22 @@ pub mod tests {
     fn there_is_no_shadow_when_an_object_is_behind_the_point() {
         let w = default_world();
         assert_eq!(w.is_shadowed(dvec3(-2.0, 2.0, -2.0), w.lights[0].position()), false);
+    }
+
+    #[test]
+    fn the_reflected_color_for_a_nonreflective_material() {
+        let w = default_world();
+        let r = Ray::new(
+            DVec3::ZERO,
+            DVec3::Z
+        );
+        let s = w.objects[1].clone()
+        .with_material(
+            Material::default()
+                .with_ambient(1.0)   
+        );
+        let i = Intersection::new(1.0, &s);
+        let comps = IntersectionInfos::new(&i, &r); 
+        assert_eq!(w.reflected_color(&comps), Color::black());
     }
 }
