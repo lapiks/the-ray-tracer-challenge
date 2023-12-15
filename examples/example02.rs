@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 use glam::dvec3;
-use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape, Plane}, Color, Material, PointLight, transformations, Pattern, pattern::PlainPattern};
+use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape, Plane}, Color, Material, PointLight, transformations, Pattern, pattern::{PlainPattern, PatternObject}};
 
 fn main() {
     let l1 = PointLight::new(
@@ -14,7 +14,10 @@ fn main() {
     );
 
     let m = Material::default()
-        .with_pattern(Pattern::PlainPattern(PlainPattern::new(Color::new(1.0, 0.9, 0.9))))
+        .with_pattern(
+            PatternObject::new(
+                Pattern::PlainPattern(PlainPattern::new(Color::new(1.0, 0.9, 0.9))))
+            )
         .with_specular(0.0);
     
     let floor = Object::new(Shape::Plane(Plane::default()))
@@ -35,7 +38,11 @@ fn main() {
     let middle = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
             Material::default()
-                .with_pattern(Pattern::PlainPattern(PlainPattern::new(Color::new(0.1, 1.0, 0.5))))
+                .with_pattern(
+                    PatternObject::new(
+                        Pattern::PlainPattern(PlainPattern::new(Color::new(0.1, 1.0, 0.5)))
+                    )
+                )
                 .with_diffuse(0.7)
                 .with_specular(0.3)
         )
@@ -44,7 +51,11 @@ fn main() {
     let right = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
             Material::default()
-                .with_pattern(Pattern::PlainPattern(PlainPattern::new(Color::new(0.5, 1.0, 0.1))))
+                .with_pattern(
+                    PatternObject::new(
+                        Pattern::PlainPattern(PlainPattern::new(Color::new(0.5, 1.0, 0.1)))
+                    )
+                )
                 .with_diffuse(0.7)
                 .with_specular(0.3)
         )
@@ -54,7 +65,11 @@ fn main() {
     let left = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
             Material::default()
-                .with_pattern(Pattern::PlainPattern(PlainPattern::new(Color::new(1.0, 0.8, 0.1))))
+                .with_pattern(
+                    PatternObject::new(
+                        Pattern::PlainPattern(PlainPattern::new(Color::new(1.0, 0.8, 0.1)))
+                    )
+                )
                 .with_diffuse(0.7)
                 .with_specular(0.3)
         )

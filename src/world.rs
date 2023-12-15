@@ -61,6 +61,7 @@ impl World {
             color += infos.object
                 .material()
                 .lighting(
+                    infos.object,
                     &light, 
                     infos.over_point, 
                     infos.eyev, 
@@ -90,7 +91,7 @@ impl World {
 pub mod tests {
     use glam::{DVec3, dvec3};
 
-    use crate::{shapes::{Sphere, Shape}, Material, intersection::{Intersection, IntersectionInfos}, Pattern, pattern::PlainPattern};
+    use crate::{shapes::{Sphere, Shape}, Material, intersection::{Intersection, IntersectionInfos}, Pattern, pattern::{PlainPattern, PatternObject}};
 
     use super::*;
 
@@ -107,7 +108,13 @@ pub mod tests {
             Color::white()
         );
         let m = Material::new()
-            .with_pattern(Pattern::PlainPattern(PlainPattern::new(Color::new(0.8, 1.0, 0.6))))
+            .with_pattern(
+                PatternObject::new(
+                    Pattern::PlainPattern(
+                        PlainPattern::new(Color::new(0.8, 1.0, 0.6))
+                    )
+                )
+            )
             .with_diffuse(0.7)
             .with_specular(0.2);
         let s1 = Object::new(Shape::Sphere(Sphere::default()))
@@ -127,10 +134,18 @@ pub mod tests {
             DVec3::new(-10.0, 10.0, -10.0), 
             Color::white()
         );
+        
         let m = Material::new()
-            .with_pattern(Pattern::PlainPattern(PlainPattern::new(Color::new(0.8, 1.0, 0.6))))
+            .with_pattern(
+                PatternObject::new(
+                    Pattern::PlainPattern(
+                        PlainPattern::new(Color::new(0.8, 1.0, 0.6))  
+                    )
+                )
+        )
             .with_diffuse(0.7)
             .with_specular(0.2);
+
         let s1 = Object::new(Shape::Sphere(Sphere::default()))
             .with_material(m);
         let s2 = Object::new(Shape::Sphere(Sphere::default()))

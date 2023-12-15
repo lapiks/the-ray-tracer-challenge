@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 use glam::dvec3;
-use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}, Color, Material, PointLight, transformations, Pattern, pattern::PlainPattern};
+use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}, Color, Material, PointLight, transformations, Pattern, pattern::{PlainPattern, PatternObject}};
 
 fn main() {
     let camera = Camera::new(1920, 1080, PI / 3.0)
@@ -29,14 +29,22 @@ fn main() {
         .with_translation(1.0, 0.0, 0.0)
         .with_material(
             Material::default()
-                .with_pattern(Pattern::PlainPattern(PlainPattern::new(Color::new(1.0, 0.2, 1.0))))
+                .with_pattern(
+                    PatternObject::new(
+                        Pattern::PlainPattern(PlainPattern::new(Color::new(1.0, 0.2, 1.0)))
+                    )
+                )
         );
 
     let o2 = Object::new(Shape::Sphere(s))
         .with_translation(-1.0, 0.0, 0.0)
         .with_material(
             Material::default()
-                .with_pattern(Pattern::PlainPattern(PlainPattern::new(Color::new(0.2, 1.0, 1.0))))
+                .with_pattern(
+                    PatternObject::new(
+                        Pattern::PlainPattern(PlainPattern::new(Color::new(0.2, 1.0, 1.0)))
+                    )
+                )
         );
 
     let world = World::new()

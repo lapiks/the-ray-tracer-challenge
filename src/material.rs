@@ -1,10 +1,10 @@
 use glam::DVec3;
 
-use crate::{Color, light::PointLight, Pattern, pattern::{PlainPattern, PatternFunc}};
+use crate::{Color, light::PointLight, Pattern, pattern::{PlainPattern, PatternObject}, Object};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Material {
-    pattern: Pattern,
+    pattern: PatternObject,
     ambient: f64,
     diffuse: f64,
     specular: f64,
@@ -16,7 +16,7 @@ impl Material {
         Self::default()
     }
 
-    pub fn with_pattern(mut self, pattern: Pattern) -> Self {
+    pub fn with_pattern(mut self, pattern: PatternObject) -> Self {
         self.pattern = pattern;
         self
     }
@@ -56,8 +56,8 @@ impl Material {
         self.shininess
     }
 
-    pub fn lighting(&self, light: &PointLight, point: DVec3, eyev: DVec3, normal: DVec3, is_in_shadow: bool) -> Color {
-        let effective_color = self.pattern.color_at(point) * light.intensity();
+    pub fn lighting(&self, object: &Object, light: &PointLight, point: DVec3, eyev: DVec3, normal: DVec3, is_in_shadow: bool) -> Color {
+        let effective_color = self.pattern.color_at_object(object, point) * light.intensity();
         let ambient = effective_color * self.ambient;
         
         if is_in_shadow {
@@ -86,7 +86,7 @@ impl Material {
 impl Default for Material {
     fn default() -> Self {
         Self { 
-            pattern: Pattern::PlainPattern(PlainPattern::new(Color::white())),
+            pattern: PatternObject::new(Pattern::PlainPattern(PlainPattern::new(Color::white()))),
             ambient: 0.1,
             diffuse: 0.9,
             specular: 0.9,
@@ -128,7 +128,17 @@ mod tests {
             dvec3(0.0, 0.0, -10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(1.9, 1.9, 1.9));
+        assert_eq!(
+            m.lighting(
+                &Object::new(Shape::Sphere(Sphere::default())),
+                &l, 
+                position, 
+                eyev, 
+                normalv, 
+                false
+            ), 
+            Color::new(1.9, 1.9, 1.9)
+        );
     }
 
     #[test]
@@ -141,7 +151,17 @@ mod tests {
             dvec3(0.0, 0.0, -10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(1.0, 1.0, 1.0));
+        assert_eq!(
+            m.lighting(
+                &Object::new(Shape::Sphere(Sphere::default())), 
+                &l, 
+                position, 
+                eyev, 
+                normalv, 
+                false
+            ), 
+            Color::new(1.0, 1.0, 1.0)
+        );
     }
 
     #[test]
@@ -154,7 +174,17 @@ mod tests {
             dvec3(0.0, 10.0, -10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(0.7364, 0.7364, 0.7364));
+        assert_eq!(
+            m.lighting(
+                &Object::new(Shape::Sphere(Sphere::default())),
+                &l, 
+                position, 
+                eyev, 
+                normalv, 
+                false
+            ), 
+            Color::new(0.7364, 0.7364, 0.7364)
+        );
     }
     
     #[test]
@@ -167,7 +197,17 @@ mod tests {
             dvec3(0.0, 10.0, -10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(1.6364, 1.6364, 1.6364));
+        assert_eq!(
+            m.lighting(
+                &Object::new(Shape::Sphere(Sphere::default())),
+                &l, 
+                position, 
+                eyev, 
+                normalv, 
+                false
+            ), 
+            Color::new(1.6364, 1.6364, 1.6364)
+        );
     }
 
     #[test]
@@ -180,7 +220,17 @@ mod tests {
             dvec3(0.0, 0.0, 10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, position, eyev, normalv, false), Color::new(0.1, 0.1, 0.1));
+        assert_eq!(
+            m.lighting(
+                &Object::new(Shape::Sphere(Sphere::default())),
+                &l, 
+                position, 
+                eyev, 
+                normalv, 
+                false
+            ), 
+            Color::new(0.1, 0.1, 0.1)
+        );
     }
 
     #[test]
@@ -193,14 +243,26 @@ mod tests {
             dvec3(0.0, 0.0, -10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, position, eyev, normalv, true), Color::new(0.1, 0.1, 0.1));
+        assert_eq!(
+            m.lighting(
+                &Object::new(Shape::Sphere(Sphere::default())),
+                &l, 
+                position, 
+                eyev, 
+                normalv, 
+                true
+            ), 
+            Color::new(0.1, 0.1, 0.1)
+        );
     }
 
     #[test]
     fn lighting_with_a_pattern_applied() {
         let m = Material::default()
             .with_pattern(
-                Pattern::StrippedPattern(StrippedPattern::new(Color::white(), Color::black()))
+                PatternObject::new(
+                    Pattern::StrippedPattern(StrippedPattern::new(Color::white(), Color::black()))
+                )
             )
             .with_ambient(1.0)
             .with_diffuse(0.0)
@@ -212,8 +274,28 @@ mod tests {
             dvec3(0.0, 0.0, -10.0),
             Color::white()
         );
-        assert_eq!(m.lighting(&l, dvec3(0.9, 0.0, 0.0), eyev, normalv, true), Color::white());
-        assert_eq!(m.lighting(&l, dvec3(1.1, 0.0, 0.0), eyev, normalv, true), Color::black());
+        assert_eq!(
+            m.lighting(
+                &Object::new(Shape::Sphere(Sphere::default())),
+                &l, 
+                dvec3(0.9, 0.0, 0.0), 
+                eyev, 
+                normalv, 
+                true
+            ), 
+            Color::white()
+        );
+        assert_eq!(
+            m.lighting(
+                &Object::new(Shape::Sphere(Sphere::default())),
+                &l, 
+                dvec3(1.1, 0.0, 0.0), 
+                eyev, 
+                normalv, 
+                true
+            ), 
+            Color::black()
+        );
     }
 }
 

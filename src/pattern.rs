@@ -2,6 +2,7 @@ use glam::{DVec3, DMat4};
 
 use crate::{Color, Object};
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct PatternObject {
     pattern: Pattern,
     transform: DMat4,
