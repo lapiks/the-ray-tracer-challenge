@@ -48,6 +48,8 @@ pub enum Pattern {
     Plain(PlainPattern),
     Stripped(StrippedPattern),
     Gradient(GradientPattern),
+    Ring(RingPattern),
+    Checker(CheckerPattern),
     Test(TestPattern),
 }
 
@@ -61,6 +63,8 @@ impl PatternFunc for Pattern {
             Pattern::Plain(p) => p.color_at(point),
             Pattern::Stripped(p) => p.color_at(point),
             Pattern::Gradient(p) => p.color_at(point),
+            Pattern::Ring(p) => p.color_at(point),
+            Pattern::Checker(p) => p.color_at(point),
             Pattern::Test(p) => p.color_at(point),
         }
     }
@@ -136,6 +140,54 @@ impl GradientPattern {
 impl PatternFunc for GradientPattern {
     fn color_at(&self, point: DVec3) -> Color {
         self.c0 + (self.c1 - self.c0) * (point.x - point.x.floor())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct RingPattern {
+    c0: Color,
+    c1: Color,
+}
+
+impl RingPattern {
+    pub fn new( c0: Color, c1: Color) -> Self {
+        Self {
+            c0, c1
+        }
+    }
+}
+
+impl PatternFunc for RingPattern {
+    fn color_at(&self, point: DVec3) -> Color {
+        if (point.x.powf(2.0) + point.z.powf(2.0)).sqrt().floor() % 2.0 == 0.0 { 
+            self.c0 
+        } else {
+            self.c1
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct CheckerPattern {
+    c0: Color,
+    c1: Color,
+}
+
+impl CheckerPattern {
+    pub fn new( c0: Color, c1: Color) -> Self {
+        Self {
+            c0, c1
+        }
+    }
+}
+
+impl PatternFunc for CheckerPattern {
+    fn color_at(&self, point: DVec3) -> Color {
+        if (point.x.floor() + point.y.floor() + point.z.floor()) % 2.0 == 0.0 { 
+            self.c0 
+        } else {
+            self.c1
+        }
     }
 }
 
@@ -286,5 +338,47 @@ mod tests {
             .with_transform(&DMat4::from_translation(dvec3(0.5, 0.0, 0.0)));
         
         assert_eq!(pattern.color_at_object(&o, dvec3(2.5, 0.0, 0.0)), Color::white());
+    }
+
+    #[test]
+    fn a_gradient_linearly_interpolates_between_colors() {
+        let pattern = GradientPattern::new(Color::white(), Color::black());        
+        assert_eq!(pattern.color_at(dvec3(0.0, 0.0, 0.0)), Color::white());
+        assert_eq!(pattern.color_at(dvec3(0.25, 0.0, 0.0)), Color::new(0.75, 0.75, 0.75));
+        assert_eq!(pattern.color_at(dvec3(0.5, 0.0, 0.0)), Color::new(0.5, 0.5, 0.5));
+        assert_eq!(pattern.color_at(dvec3(0.75, 0.0, 0.0)),Color::new(0.25, 0.25, 0.25));
+    }
+    
+    #[test]
+    fn a_ring_should_extend_in_both_x_and_z() {
+        let pattern = RingPattern::new(Color::white(), Color::black());        
+        assert_eq!(pattern.color_at(dvec3(0.0, 0.0, 0.0)), Color::white());
+        assert_eq!(pattern.color_at(dvec3(1.0, 0.0, 0.0)), Color::black());
+        assert_eq!(pattern.color_at(dvec3(0.0, 0.0, 1.0)), Color::black());
+        assert_eq!(pattern.color_at(dvec3(0.708, 0.0, 0.708)),Color::black());
+    }
+
+    #[test]
+    fn checkers_should_repeat_in_x() {
+        let pattern = CheckerPattern::new(Color::white(), Color::black());        
+        assert_eq!(pattern.color_at(dvec3(0.0, 0.0, 0.0)), Color::white());
+        assert_eq!(pattern.color_at(dvec3(0.99, 0.0, 0.0)), Color::white());
+        assert_eq!(pattern.color_at(dvec3(1.1, 0.0, 0.0)), Color::black());
+    }
+
+    #[test]
+    fn checkers_should_repeat_in_y() {
+        let pattern = CheckerPattern::new(Color::white(), Color::black());        
+        assert_eq!(pattern.color_at(dvec3(0.0, 0.0, 0.0)), Color::white());
+        assert_eq!(pattern.color_at(dvec3(0.0, 0.99, 0.0)), Color::white());
+        assert_eq!(pattern.color_at(dvec3(0.0, 1.1, 0.0)), Color::black());
+    }
+
+    #[test]
+    fn checkers_should_repeat_in_z() {
+        let pattern = CheckerPattern::new(Color::white(), Color::black());        
+        assert_eq!(pattern.color_at(dvec3(0.0, 0.0, 0.0)), Color::white());
+        assert_eq!(pattern.color_at(dvec3(0.0, 0.0, 0.99)), Color::white());
+        assert_eq!(pattern.color_at(dvec3(0.0, 0.0, 1.1)), Color::black());
     }
 }
