@@ -111,6 +111,7 @@ pub struct IntersectionInfos<'a> {
     pub over_point: DVec3,
     pub eyev: DVec3,
     pub normalv: DVec3,
+    pub reflectv: DVec3,
     pub inside: bool,
 }
 
@@ -126,6 +127,7 @@ impl<'a> IntersectionInfos<'a> {
             normalv = -normalv;
         }
         let over_point = point + normalv * EPSILON;
+        let reflectv = ray.direction - normalv * 2.0 * ray.direction.dot(normalv);
         Self {
             t: intersection.t,
             object,
@@ -133,6 +135,7 @@ impl<'a> IntersectionInfos<'a> {
             over_point,
             eyev,
             normalv,
+            reflectv,
             inside,
         }
     }
@@ -142,7 +145,7 @@ impl<'a> IntersectionInfos<'a> {
 mod tests {
     use glam::dvec3;
 
-    use crate::{shapes::{sphere::Sphere, shape::Shape}, ray::Ray};
+    use crate::{shapes::{sphere::Sphere, shape::Shape, Plane}, ray::Ray};
 
     use super::*;
 
@@ -271,5 +274,18 @@ mod tests {
         let comps = IntersectionInfos::new(&i, &r);
         assert!(comps.over_point.z < -EPSILON/2.0);
         assert!(comps.point.z > comps.over_point.z);
+    }
+
+    
+    #[test]
+    fn precomputing_the_reflection_vector() {
+        let o = Object::new(Shape::Plane(Plane::new()));
+        let r = Ray::new(
+            dvec3(0.0, 1.0, -1.0), 
+            dvec3(0.0, -2.0_f64.sqrt()/2.0, 2.0_f64.sqrt()/2.0)
+        );
+        let i = Intersection::new(2.0_f64.sqrt(), &o);
+        let comps = IntersectionInfos::new(&i, &r);
+        assert_eq!(comps.reflectv, dvec3(0.0, 2.0_f64.sqrt()/2.0, 2.0_f64.sqrt()/2.0));
     }
 }

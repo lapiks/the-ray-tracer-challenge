@@ -9,6 +9,7 @@ pub struct Material {
     diffuse: f64,
     specular: f64,
     shininess: f64,
+    reflective: f64,
 }
 
 impl Material {
@@ -41,6 +42,11 @@ impl Material {
         self
     }
 
+    pub fn with_reflective(mut self, reflective: f64) -> Self {
+        self.reflective = reflective;
+        self
+    }
+
     pub fn ambient(&self) -> f64 {
         self.ambient
     }
@@ -52,8 +58,13 @@ impl Material {
     pub fn specular(&self) -> f64 {
         self.specular
     }
+
     pub fn shininess(&self) -> f64 {
         self.shininess
+    }
+
+    pub fn reflective(&self) -> f64 {
+        self.reflective
     }
 
     pub fn lighting(&self, object: &Object, light: &PointLight, point: DVec3, eyev: DVec3, normal: DVec3, is_in_shadow: bool) -> Color {
@@ -91,6 +102,7 @@ impl Default for Material {
             diffuse: 0.9,
             specular: 0.9,
             shininess: 200.0,
+            reflective: 0.0,
          }
     }
 }
@@ -296,6 +308,12 @@ mod tests {
             ), 
             Color::black()
         );
+    }
+
+    #[test]
+    fn reflectivity_for_the_default_material() {
+        let m = Material::default();
+        assert_eq!(m.reflective, 0.0);
     }
 }
 
