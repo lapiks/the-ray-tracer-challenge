@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 use glam::{dvec3, DMat4};
-use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape, Plane}, Color, Material, PointLight, transformations, Pattern, pattern::{PlainPattern, PatternObject, StrippedPattern, GradientPattern, RingPattern, CheckerPattern}};
+use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape, Plane}, Color, Material, PointLight, transformations, Pattern, pattern::{PlainPattern, PatternObject, StrippedPattern, GradientPattern, CheckerPattern}};
 
 fn main() {
     let l1 = PointLight::new(
@@ -13,11 +13,11 @@ fn main() {
         Color::white() * 0.4
     );
 
-    let m = Material::default()
+    let wall_material = Material::default()
         .with_pattern(
             PatternObject::new(
-                Pattern::Stripped(
-                    StrippedPattern::new(Color::white(), Color::new(0.75, 0.75, 0.75)))
+                Pattern::Plain(
+                    PlainPattern::new(Color::white()))
                 )
             )
         .with_specular(0.0);
@@ -25,6 +25,7 @@ fn main() {
     let floor = Object::new(Shape::Plane(Plane::default()))
         .with_material(
             Material::default()
+                .with_reflective(0.3)
                 .with_pattern(
                     PatternObject::new(
                         Pattern::Checker(
@@ -38,13 +39,13 @@ fn main() {
         );
 
     let left_wall = Object::new(Shape::Plane(Plane::default()))
-        .with_material(m.clone())
+        .with_material(wall_material.clone())
         .with_rotation_x(PI/2.0)
         .with_rotation_y(-PI/4.0)
         .with_translation(0.0, 0.0, 5.0);
 
     let right_wall = Object::new(Shape::Plane(Plane::default()))
-        .with_material(m.clone())
+        .with_material(wall_material.clone())
         .with_rotation_x(PI/2.0)
         .with_rotation_y(PI/4.0)
         .with_translation(0.0, 0.0, 5.0);
