@@ -17,7 +17,7 @@ fn main() {
         .with_pattern(
             PatternObject::new(
                 Pattern::Stripped(
-                    StrippedPattern::new(Color::black(), Color::new(0.5, 0.5, 0.5)))
+                    StrippedPattern::new(Color::white(), Color::new(0.75, 0.75, 0.75)))
                 )
             )
         .with_specular(0.0);
