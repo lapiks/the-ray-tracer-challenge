@@ -49,13 +49,13 @@ impl Camera {
         self
     }
 
-    pub fn render(&self, world: &World) -> Canvas {
+    pub fn render(&self, world: &World, max_recursions: u8) -> Canvas {
         let mut canvas = Canvas::new(self.width, self.height);
 
         for y in 0..self.height-1 {
             for x in 0..self.width-1 {
                 let ray = self.ray_for_pixel(x, y);
-                canvas[y][x] = world.color_at(&ray);
+                canvas[y][x] = world.color_at(&ray, max_recursions);
             }
         }
 
@@ -148,7 +148,7 @@ mod tests {
                     dvec3(0.0, 1.0, 0.0)    
                 )
             );
-        let image = c.render(&w);
+        let image = c.render(&w, 1);
         assert_eq!(image[5][5], Color::new(0.38066, 0.47583, 0.2855));
     }
 }

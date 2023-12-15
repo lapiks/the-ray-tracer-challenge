@@ -120,6 +120,6 @@ fn main() {
             )
         );
 
-    let canvas = camera.render(&world);
+    let canvas = camera.render(&world, 5);
     canvas.export("examples/example03.png").unwrap();
 }

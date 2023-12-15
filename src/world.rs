@@ -39,12 +39,12 @@ impl World {
         self.objects.get(index)
     }
 
-    pub fn color_at(&self, ray: &Ray) -> Color {
+    pub fn color_at(&self, ray: &Ray, remaining: u8) -> Color {
         if let Some(intersection) = self
             .intersects(ray)
             .hit() {
                 let infos = IntersectionInfos::new(&intersection, &ray);
-                return self.shade_hit(&infos);
+                return self.shade_hit(&infos, remaining);
             }
 
         Color::black()
@@ -63,7 +63,7 @@ impl World {
         intersections.sort()
     }
 
-    fn shade_hit(&self, infos: &IntersectionInfos) -> Color {
+    fn shade_hit(&self, infos: &IntersectionInfos, remaining: u8) -> Color {
         let mut color = Color::black();
         for light in &self.lights {
             color += infos.object
@@ -78,7 +78,7 @@ impl World {
                 );
         }
 
-        color + self.reflected_color(infos)
+        color + self.reflected_color(infos, remaining)
     }
 
     fn is_shadowed(&self, world_point: DVec3, light_pos: DVec3) -> bool {
@@ -94,9 +94,9 @@ impl World {
         false
     }
 
-    fn reflected_color(&self, infos: &IntersectionInfos) -> Color {
+    fn reflected_color(&self, infos: &IntersectionInfos, remaining: u8) -> Color {
         let reflective = infos.object.material().reflective();
-        if reflective == 0.0 {
+        if remaining < 1 || reflective == 0.0 {
             return Color::black();
         }
 
@@ -104,7 +104,8 @@ impl World {
             &Ray::new(
                 infos.over_point, 
                 infos.reflectv
-            )
+            ),
+            remaining - 1
         ) * reflective
     }
 }
@@ -113,7 +114,7 @@ impl World {
 pub mod tests {
     use glam::{DVec3, dvec3};
 
-    use crate::{shapes::{Sphere, Shape, Plane}, Material, intersection::{Intersection, IntersectionInfos}, Pattern, pattern::{PlainPattern, PatternObject}, object};
+    use crate::{shapes::{Sphere, Shape, Plane}, Material, intersection::{Intersection, IntersectionInfos}, Pattern, pattern::{PlainPattern, PatternObject}};
 
     use super::*;
 
@@ -205,7 +206,7 @@ pub mod tests {
         let s = w.objects.get(0).unwrap();
         let i = Intersection::new(4.0, s);
         let comps = IntersectionInfos::new(&i, &r);
-        let c = w.shade_hit(&comps);
+        let c = w.shade_hit(&comps, 1);
         assert_eq!(c, Color::new(0.38066, 0.47583, 0.2855));
     }
 
@@ -227,7 +228,7 @@ pub mod tests {
         let s = w.objects.get(1).unwrap();
         let i = Intersection::new(0.5, s);
         let comps = IntersectionInfos::new(&i, &r);
-        let c = w.shade_hit(&comps);
+        let c = w.shade_hit(&comps, 1);
         assert_eq!(c, Color::new(0.90498, 0.90498, 0.90498));
     }
 
@@ -255,7 +256,7 @@ pub mod tests {
 
         let i = Intersection::new(4.0, &s2);
         let comps = IntersectionInfos::new(&i, &r);
-        let c = w.shade_hit(&comps);
+        let c = w.shade_hit(&comps, 1);
         assert_eq!(c, Color::new(0.1, 0.1, 0.1));
     }
 
@@ -266,7 +267,7 @@ pub mod tests {
             dvec3(0.0, 0.0, -5.0),
             dvec3(0.0, 1.0, 0.0)
         );
-        let c = w.color_at(&r);
+        let c = w.color_at(&r, 1);
         assert_eq!(c, Color::black());
     }
 
@@ -277,7 +278,7 @@ pub mod tests {
             dvec3(0.0, 0.0, -5.0),
             dvec3(0.0, 0.0, 1.0)
         );
-        let c = w.color_at(&r);
+        let c = w.color_at(&r, 1);
         assert_eq!(c, Color::new(0.38066, 0.47583, 0.2855));
     }
 
@@ -301,7 +302,7 @@ pub mod tests {
             dvec3(0.0, 0.0, 0.75),
             dvec3(0.0, 0.0, -1.0)
         );
-        let c = w.color_at(&r);
+        let c = w.color_at(&r, 1);
         assert_eq!(c, PlainPattern::default().color());
     }
 
@@ -343,7 +344,7 @@ pub mod tests {
         );
         let i = Intersection::new(1.0, &s);
         let comps = IntersectionInfos::new(&i, &r); 
-        assert_eq!(w.reflected_color(&comps), Color::black());
+        assert_eq!(w.reflected_color(&comps, 1), Color::black());
     }
 
     #[test]
@@ -364,6 +365,78 @@ pub mod tests {
         );
         let i = Intersection::new(2.0_f64.sqrt(), &o);
         let comps = IntersectionInfos::new(&i, &r); 
-        assert_eq!(w.reflected_color(&comps), Color::new(0.19032, 0.2379, 0.14274));
+        assert_eq!(w.reflected_color(&comps, 5), Color::new(0.19032, 0.2379, 0.14274));
+    }
+
+    #[test]
+    fn shade_hit_with_a_reflective_material() {
+        let mut w = default_world();
+        w.push_object(
+            Object::new(Shape::Plane(Plane::default()))
+                .with_material(
+                    Material::default()
+                        .with_reflective(0.5)
+                )
+                .with_translation(0.0, -1.0, 0.0)
+        );
+        let o = w.object(2).unwrap();
+        let r = Ray::new(
+            dvec3(0.0, 0.0, -3.0),
+            dvec3(0.0, -2.0_f64.sqrt()/2.0, 2.0_f64.sqrt()/2.0)
+        );
+        let i = Intersection::new(2.0_f64.sqrt(), &o);
+        let comps = IntersectionInfos::new(&i, &r); 
+        assert_eq!(w.shade_hit(&comps, 5), Color::new(0.87677, 0.92436, 0.82918));
+    }
+
+    #[test]
+    fn color_at_with_mutually_reflective_surfaces() {
+        let w = World {
+            objects: vec![
+                Object::new(Shape::Plane(Plane::default()))
+                    .with_material(
+                        Material::default()
+                            .with_reflective(1.0)
+                    )
+                    .with_translation(0.0, 1.0, 0.0),
+                Object::new(Shape::Plane(Plane::default()))
+                    .with_material(
+                        Material::default()
+                            .with_reflective(1.0)
+                    )
+                    .with_translation(0.0, -1.0, 0.0),
+            ],
+            ..default_world()
+        };
+
+        let r = Ray::new(
+            dvec3(0.0, 0.0, 0.0),
+            dvec3(0.0, 1.0, 0.0)
+        );
+
+        w.color_at(&r, 5);
+        // if we can arrive here, the color_at function is successful
+        // without infinite recursion
+    }
+
+    #[test]
+    fn the_reflected_color_at_the_maximum_recursive_depth() {
+        let mut w = default_world();
+        w.push_object(
+            Object::new(Shape::Plane(Plane::default()))
+                .with_material(
+                    Material::default()
+                        .with_reflective(0.5)
+                )
+                .with_translation(0.0, -1.0, 0.0)
+        );
+        let o = w.object(2).unwrap();
+        let r = Ray::new(
+            dvec3(0.0, 0.0, -3.0),
+            dvec3(0.0, -2.0_f64.sqrt()/2.0, 2.0_f64.sqrt()/2.0)
+        );
+        let i = Intersection::new(2.0_f64.sqrt(), &o);
+        let comps = IntersectionInfos::new(&i, &r); 
+        assert_eq!(w.reflected_color(&comps, 0), Color::black());
     }
 }

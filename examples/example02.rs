@@ -89,6 +89,6 @@ fn main() {
             )
         );
 
-    let canvas = camera.render(&world);
+    let canvas = camera.render(&world, 5);
     canvas.export("examples/example02.png").unwrap();
 }

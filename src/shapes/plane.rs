@@ -43,8 +43,6 @@ mod tests {
 
     use super::*;
 
-    const EPSILON: f64 = 0.00001;
-
     #[test]
     fn the_normal_of_a_plane_is_constant_everywhere() {
         let p = Plane::default();
