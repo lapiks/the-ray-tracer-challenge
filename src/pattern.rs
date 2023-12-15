@@ -23,6 +23,10 @@ impl PatternObject {
         self
     }
 
+    pub fn transform(&self) -> &DMat4 {
+        &self.transform
+    }
+
     pub fn color_at_object(&self, object: &Object, world_point: DVec3) -> Color {
         let object_point = object.inverse_transform().transform_point3(world_point);
         let pattern_point = self.inverse_transform.transform_point3(object_point);
@@ -43,6 +47,7 @@ impl Default for PatternObject {
 pub enum Pattern {
     Plain(PlainPattern),
     Stripped(StrippedPattern),
+    Test(TestPattern),
 }
 
 pub trait PatternFunc {
@@ -54,6 +59,7 @@ impl PatternFunc for Pattern {
         match self {
             Pattern::Plain(p) => p.color_at(point),
             Pattern::Stripped(p) => p.color_at(point),
+            Pattern::Test(p) => p.color_at(point),
         }
     }
 }
@@ -111,6 +117,22 @@ impl PatternFunc for StrippedPattern {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct TestPattern {}
+
+impl TestPattern {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl PatternFunc for TestPattern {
+    fn color_at(&self, _: DVec3) -> Color {
+        Color::white()
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use glam::dvec3;
@@ -151,6 +173,19 @@ mod tests {
         assert_eq!(pattern.color_at(dvec3(-0.1, 0.0, 0.0)), Color::black());
         assert_eq!(pattern.color_at(dvec3(-1.0, 0.0, 0.0)), Color::black());
         assert_eq!(pattern.color_at(dvec3(-1.1, 0.0, 0.0)), Color::white());
+    }
+
+    #[test]
+    fn the_default_pattern_transformation() {
+        let pattern = PatternObject::new(Pattern::Test(TestPattern::new()));
+        assert_eq!(*pattern.transform(), DMat4::IDENTITY);
+    }
+
+    #[test]
+    fn assigning_a_transformation() {
+        let pattern = PatternObject::new(Pattern::Test(TestPattern::new()))
+            .with_transform(&DMat4::from_translation(dvec3(1.0, 2.0, 3.0)));
+        assert_eq!(*pattern.transform(), DMat4::from_translation(dvec3(1.0, 2.0, 3.0)));
     }
 
     #[test]
