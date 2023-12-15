@@ -47,6 +47,7 @@ impl Default for PatternObject {
 pub enum Pattern {
     Plain(PlainPattern),
     Stripped(StrippedPattern),
+    Gradient(GradientPattern),
     Test(TestPattern),
 }
 
@@ -59,6 +60,7 @@ impl PatternFunc for Pattern {
         match self {
             Pattern::Plain(p) => p.color_at(point),
             Pattern::Stripped(p) => p.color_at(point),
+            Pattern::Gradient(p) => p.color_at(point),
             Pattern::Test(p) => p.color_at(point),
         }
     }
@@ -114,6 +116,26 @@ impl PatternFunc for StrippedPattern {
         } else {
             self.c1
         }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct GradientPattern {
+    c0: Color,
+    c1: Color,
+}
+
+impl GradientPattern {
+    pub fn new( c0: Color, c1: Color) -> Self {
+        Self {
+            c0, c1
+        }
+    }
+}
+
+impl PatternFunc for GradientPattern {
+    fn color_at(&self, point: DVec3) -> Color {
+        self.c0 + (self.c1 - self.c0) * (point.x - point.x.floor())
     }
 }
 
