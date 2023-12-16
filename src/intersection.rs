@@ -116,6 +116,7 @@ pub struct IntersectionInfos<'a> {
     pub object: &'a Object,
     pub point: DVec3,
     pub over_point: DVec3,
+    pub under_point: DVec3,
     pub eyev: DVec3,
     pub normalv: DVec3,
     pub reflectv: DVec3,
@@ -137,6 +138,7 @@ impl<'a> IntersectionInfos<'a> {
             normalv = -normalv;
         }
         let over_point = point + normalv * EPSILON;
+        let under_point = point - normalv * EPSILON;
         let reflectv = ray.direction - normalv * 2.0 * ray.direction.dot(normalv);
 
         // find n1 n2
@@ -174,6 +176,7 @@ impl<'a> IntersectionInfos<'a> {
             object,
             point,
             over_point,
+            under_point,
             eyev,
             normalv,
             reflectv,
@@ -384,5 +387,19 @@ mod tests {
         assert_eq!(IntersectionInfos::new(&xs, 3, &r).n, (2.5, 2.5));
         assert_eq!(IntersectionInfos::new(&xs, 4, &r).n, (2.5, 1.5));
         assert_eq!(IntersectionInfos::new(&xs, 5, &r).n, (1.5, 1.0));
+    }
+
+    #[test]
+    fn the_under_point_is_offset_below_the_surface() {
+        let r = Ray::new(
+            dvec3(0.0, 0.0, -5.0), 
+            dvec3(0.0, 0.0, 1.0)
+        );
+        let s = glass_sphere()
+            .with_translation(0.0, 0.0, 1.0);
+        let xs = Intersections::new().with_intersections(vec![Intersection::new(5.0, &s)]);
+        let infos = IntersectionInfos::new(&xs, 0, &r);
+        assert!(infos.under_point.z > EPSILON / 2.0);
+        assert!(infos.point.z < infos.under_point.z);
     }
 }
