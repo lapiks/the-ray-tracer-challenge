@@ -115,6 +115,16 @@ impl World {
             return Color::black();
         }
 
+        // total internal reflection
+        // Snell's Law
+        let ratio = infos.n.0 / infos.n.1;
+        let cos_i = infos.eyev.dot(infos.normalv);
+        let sin2_t = ratio.powf(2.0) * (1.0 - cos_i.powf(2.0));
+        if sin2_t > 1.0 {
+            // total internal reflection case, light is fully reflected
+            return Color::black();
+        }
+
         Color::white()
     }
 }
@@ -494,5 +504,27 @@ pub mod tests {
         );
         let comps = IntersectionInfos::new(&xs, 0, &r);
         assert_eq!(w.refracted_color(&comps, 0), Color::black());
+    }
+
+    #[test]
+    fn the_refracted_color_under_total_internal_reflection() {
+        let w = default_world();
+        let o = w.object(0).unwrap();
+        o.material()
+            .clone()
+            .with_transparency(1.0)
+            .with_refractive_index(1.5);
+        let r = Ray::new(
+            dvec3(0.0, 0.0, 2.0_f64.sqrt()/2.0),
+            dvec3(0.0, 1.0, 0.0)
+        );
+        let xs = Intersections::new().with_intersections(
+            vec![
+                Intersection::new(-2.0_f64.sqrt()/2.0, &o),
+                Intersection::new(2.0_f64.sqrt()/2.0, &o)
+            ]
+        );
+        let comps = IntersectionInfos::new(&xs, 1, &r);
+        assert_eq!(w.refracted_color(&comps, 5), Color::black());
     }
 }
