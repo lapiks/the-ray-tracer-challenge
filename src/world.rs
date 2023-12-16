@@ -40,18 +40,18 @@ impl World {
     }
 
     pub fn color_at(&self, ray: &Ray, remaining: u8) -> Color {
-        if let Some(intersection) = self
-            .intersects(ray)
-            .hit() {
-                let infos = IntersectionInfos::new(&intersection, &ray);
-                return self.shade_hit(&infos, remaining);
-            }
-
-        Color::black()
+        let intersections = self.intersects(ray);
+        match intersections.hit_index() {
+            Some(index) => {
+                let infos = IntersectionInfos::new(&intersections, index, &ray);
+                self.shade_hit(&infos, remaining)
+            },
+            None => Color::black(),
+        }
     }
 
     fn intersects(&self, ray: &Ray) -> Intersections{
-        let mut intersections = Intersections::new_empty();
+        let mut intersections = Intersections::new();
         for object in &self.objects {
             intersections
                 .append(
@@ -205,7 +205,8 @@ pub mod tests {
         );
         let s = w.objects.get(0).unwrap();
         let i = Intersection::new(4.0, s);
-        let comps = IntersectionInfos::new(&i, &r);
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         let c = w.shade_hit(&comps, 1);
         assert_eq!(c, Color::new(0.38066, 0.47583, 0.2855));
     }
@@ -227,7 +228,8 @@ pub mod tests {
         );
         let s = w.objects.get(1).unwrap();
         let i = Intersection::new(0.5, s);
-        let comps = IntersectionInfos::new(&i, &r);
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         let c = w.shade_hit(&comps, 1);
         assert_eq!(c, Color::new(0.90498, 0.90498, 0.90498));
     }
@@ -255,7 +257,8 @@ pub mod tests {
         );
 
         let i = Intersection::new(4.0, &s2);
-        let comps = IntersectionInfos::new(&i, &r);
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         let c = w.shade_hit(&comps, 1);
         assert_eq!(c, Color::new(0.1, 0.1, 0.1));
     }
@@ -343,7 +346,8 @@ pub mod tests {
                 .with_ambient(1.0)   
         );
         let i = Intersection::new(1.0, &s);
-        let comps = IntersectionInfos::new(&i, &r); 
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         assert_eq!(w.reflected_color(&comps, 1), Color::black());
     }
 
@@ -364,7 +368,8 @@ pub mod tests {
             dvec3(0.0, -2.0_f64.sqrt()/2.0, 2.0_f64.sqrt()/2.0)
         );
         let i = Intersection::new(2.0_f64.sqrt(), &o);
-        let comps = IntersectionInfos::new(&i, &r); 
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         assert_eq!(w.reflected_color(&comps, 5), Color::new(0.19032, 0.2379, 0.14274));
     }
 
@@ -385,7 +390,8 @@ pub mod tests {
             dvec3(0.0, -2.0_f64.sqrt()/2.0, 2.0_f64.sqrt()/2.0)
         );
         let i = Intersection::new(2.0_f64.sqrt(), &o);
-        let comps = IntersectionInfos::new(&i, &r); 
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         assert_eq!(w.shade_hit(&comps, 5), Color::new(0.87677, 0.92436, 0.82918));
     }
 
@@ -436,7 +442,8 @@ pub mod tests {
             dvec3(0.0, -2.0_f64.sqrt()/2.0, 2.0_f64.sqrt()/2.0)
         );
         let i = Intersection::new(2.0_f64.sqrt(), &o);
-        let comps = IntersectionInfos::new(&i, &r); 
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         assert_eq!(w.reflected_color(&comps, 0), Color::black());
     }
 }

@@ -56,22 +56,21 @@ pub struct Intersections<'a> {
 }
 
 impl<'a> Intersections<'a> {
-    pub fn new_empty() -> Self {
-        Self {
+    pub fn new() -> Self {
+        Self {  
             intersections: Vec::default()
         }
     }
 
-    pub fn new(intersections: Vec<Intersection<'a>>) -> Self {
-        Self {  
-            intersections: intersections
-        }
-    }
-
-    pub fn with_capacity(size: usize) -> Self {
+    pub fn from_capacity(size: usize) -> Self {
         Self {
             intersections: Vec::with_capacity(size)
         }
+    }
+
+    pub fn with_intersections(mut self, intersections: Vec<Intersection<'a>>) -> Self {
+        self.intersections = intersections;
+        self
     }
 
     pub fn push(&mut self, intersection: &Intersection<'a>) {
@@ -79,7 +78,7 @@ impl<'a> Intersections<'a> {
     }
 
     pub fn append(&mut self, other: Intersections<'a>) {
-        self.intersections.append(&mut other.get_all());
+        self.intersections.append(&mut other.move_all());
     }
 
     pub fn sort(mut self) -> Self {
@@ -91,6 +90,10 @@ impl<'a> Intersections<'a> {
         self.intersections.iter().find(|i| i.t >= 0.0)
     }
 
+    pub fn hit_index(&self) -> Option<usize> {
+        self.intersections.iter().position(|i| i.t >= 0.0)
+    }
+
     pub fn count(&self) -> usize {
         self.intersections.len()
     }
@@ -99,8 +102,12 @@ impl<'a> Intersections<'a> {
         self.intersections.get(index)
     }
 
-    pub fn get_all(self) -> Vec<Intersection<'a>> {
+    pub fn move_all(self) -> Vec<Intersection<'a>> {
         self.intersections
+    }
+
+    pub fn get_all(&self) -> &Vec<Intersection<'a>> {
+        &self.intersections
     }
 }
 
@@ -113,10 +120,13 @@ pub struct IntersectionInfos<'a> {
     pub normalv: DVec3,
     pub reflectv: DVec3,
     pub inside: bool,
+    pub n: (f64, f64)
 }
 
 impl<'a> IntersectionInfos<'a> {
-    pub fn new(intersection: &Intersection<'a>, ray: &Ray) -> Self {
+    pub fn new(intersections: &'a Intersections<'a>, intersection_index: usize, ray: &Ray) -> Self {
+        let intersection = intersections.get(intersection_index).unwrap();
+
         let point = ray.at(intersection.t);
         let object = intersection.object;
         let eyev = -ray.direction;
@@ -128,6 +138,37 @@ impl<'a> IntersectionInfos<'a> {
         }
         let over_point = point + normalv * EPSILON;
         let reflectv = ray.direction - normalv * 2.0 * ray.direction.dot(normalv);
+
+        // find n1 n2
+        let (mut n1, mut n2) = (0.0, 0.0);
+        let mut containers: Vec<&Object> = Vec::default();
+        for (current_index, i) in intersections.get_all().iter().enumerate() {
+            if current_index == intersection_index {
+                if containers.is_empty() {
+                    n1 = 1.0;
+                } else {
+                    n1 = containers.last().unwrap().material().refractive_index();
+                }
+            }
+
+            match containers
+                .iter()
+                .position(|&object| object == i.object) {
+                    Some(pos) => {
+                        containers.remove(pos);
+                    }
+                    None => containers.push(i.object),
+            }
+
+            if current_index == intersection_index {
+                if containers.is_empty() {
+                    n2 = 1.0;
+                } else {
+                    n2 = containers.last().unwrap().material().refractive_index();
+                }
+            }
+        }
+
         Self {
             t: intersection.t,
             object,
@@ -137,6 +178,7 @@ impl<'a> IntersectionInfos<'a> {
             normalv,
             reflectv,
             inside,
+            n: (n1, n2)
         }
     }
 }
@@ -145,7 +187,7 @@ impl<'a> IntersectionInfos<'a> {
 mod tests {
     use glam::dvec3;
 
-    use crate::{shapes::{sphere::Sphere, shape::Shape, Plane}, ray::Ray};
+    use crate::{shapes::{sphere::Sphere, shape::Shape, Plane}, ray::Ray, Material};
 
     use super::*;
 
@@ -165,7 +207,7 @@ mod tests {
         let o = Object::new(Shape::Sphere(s));
         let i1 = Intersection::new(1.0, &o);
         let i2 = Intersection::new(2.0, &o);
-        let xs = Intersections::new(vec![i1.clone(), i2.clone()]);
+        let xs = Intersections::new().with_intersections(vec![i1.clone(), i2.clone()]);
         assert_eq!(xs.count(), 2);
         assert_eq!(xs.get(0), Some(&i1));
         assert_eq!(xs.get(1), Some(&i2));
@@ -177,7 +219,7 @@ mod tests {
         let o = Object::new(Shape::Sphere(s));
         let i1 = Intersection::new(1.0, &o);
         let i2 = Intersection::new(2.0, &o);
-        let xs = Intersections::new(vec![i1.clone(), i2.clone()]).sort();
+        let xs = Intersections::new().with_intersections(vec![i1.clone(), i2.clone()]).sort();
         let i = xs.hit();
         assert_eq!(i, Some(&i1));
     }
@@ -188,7 +230,7 @@ mod tests {
         let o = Object::new(Shape::Sphere(s));
         let i1 = Intersection::new(-1.0, &o);
         let i2 = Intersection::new(1.0, &o);
-        let xs = Intersections::new(vec![i1.clone(), i2.clone()]).sort();
+        let xs = Intersections::new().with_intersections(vec![i1.clone(), i2.clone()]).sort();
         let i = xs.hit();
         assert_eq!(i, Some(&i2));
     }
@@ -199,7 +241,7 @@ mod tests {
         let o = Object::new(Shape::Sphere(s));
         let i1 = Intersection::new(-2.0, &o);
         let i2 = Intersection::new(-1.0, &o);
-        let xs = Intersections::new(vec![i1.clone(), i2.clone()]).sort();
+        let xs = Intersections::new().with_intersections(vec![i1.clone(), i2.clone()]).sort();
         let i = xs.hit();
         assert_eq!(i, None);
     }
@@ -212,7 +254,7 @@ mod tests {
         let i2 = Intersection::new(7.0, &o);
         let i3 = Intersection::new(-3.0, &o);
         let i4 = Intersection::new(2.0, &o);
-        let xs = Intersections::new(vec![i1.clone(), i2.clone(), i3.clone(), i4.clone()]).sort();
+        let xs = Intersections::new().with_intersections(vec![i1.clone(), i2.clone(), i3.clone(), i4.clone()]).sort();
         let i = xs.hit();
         assert_eq!(i, Some(&i4));
     }
@@ -225,7 +267,8 @@ mod tests {
         );
         let o = Object::new(Shape::Sphere(Sphere::default()));
         let i = Intersection::new(4.0,&o);
-        let comps = IntersectionInfos::new(&i, &r);
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         assert_eq!(comps.t, i.t);
         assert_eq!(comps.object, i.object);
         assert_eq!(comps.point, dvec3(0.0, 0.0, -1.0));
@@ -241,7 +284,8 @@ mod tests {
         );
         let o = Object::new(Shape::Sphere(Sphere::default()));
         let i = Intersection::new(4.0,&o);
-        let comps = IntersectionInfos::new(&i, &r);
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         assert_eq!(comps.inside, false);
     }
 
@@ -253,7 +297,8 @@ mod tests {
         );
         let o = Object::new(Shape::Sphere(Sphere::default()));
         let i = Intersection::new(1.0,&o);
-        let comps = IntersectionInfos::new(&i, &r);
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         assert_eq!(comps.t, i.t);
         assert_eq!(comps.object, i.object);
         assert_eq!(comps.point, dvec3(0.0, 0.0, 1.0));
@@ -271,7 +316,8 @@ mod tests {
         let o = Object::new(Shape::Sphere(Sphere::default()))
             .with_translation(0.0, 0.0, 1.0);
         let i = Intersection::new(5.0,&o);
-        let comps = IntersectionInfos::new(&i, &r);
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         assert!(comps.over_point.z < -EPSILON/2.0);
         assert!(comps.point.z > comps.over_point.z);
     }
@@ -285,7 +331,58 @@ mod tests {
             dvec3(0.0, -2.0_f64.sqrt()/2.0, 2.0_f64.sqrt()/2.0)
         );
         let i = Intersection::new(2.0_f64.sqrt(), &o);
-        let comps = IntersectionInfos::new(&i, &r);
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
         assert_eq!(comps.reflectv, dvec3(0.0, 2.0_f64.sqrt()/2.0, 2.0_f64.sqrt()/2.0));
+    }
+
+    fn glass_sphere() -> Object {
+        Object::new(Shape::Sphere(Sphere::default()))
+            .with_material(
+                Material::default()
+                .with_transparency(1.0)
+                .with_refractive_index(1.5)
+            )
+    }
+
+    #[test]
+    fn finding_n1_and_n2_at_various_intersections() {
+        let a = glass_sphere()
+            .with_scale(2.0, 2.0, 2.0);
+        let b = glass_sphere()
+            .with_translation(0.0, 0.0, -0.25)
+            .with_material(
+                a.material().clone()
+                    .with_refractive_index(2.0)
+            );
+        let c = glass_sphere()
+            .with_translation(0.0, 0.0, 0.25)
+            .with_material(
+                a.material().clone()
+                    .with_refractive_index(2.5)
+            );
+        let r = Ray::new(
+            dvec3(0.0, 0.0, -4.0),
+            dvec3(0.0, 0.0, 1.0)
+        );
+
+        let xs = Intersections::new()
+            .with_intersections(
+                vec![
+                    Intersection::new(2.0, &a),
+                    Intersection::new(2.75, &b),
+                    Intersection::new(3.25, &c),
+                    Intersection::new(4.75, &b),
+                    Intersection::new(5.25, &c),
+                    Intersection::new(6.0, &a),
+                ]
+            );
+
+        assert_eq!(IntersectionInfos::new(&xs, 0, &r).n, (1.0, 1.5));
+        assert_eq!(IntersectionInfos::new(&xs, 1, &r).n, (1.5, 2.0));
+        assert_eq!(IntersectionInfos::new(&xs, 2, &r).n, (2.0, 2.5));
+        assert_eq!(IntersectionInfos::new(&xs, 3, &r).n, (2.5, 2.5));
+        assert_eq!(IntersectionInfos::new(&xs, 4, &r).n, (2.5, 1.5));
+        assert_eq!(IntersectionInfos::new(&xs, 5, &r).n, (1.5, 1.0));
     }
 }

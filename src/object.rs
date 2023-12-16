@@ -80,7 +80,7 @@ impl Object {
     pub fn intersect(&self, ray: &Ray) -> Intersections {
         let transformed_ray = ray.transform(&self.inverse_transform);
         let ts = self.shape.intersect(&transformed_ray);
-        let mut xs = Intersections::with_capacity(ts.len());
+        let mut xs = Intersections::from_capacity(ts.len());
         for t in ts {
             xs.push(
                 &Intersection::new(
