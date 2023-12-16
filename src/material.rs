@@ -59,6 +59,46 @@ impl Material {
         self
     }
 
+    pub fn set_pattern(&mut self, pattern: PatternObject) -> &mut Self {
+        self.pattern = pattern;
+        self
+    }
+
+    pub fn set_ambient(&mut self, ambient: f64) -> &mut Self {
+        self.ambient = ambient;
+        self
+    }
+
+    pub fn set_diffuse(&mut self, diffuse: f64) -> &mut Self {
+        self.diffuse = diffuse;
+        self
+    }
+
+    pub fn set_specular(&mut self, specular: f64) -> &mut Self {
+        self.specular = specular;
+        self
+    }
+
+    pub fn set_shininess(&mut self, shininess: f64) -> &mut Self {
+        self.shininess = shininess;
+        self
+    }
+
+    pub fn set_reflective(&mut self, reflective: f64) -> &mut Self {
+        self.reflective = reflective;
+        self
+    }
+
+    pub fn set_transparency(&mut self, transparency: f64) -> &mut Self {
+        self.transparency = transparency;
+        self
+    }
+
+    pub fn set_refractive_index(&mut self, refractive_index: f64) -> &mut Self {
+        self.refractive_index = refractive_index;
+        self
+    }
+
     pub fn ambient(&self) -> f64 {
         self.ambient
     }

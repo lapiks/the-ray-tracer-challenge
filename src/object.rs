@@ -69,6 +69,10 @@ impl Object {
         &self.material
     }
 
+    pub fn material_mut(&mut self) -> &mut Material {
+        &mut self.material
+    }
+
     pub fn transform(&self) -> &DMat4 {
         &self.transform
     }
