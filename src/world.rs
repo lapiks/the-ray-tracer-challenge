@@ -82,7 +82,7 @@ impl World {
                 );
         }
 
-        color + self.reflected_color(infos, remaining)
+        color + self.reflected_color(infos, remaining) + self.refracted_color(infos, remaining)
     }
 
     fn is_shadowed(&self, world_point: DVec3, light_pos: DVec3) -> bool {
@@ -577,5 +577,41 @@ pub mod tests {
         );
         let comps = IntersectionInfos::new(&xs, 2, &r);
         assert_eq!(w.refracted_color(&comps, 5), Color::new(0.0, 0.99888, 0.04725));
+    }
+
+    #[test]
+    fn shade_hit_with_a_transparent_material() {
+        let mut w = default_world();
+        w.push_object(
+            Object::new(Shape::Plane(Plane::default()))
+            .   with_translation(0.0, -1.0, 0.0)
+                .with_material(
+                    Material::default()
+                        .with_transparency(0.5)
+                        .with_refractive_index(1.5)
+                )
+        );
+        w.push_object(
+            Object::new(Shape::Sphere(Sphere::default()))
+                .with_translation(0.0, -3.5, -0.5)
+                .with_material(
+                    Material::default()
+                        .with_pattern(
+                            PatternObject::new(
+                                Pattern::Plain(PlainPattern::new(Color::red()))
+                            )
+                        )
+                        .with_ambient(0.5)
+                )
+        );
+        let floor = w.object(2).unwrap();
+        let r = Ray::new(
+            dvec3(0.0, 0.0, -3.0),
+            dvec3(0.0, -2.0_f64.sqrt()/2.0, 2.0_f64.sqrt()/2.0)
+        );
+        let i = Intersection::new(2.0_f64.sqrt(), floor);
+        let xs = Intersections::new().with_intersections(vec![i.clone()]);
+        let comps = IntersectionInfos::new(&xs, 0, &r);
+        assert_eq!(w.shade_hit(&comps, 5), Color::new(0.93642, 0.68642, 0.68642));
     }
 }
