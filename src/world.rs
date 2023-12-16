@@ -496,15 +496,14 @@ pub mod tests {
 
     #[test]
     fn the_refracted_color_at_the_maximum_recursive_depth() {
-        let w = default_world();
+        let mut w = default_world();
+
+        w.object_mut(0).unwrap()
+            .material_mut()
+            .set_transparency(1.0)
+            .set_refractive_index(1.5);
+
         let o = w.object(0).unwrap();
-        let o_copy = o.clone()
-            .with_material( 
-                o.material()
-                .clone()
-                .with_transparency(1.0)
-                .with_refractive_index(1.5)
-        );
         
         let r = Ray::new(
             dvec3(0.0, 0.0, -5.0),
@@ -512,8 +511,8 @@ pub mod tests {
         );
         let xs = Intersections::new().with_intersections(
             vec![
-                Intersection::new(4.0, &o_copy),
-                Intersection::new(6.0, &o_copy)
+                Intersection::new(4.0, &o),
+                Intersection::new(6.0, &o)
             ]
         );
         let comps = IntersectionInfos::new(&xs, 0, &r);
@@ -522,15 +521,14 @@ pub mod tests {
 
     #[test]
     fn the_refracted_color_under_total_internal_reflection() {
-        let w = default_world();
+        let mut w  = default_world();
+        
+        w.object_mut(0).unwrap()
+            .material_mut()
+            .set_transparency(1.0)
+            .set_refractive_index(1.5);
+
         let o = w.object(0).unwrap();
-        let o_copy = o.clone()
-            .with_material( 
-                o.material()
-                .clone()
-                .with_transparency(1.0)
-                .with_refractive_index(1.5)
-        );
 
         let r = Ray::new(
             dvec3(0.0, 0.0, 2.0_f64.sqrt()/2.0),
@@ -538,8 +536,8 @@ pub mod tests {
         );
         let xs = Intersections::new().with_intersections(
             vec![
-                Intersection::new(-2.0_f64.sqrt()/2.0, &o_copy),
-                Intersection::new(2.0_f64.sqrt()/2.0, &o_copy)
+                Intersection::new(-2.0_f64.sqrt()/2.0, &o),
+                Intersection::new(2.0_f64.sqrt()/2.0, &o)
             ]
         );
         let comps = IntersectionInfos::new(&xs, 1, &r);
@@ -550,21 +548,17 @@ pub mod tests {
     fn the_refracted_color_with_a_refracted_ray() {
         let mut w = default_world();
 
-        {
-            let a = w.object_mut(0).unwrap();
-            a.material_mut()
-                .set_ambient(1.0)
-                .set_pattern(
-                    PatternObject::new(Pattern::Test(TestPattern::new()))
-                );
-        }
+        w.object_mut(0).unwrap()
+            .material_mut()
+            .set_ambient(1.0)
+            .set_pattern(
+                PatternObject::new(Pattern::Test(TestPattern::new()))
+            );
         
-        {
-            let b = w.object_mut(1).unwrap();
-            b.material_mut()
-                .set_transparency(1.0)
-                .set_refractive_index(1.5);
-        }
+        w.object_mut(1).unwrap()
+            .material_mut()
+            .set_transparency(1.0)
+            .set_refractive_index(1.5);
 
         let a = w.object(0).unwrap();
         let b = w.object(1).unwrap();
