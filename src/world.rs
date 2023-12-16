@@ -108,6 +108,15 @@ impl World {
             remaining - 1
         ) * reflective
     }
+
+    fn refracted_color(&self, infos: &IntersectionInfos, remaining: u8) -> Color {
+        let transparency = infos.object.material().transparency();
+        if remaining < 1 || transparency == 0.0 {
+            return Color::black();
+        }
+
+        Color::white()
+    }
 }
 
 #[cfg(test)]
@@ -445,5 +454,45 @@ pub mod tests {
         let xs = Intersections::new().with_intersections(vec![i.clone()]);
         let comps = IntersectionInfos::new(&xs, 0, &r);
         assert_eq!(w.reflected_color(&comps, 0), Color::black());
+    }
+
+    #[test]
+    fn the_refracted_color_with_an_opaque_object() {
+        let w = default_world();
+        let o = w.object(0).unwrap();
+        let r = Ray::new(
+            dvec3(0.0, 0.0, -5.0),
+            dvec3(0.0, 0.0, 1.0)
+        );
+        let xs = Intersections::new().with_intersections(
+            vec![
+                Intersection::new(4.0, &o),
+                Intersection::new(6.0, &o)
+            ]
+        );
+        let comps = IntersectionInfos::new(&xs, 0, &r);
+        assert_eq!(w.refracted_color(&comps, 5), Color::black());
+    }
+
+    #[test]
+    fn the_refracted_color_at_the_maximum_recursive_depth() {
+        let w = default_world();
+        let o = w.object(0).unwrap();
+        o.material()
+            .clone()
+            .with_transparency(1.0)
+            .with_refractive_index(1.5);
+        let r = Ray::new(
+            dvec3(0.0, 0.0, -5.0),
+            dvec3(0.0, 0.0, 1.0)
+        );
+        let xs = Intersections::new().with_intersections(
+            vec![
+                Intersection::new(4.0, &o),
+                Intersection::new(6.0, &o)
+            ]
+        );
+        let comps = IntersectionInfos::new(&xs, 0, &r);
+        assert_eq!(w.refracted_color(&comps, 0), Color::black());
     }
 }
