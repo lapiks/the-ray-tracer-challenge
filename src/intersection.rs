@@ -184,6 +184,23 @@ impl<'a> IntersectionInfos<'a> {
             n: (n1, n2)
         }
     }
+
+    pub fn schlick(&self) -> f64 {
+        let mut cos = self.eyev.dot(self.normalv);
+        if self.n.0 > self.n.1 {
+            let n = self.n.0 / self.n.1;
+            let sin2_t = n * n * (1.0 - cos * cos);
+            if sin2_t > 1.0 {
+                return 1.0;
+            }
+
+            cos = (1.0 - sin2_t).sqrt(); 
+        }
+
+        let r0 = ((self.n.0 - self.n.1) / (self.n.0 + self.n.1)).powi(2);
+
+        return r0 + (1.0 - r0) * (1.0 - cos).powi(5);
+    }
 }
 
 #[cfg(test)]
@@ -401,5 +418,64 @@ mod tests {
         let infos = IntersectionInfos::new(&xs, 0, &r);
         assert!(infos.under_point.z > EPSILON / 2.0);
         assert!(infos.point.z < infos.under_point.z);
+    }
+
+    #[test]
+    fn the_schlick_approximation_user_total_internal_reflection() {
+        let s = glass_sphere();
+
+        let r = Ray::new(
+            dvec3(0.0, 0.0, 2.0_f64.sqrt()/2.0), 
+            dvec3(0.0, 1.0, 0.0)
+        );
+        
+        let xs = Intersections::new().with_intersections(
+            vec![
+                Intersection::new(-2.0_f64.sqrt()/2.0, &s),
+                Intersection::new(2.0_f64.sqrt()/2.0, &s)
+            ]
+        );
+        let infos = IntersectionInfos::new(&xs, 1, &r);
+
+        assert_eq!(infos.schlick(), 1.0);
+    }
+
+    #[test]
+    fn the_schlick_approximation_with_a_perpendicular_viewing_angle() {
+        let s = glass_sphere();
+
+        let r = Ray::new(
+            dvec3(0.0, 0.0, 0.0), 
+            dvec3(0.0, 1.0, 0.0)
+        );
+        
+        let xs = Intersections::new().with_intersections(
+            vec![
+                Intersection::new(-1.0, &s),
+                Intersection::new(1.0, &s)
+            ]
+        );
+        let infos = IntersectionInfos::new(&xs, 1, &r);
+
+        assert!((infos.schlick() - 0.04).abs() < EPSILON);
+    }
+
+    #[test]
+    fn the_schlick_approximation_with_small_angle_and_n2_greater_than_n1() {
+        let s = glass_sphere();
+
+        let r = Ray::new(
+            dvec3(0.0, 0.99, -2.0), 
+            dvec3(0.0, 0.0, 1.0)
+        );
+        
+        let xs = Intersections::new().with_intersections(
+            vec![
+                Intersection::new(1.8589, &s)
+            ]
+        );
+        let infos = IntersectionInfos::new(&xs, 0, &r);
+
+        assert!((infos.schlick() - 0.48873).abs() < EPSILON);
     }
 }
