@@ -1,4 +1,7 @@
+use std::time::Instant;
+
 use glam::{DVec3, DMat4, dvec3};
+use rayon::prelude::*;
 
 use crate::{Canvas, ray::Ray, World};
 
@@ -51,13 +54,20 @@ impl Camera {
 
     pub fn render(&self, world: &World, max_recursions: u8) -> Canvas {
         let mut canvas = Canvas::new(self.width, self.height);
+        let now = Instant::now();
 
-        for y in 0..self.height-1 {
-            for x in 0..self.width-1 {
+        canvas
+            .pixels_mut()
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(i, color)| {
+                let y = i / self.width;
+                let x = i - y * self.width;
                 let ray = self.ray_for_pixel(x, y);
-                canvas[y][x] = world.color_at(&ray, max_recursions);
-            }
-        }
+                *color = world.color_at(&ray, max_recursions);
+            });
+
+        println!("Rendering finished in {:.2?} seconds", now.elapsed());
 
         canvas
     }

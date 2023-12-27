@@ -47,6 +47,10 @@ impl Canvas {
 
         img.save(path)
     }
+
+    pub fn pixels_mut(&mut self) -> &mut Vec<Color> {
+        &mut self.pixels
+    }
 }
 
 impl std::ops::Index<usize> for Canvas {
