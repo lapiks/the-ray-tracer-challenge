@@ -43,14 +43,14 @@ impl World {
         self.objects.get_mut(index)
     }
 
-    pub fn color_at(&self, ray: &Ray, remaining: u8) -> Color {
+    pub fn color_at(&self, ray: &Ray, remaining: u8) -> Option<Color> {
         let intersections = self.intersects(ray);
         match intersections.hit_index() {
             Some(index) => {
                 let infos = IntersectionInfos::new(&intersections, index, &ray);
-                self.shade_hit(&infos, remaining)
+                Some(self.shade_hit(&infos, remaining))
             },
-            None => Color::black(),
+            None => None
         }
     }
 
@@ -119,7 +119,7 @@ impl World {
                 infos.reflectv
             ),
             remaining - 1
-        ) * reflective
+        ).unwrap_or_default() * reflective
     }
 
     fn refracted_color(&self, infos: &IntersectionInfos, remaining: u8) -> Color {
@@ -144,7 +144,7 @@ impl World {
             infos.normalv * (ratio * cos_i - cos_t) - infos.eyev * ratio
         );
 
-        self.color_at(&refracted_ray, remaining - 1) * transparency
+        self.color_at(&refracted_ray, remaining - 1).unwrap_or_default() * transparency
     }
 }
 
@@ -309,7 +309,7 @@ pub mod tests {
             dvec3(0.0, 1.0, 0.0)
         );
         let c = w.color_at(&r, 1);
-        assert_eq!(c, Color::black());
+        assert_eq!(c, None);
     }
 
     #[test]
@@ -319,7 +319,7 @@ pub mod tests {
             dvec3(0.0, 0.0, -5.0),
             dvec3(0.0, 0.0, 1.0)
         );
-        let c = w.color_at(&r, 1);
+        let c = w.color_at(&r, 1).unwrap_or_default();
         assert_eq!(c, Color::new(0.38066, 0.47583, 0.2855));
     }
 
@@ -343,7 +343,7 @@ pub mod tests {
             dvec3(0.0, 0.0, 0.75),
             dvec3(0.0, 0.0, -1.0)
         );
-        let c = w.color_at(&r, 1);
+        let c = w.color_at(&r, 1).unwrap_or_default();
         assert_eq!(c, PlainPattern::default().color());
     }
 

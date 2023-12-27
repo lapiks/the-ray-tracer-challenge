@@ -3,7 +3,7 @@ use std::time::Instant;
 use glam::{DVec3, DMat4, dvec3};
 use rayon::prelude::*;
 
-use crate::{Canvas, ray::Ray, World};
+use crate::{Canvas, ray::Ray, World, Color};
 
 pub struct Camera {
     width: usize,
@@ -14,6 +14,7 @@ pub struct Camera {
     pixel_size: f64,
     half_width: f64,
     half_height: f64,
+    background: Color,
 }
 
 impl Camera {
@@ -43,12 +44,18 @@ impl Camera {
             pixel_size,
             half_width,
             half_height,
+            background: Color::black(),
         }
     }
 
     pub fn with_transform(mut self, transform: DMat4) -> Self {
         self.transform = transform;
         self.transform_inverse = transform.inverse();
+        self
+    }
+
+    pub fn with_background(mut self, color: Color) -> Self {
+        self.background = color;
         self
     }
 
@@ -64,7 +71,9 @@ impl Camera {
                 let y = i / self.width;
                 let x = i - y * self.width;
                 let ray = self.ray_for_pixel(x, y);
-                *color = world.color_at(&ray, max_recursions);
+                *color = world
+                    .color_at(&ray, max_recursions)
+                    .unwrap_or(self.background);
             });
 
         println!("Rendering finished in {:.2?} seconds", now.elapsed());

@@ -35,6 +35,12 @@ impl Color {
     }
 }
 
+impl Default for Color {
+    fn default() -> Self {
+        Color::black()
+    }
+}
+
 impl PartialEq for Color {
     fn eq(&self, other: &Color) -> bool {
             (self.r - other.r).abs() < 1.0e-3 &&
