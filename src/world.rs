@@ -486,7 +486,7 @@ pub mod tests {
     }
 
     #[test]
-    fn the_refracted_color_with_an_opaque_object() {
+    fn the_refracted_color_with_an_opaque_surface() {
         let w = default_world();
         let o = w.object(0).unwrap();
         let r = Ray::new(

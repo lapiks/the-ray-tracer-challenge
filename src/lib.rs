@@ -2,11 +2,14 @@ pub mod shapes {
     pub use shape::Shape;
     pub use sphere::Sphere;
     pub use plane::Plane;
+    pub use cube::Cube;
+    pub use group::Group;
 
     pub mod shape;
     pub mod sphere;
     pub mod plane;
     pub mod cube;
+    pub mod group;
     mod test_shape;
 }
 

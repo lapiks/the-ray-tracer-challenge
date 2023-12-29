@@ -43,8 +43,6 @@ impl Hittable for Cube {
         } else {
             vec![tmin, tmax]
         }
-
-        
     }
 
     fn normal_at(&self, point: DVec3) -> DVec3 {
