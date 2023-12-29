@@ -1,12 +1,13 @@
 use glam::DVec3;
 
 use crate::ray::Ray;
-use super::{sphere::Sphere, test_shape::TestShape, plane::Plane};
+use super::{sphere::Sphere, test_shape::TestShape, plane::Plane, cube::Cube};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Shape {
     Sphere(Sphere), 
     Plane(Plane),
+    Cube(Cube),
     TestShape(TestShape),
 }
 
@@ -20,6 +21,7 @@ impl Hittable for Shape {
         match self {
             Shape::Sphere(s) => s.intersect(ray),
             Shape::Plane(p) => p.intersect(ray),
+            Shape::Cube(c) => c.intersect(ray),
             Shape::TestShape(s) => s.intersect(ray),
         }
     }
@@ -28,6 +30,7 @@ impl Hittable for Shape {
         match self {
             Shape::Sphere(s) => s.normal_at(point),
             Shape::Plane(p) => p.normal_at(point),
+            Shape::Cube(c) => c.normal_at(point),
             Shape::TestShape(s) => s.normal_at(point),
         }
     }

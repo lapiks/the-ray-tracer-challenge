@@ -12,11 +12,13 @@ pub struct Plane {}
 impl Hittable for Plane {
     fn intersect(&self, ray: &Ray) -> Vec<f64> {
         if ray.direction.y.abs() < EPSILON {
-            return vec![]
+            vec![]
+        } else {
+            vec![
+                -ray.origin.y / ray.direction.y
+            ]
         }
-        vec![
-            -ray.origin.y / ray.direction.y
-        ]
+        
     }
 
     fn normal_at(&self, _: DVec3) -> DVec3 {

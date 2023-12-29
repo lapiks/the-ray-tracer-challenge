@@ -6,6 +6,7 @@ pub mod shapes {
     pub mod shape;
     pub mod sphere;
     pub mod plane;
+    pub mod cube;
     mod test_shape;
 }
 
