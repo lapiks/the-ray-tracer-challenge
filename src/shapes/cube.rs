@@ -48,8 +48,14 @@ impl Hittable for Cube {
     }
 
     fn normal_at(&self, point: DVec3) -> DVec3 {
-        // for a unit sphere at 0,0,0
-        point.normalize()
+        let maxc = f64::max(point.x.abs(), f64::max(point.y.abs(), point.z.abs()));
+        if maxc == point.x.abs() { 
+            DVec3::new(point.x, 0.0, 0.0)
+        } else if maxc == point.y.abs() {
+            DVec3::new(0.0, point.y, 0.0)
+        } else {
+            DVec3::new(0.0, 0.0, point.z)
+        }
     }
 }
 
@@ -120,6 +126,25 @@ mod tests {
     
             let xs = c.intersect(&r);
             assert_eq!(xs.len(), 0);
+        }
+    }
+
+    #[test]
+    fn the_normal_on_the_surface_of_a_cube() {
+        let c = Cube::default();
+        let points_normals = vec![
+            (DVec3::new(1.0, 0.5, -0.8), DVec3::new(1.0, 0.0, 0.0)), 
+            (DVec3::new(-1.0, -0.2, 0.9), DVec3::new(-1.0, 0.0, 0.0)), 
+            (DVec3::new(-0.4, 1.0, -0.1), DVec3::new(0.0, 1.0, 0.0)), 
+            (DVec3::new(0.3, -1.0, -0.7), DVec3::new(0.0, -1.0, 0.0)), 
+            (DVec3::new(-0.6, 0.3, 1.0), DVec3::new(0.0, 0.0, 1.0)), 
+            (DVec3::new(0.4, 0.4, -1.0), DVec3::new(0.0, 0.0, -1.0)), 
+            (DVec3::new(1.0, 1.0, 1.0), DVec3::new(1.0, 0.0, 0.0)), 
+            (DVec3::new(-1.0, -1.0, -1.0), DVec3::new(-1.0, 0.0, 0.0)), 
+        ];
+
+        for point_normal in points_normals {
+            assert_eq!(c.normal_at(point_normal.0), point_normal.1);
         }
     }
 }
