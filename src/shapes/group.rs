@@ -9,11 +9,11 @@ pub struct Group {
 }
 
 impl Hittable for Group {
-    fn intersect(&self, ray: &Ray) -> Vec<f64> {
+    fn intersect(&self, _: &Ray) -> Vec<f64> {
         vec![]
     }
 
-    fn normal_at(&self, point: DVec3) -> DVec3 {
+    fn normal_at(&self, _: DVec3) -> DVec3 {
         DVec3::default()
     }
 }
@@ -34,12 +34,10 @@ impl Group {
 
 #[cfg(test)]
 mod tests {
-    use glam::{DVec3, DMat4};
+    use glam::DMat4;
     use crate::shapes::Shape;
 
     use super::*;
-
-    const EPSILON: f64 = 0.00001;
 
     #[test]
     fn creating_a_new_group() {

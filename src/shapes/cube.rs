@@ -74,8 +74,6 @@ mod tests {
     use glam::DVec3;
     use super::*;
 
-    const EPSILON: f64 = 0.00001;
-
     #[test]
     fn a_ray_intersects_a_cube() {
         let datas = vec![
