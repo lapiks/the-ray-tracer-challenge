@@ -30,8 +30,23 @@ impl Triangle {
 }
 
 impl Hittable for Triangle {
-    fn intersect(&self, _: &Ray) -> Vec<f64> {
-        vec![]
+    fn intersect(&self, ray: &Ray) -> Vec<f64> {
+        let dir_cross_e2 = ray.direction.cross(self.e2);
+        let det = self.e1.dot(dir_cross_e2);
+        if det.abs() < f64::EPSILON { return vec![] }
+
+        let f = 1.0 / det;
+        let p1_to_origin = ray.origin - self.p1;
+        let u = f * p1_to_origin.dot(dir_cross_e2);
+        if u < 0.0 || u > 1.0 { return vec![] }
+
+        let origin_cross_e1 = p1_to_origin.cross(self.e1);
+        let v = f * ray.direction.dot(origin_cross_e1);
+        if v < 0.0 || u + v > 1.0 { return vec![] }
+
+        vec![
+            f * self.e2.dot(origin_cross_e1)
+        ]
     }
 
     fn normal_at(&self, _: DVec3) -> DVec3 {
@@ -71,5 +86,81 @@ mod tests {
         assert_eq!(n1, t.normal);
         assert_eq!(n2, t.normal);
         assert_eq!(n3, t.normal);
+    }
+
+    #[test]
+    fn inersecting_a_ray_parallel_to_the_triangle() {
+        let t = Triangle::new(
+            dvec3(0.0, 1.0, 0.0),
+            dvec3(-1.0, 0.0, 0.0),
+            dvec3(1.0, 0.0, 0.0)
+        );
+        let r = Ray::new(
+            dvec3(0.0, -1.0, -2.0),
+            dvec3(0.0, 1.0, 0.0)
+        );
+        let xs = t.intersect(&r);
+        assert!(xs.is_empty());
+    }
+
+    #[test]
+    fn a_ray_misses_the_p1_p3_edge() {
+        let t = Triangle::new(
+            dvec3(0.0, 1.0, 0.0),
+            dvec3(-1.0, 0.0, 0.0),
+            dvec3(1.0, 0.0, 0.0)
+        );
+        let r = Ray::new(
+            dvec3(1.0, 1.0, -2.0),
+            dvec3(0.0, 0.0, 1.0)
+        );
+        let xs = t.intersect(&r);
+        assert!(xs.is_empty());
+    }
+
+    #[test]
+    fn a_ray_misses_the_p1_p2_edge() {
+        let t = Triangle::new(
+            dvec3(0.0, 1.0, 0.0),
+            dvec3(-1.0, 0.0, 0.0),
+            dvec3(1.0, 0.0, 0.0)
+        );
+        let r = Ray::new(
+            dvec3(-1.0, 1.0, -2.0),
+            dvec3(0.0, 0.0, 1.0)
+        );
+        let xs = t.intersect(&r);
+        assert!(xs.is_empty());
+    }
+
+    #[test]
+    fn a_ray_misses_the_p2_p3_edge() {
+        let t = Triangle::new(
+            dvec3(0.0, 1.0, 0.0),
+            dvec3(-1.0, 0.0, 0.0),
+            dvec3(1.0, 0.0, 0.0)
+        );
+        let r = Ray::new(
+            dvec3(0.0, -1.0, -2.0),
+            dvec3(0.0, 0.0, 1.0)
+        );
+        let xs = t.intersect(&r);
+        assert!(xs.is_empty());
+    }
+
+    #[test]
+    fn a_ray_strikes_a_triangle() {
+        let t = Triangle::new(
+            dvec3(0.0, 1.0, 0.0),
+            dvec3(-1.0, 0.0, 0.0),
+            dvec3(1.0, 0.0, 0.0)
+        );
+        let r = Ray::new(
+            dvec3(0.0, 0.5, -2.0),
+            dvec3(0.0, 0.0, 1.0)
+        );
+        let xs = t.intersect(&r);
+        assert_eq!(xs.len(), 1);
+        assert_eq!(xs[0], 2.0);
     }
 }
