@@ -4,11 +4,13 @@ pub mod shapes {
     pub use plane::Plane;
     pub use cube::Cube;
     pub use group::Group;
+    pub use triangle::Triangle;
 
     pub mod shape;
     pub mod sphere;
     pub mod plane;
     pub mod cube;
+    pub mod triangle;
     pub mod group;
     mod test_shape;
 }
