@@ -2,14 +2,14 @@ use std::mem::swap;
 
 use glam::DVec3;
 
-use crate::ray::Ray;
+use crate::{ray::Ray, Object, intersection::{Intersections, Intersection}};
 use super::shape::Hittable;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Cube {}
 
 impl Hittable for Cube {
-    fn intersect(&self, ray: &Ray) -> Vec<f64> {
+    fn intersect<'a>(&self, ray: &Ray, object: &'a Object) -> Intersections<'a> {
         fn check_axis(origin: f64, direction: f64) -> (f64, f64) {
             let tmin_numerator = -1.0 - origin;
             let tmax_numerator = 1.0 - origin;
@@ -39,9 +39,12 @@ impl Hittable for Cube {
         let tmax = f64::min(xtmax, f64::min(ytmax, ztmax));
 
         if tmin > tmax {
-            Vec::default()
+            Intersections::new()
         } else {
-            vec![tmin, tmax]
+            let mut xs = Intersections::new();
+            xs.push(Intersection::new(tmin, object));
+            xs.push(Intersection::new(tmax, object));
+            xs
         }
     }
 
@@ -72,6 +75,8 @@ impl Cube {
 #[cfg(test)]
 mod tests {
     use glam::DVec3;
+    use crate::shapes::Shape;
+
     use super::*;
 
     #[test]
@@ -86,7 +91,7 @@ mod tests {
             (DVec3::new(0.0, 0.5, 0.0), DVec3::new(0.0, 0.0, 1.0), -1.0, 1.0),
         ];
 
-        let c = Cube::default();
+        let c = Object::new(Shape::Cube(Cube::default()));
 
         for data in datas {
             let r = Ray::new(
@@ -95,9 +100,9 @@ mod tests {
             );
     
             let xs = c.intersect(&r);
-            assert_eq!(xs.len(), 2);
-            assert_eq!(xs[0], data.2);
-            assert_eq!(xs[1], data.3);
+            assert_eq!(xs.count(), 2);
+            assert_eq!(xs[0].t(), data.2);
+            assert_eq!(xs[1].t(), data.3);
         }
     }
 
@@ -112,7 +117,7 @@ mod tests {
             (DVec3::new(2.0, 2.0, 0.0), DVec3::new(-1.0, 0.0, 0.0)), 
         ];
 
-        let c = Cube::default();
+        let c = Object::new(Shape::Cube(Cube::default()));
 
         for data in datas {
             let r = Ray::new(
@@ -121,7 +126,7 @@ mod tests {
             );
     
             let xs = c.intersect(&r);
-            assert_eq!(xs.len(), 0);
+            assert_eq!(xs.count(), 0);
         }
     }
 

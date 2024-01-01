@@ -1,13 +1,15 @@
 use glam::DVec3;
 
-use crate::ray::Ray;
+use crate::{ray::Ray, Object, intersection::{Intersections, Intersection}};
 use super::shape::Hittable;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Sphere {}
 
 impl Hittable for Sphere {
-    fn intersect(&self, ray: &Ray) -> Vec<f64> {
+    fn intersect<'a>(&self, ray: &Ray, object: &'a Object) -> Intersections<'a> {
+        let mut xs = Intersections::new();
+
         let sphere_to_ray = ray.origin;
         let a = ray.direction.dot(ray.direction);
         let b = 2.0 * ray.direction.dot(sphere_to_ray);
@@ -15,16 +17,25 @@ impl Hittable for Sphere {
         let c = sphere_to_ray.dot(sphere_to_ray) - 1.0;
         let discriminant = b*b - 4.0 * a * c;
         if discriminant < 0.0 {
-            return Vec::default();
+            return xs
         } 
 
         let sqrt_disc = discriminant.sqrt();
         let inv_denom = 1.0 / (2.0 * a);
 
-        vec![
-            (-b - sqrt_disc) * inv_denom,
-            (-b + sqrt_disc) * inv_denom
-        ]
+        xs.push(
+            Intersection::new(
+                (-b - sqrt_disc) * inv_denom, 
+                object
+            )
+        );
+        xs.push(
+            Intersection::new(
+                (-b + sqrt_disc) * inv_denom, 
+                object
+            )
+        );
+        xs
     }
 
     fn normal_at(&self, point: DVec3) -> DVec3 {
@@ -64,11 +75,11 @@ mod tests {
             DVec3::new(0.0, 0.0, -5.0), 
             DVec3::new(0.0, 0.0, 1.0)
         );
-        let s = Sphere::default();
+        let s = Object::new(Shape::Sphere(Sphere::default()));
         let xs = s.intersect(&r);
-        assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0], 4.0);
-        assert_eq!(xs[1], 6.0);
+        assert_eq!(xs.count(), 2);
+        assert_eq!(xs[0].t(), 4.0);
+        assert_eq!(xs[1].t(), 6.0);
     }
 
     #[test]
@@ -77,11 +88,11 @@ mod tests {
             DVec3::new(0.0, 1.0, -5.0), 
             DVec3::new(0.0, 0.0, 1.0)
         );
-        let s = Sphere::default();
+        let s = Object::new(Shape::Sphere(Sphere::default()));
         let xs = s.intersect(&r);
-        assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0], 5.0);
-        assert_eq!(xs[1], 5.0);
+        assert_eq!(xs.count(), 2);
+        assert_eq!(xs[0].t(), 5.0);
+        assert_eq!(xs[1].t(), 5.0);
     }
 
     #[test]
@@ -90,9 +101,9 @@ mod tests {
             DVec3::new(0.0, 2.0, -5.0), 
             DVec3::new(0.0, 0.0, 1.0)
         );
-        let s = Sphere::default();
+        let s = Object::new(Shape::Sphere(Sphere::default()));
         let xs = s.intersect(&r);
-        assert_eq!(xs.len(), 0);
+        assert_eq!(xs.count(), 0);
     }
     
     #[test]
@@ -101,11 +112,11 @@ mod tests {
             DVec3::new(0.0, 0.0, 0.0), 
             DVec3::new(0.0, 0.0, 1.0)
         );
-        let s = Sphere::default();
+        let s = Object::new(Shape::Sphere(Sphere::default()));
         let xs = s.intersect(&r);
-        assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0], -1.0);
-        assert_eq!(xs[1], 1.0);
+        assert_eq!(xs.count(), 2);
+        assert_eq!(xs[0].t(), -1.0);
+        assert_eq!(xs[1].t(), 1.0);
     }
 
     #[test]
@@ -114,11 +125,11 @@ mod tests {
             DVec3::new(0.0, 0.0, 5.0), 
             DVec3::new(0.0, 0.0, 1.0)
         );
-        let s = Sphere::default();
+        let s = Object::new(Shape::Sphere(Sphere::default()));
         let xs = s.intersect(&r);
-        assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0], -6.0);
-        assert_eq!(xs[1], -4.0);
+        assert_eq!(xs.count(), 2);
+        assert_eq!(xs[0].t(), -6.0);
+        assert_eq!(xs[1].t(), -4.0);
     }
 
     #[test]

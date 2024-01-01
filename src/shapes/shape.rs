@@ -1,6 +1,6 @@
 use glam::DVec3;
 
-use crate::ray::Ray;
+use crate::{ray::Ray, intersection::Intersections, Object};
 use super::{Sphere, test_shape::TestShape, Plane, Cube, Group, Triangle};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -14,19 +14,19 @@ pub enum Shape {
 }
 
 pub trait Hittable {
-    fn intersect(&self, ray: &Ray) -> Vec<f64>;
+    fn intersect<'a>(&self, ray: &Ray, object: &'a Object) -> Intersections<'a>;
     fn normal_at(&self, world_point: DVec3) -> DVec3;
 }
 
 impl Hittable for Shape {
-    fn intersect(&self, ray: &Ray) -> Vec<f64> {
+    fn intersect<'a>(&self, ray: &Ray, object: &'a Object) -> Intersections<'a> {
         match self {
-            Shape::Sphere(s) => s.intersect(ray),
-            Shape::Plane(p) => p.intersect(ray),
-            Shape::Cube(c) => c.intersect(ray),
-            Shape::Triangle(t) => t.intersect(ray),
-            Shape::Group(g) => g.intersect(ray),
-            Shape::TestShape(s) => s.intersect(ray),
+            Shape::Sphere(s) => s.intersect(ray, object),
+            Shape::Plane(p) => p.intersect(ray, object),
+            Shape::Cube(c) => c.intersect(ray, object),
+            Shape::Triangle(t) => t.intersect(ray, object),
+            Shape::Group(g) => g.intersect(ray, object),
+            Shape::TestShape(s) => s.intersect(ray, object),
         }
     }
 

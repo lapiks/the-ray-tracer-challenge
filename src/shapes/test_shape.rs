@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use glam::DVec3;
 
-use crate::ray::Ray;
+use crate::{ray::Ray, Object, intersection::Intersections};
 use super::shape::Hittable;
 
 #[derive(Clone, Debug)]
@@ -11,9 +11,9 @@ pub struct TestShape {
 }
 
 impl Hittable for TestShape {
-    fn intersect(&self, ray: &Ray) -> Vec<f64> {
+    fn intersect<'a>(&self, ray: &Ray, _: &'a Object) -> Intersections<'a> {
         *self.saved_ray.lock().unwrap() = Some(*ray);
-        Vec::default()
+        Intersections::new()
     }
 
     fn normal_at(&self, point: DVec3) -> DVec3 {

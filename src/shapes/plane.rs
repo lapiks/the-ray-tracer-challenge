@@ -2,7 +2,7 @@ use std::f64::EPSILON;
 
 use glam::DVec3;
 
-use crate::ray::Ray;
+use crate::{ray::Ray, intersection::{Intersections, Intersection}, Object};
 use super::shape::Hittable;
 
 /// infinite xz plane 
@@ -10,15 +10,18 @@ use super::shape::Hittable;
 pub struct Plane {}
 
 impl Hittable for Plane {
-    fn intersect(&self, ray: &Ray) -> Vec<f64> {
-        if ray.direction.y.abs() < EPSILON {
-            vec![]
-        } else {
-            vec![
-                -ray.origin.y / ray.direction.y
-            ]
+    fn intersect<'a>(&self, ray: &Ray, object: &'a Object) -> Intersections<'a> {
+        let mut xs = Intersections::new();
+        if ray.direction.y.abs() > EPSILON {
+            xs.push(
+                Intersection::new(
+                    -ray.origin.y / ray.direction.y,
+                    object
+                )
+            );
         }
-        
+
+        xs        
     }
 
     fn normal_at(&self, _: DVec3) -> DVec3 {
@@ -43,6 +46,8 @@ impl Plane {
 mod tests {
     use glam::dvec3;
 
+    use crate::shapes::Shape;
+
     use super::*;
 
     #[test]
@@ -55,47 +60,47 @@ mod tests {
 
     #[test]
     fn intersect_with_a_ray_parallel_to_the_plane() {
-        let p = Plane::default();
+        let p = Object::new(Shape::Plane(Plane::default()));
         let r = Ray {
             origin: dvec3(0.0, 10.0, 0.0),
             direction: dvec3(0.0, 0.0, 1.0)
         };
         let xs = p.intersect(&r);
-        assert_eq!(xs.len(), 0);
+        assert_eq!(xs.count(), 0);
     }
 
     #[test]
     fn intersect_with_a_ray_coplanar_to_the_plane() {
-        let p = Plane::default();
+        let p = Object::new(Shape::Plane(Plane::default()));
         let r = Ray {
             origin: dvec3(0.0, 0.0, 0.0),
             direction: dvec3(0.0, 0.0, 1.0)
         };
         let xs = p.intersect(&r);
-        assert_eq!(xs.len(), 0);
+        assert_eq!(xs.count(), 0);
     }
 
     #[test]
     fn a_ray_intersecting_a_plane_from_above() {
-        let p = Plane::default();
+        let p = Object::new(Shape::Plane(Plane::default()));
         let r = Ray {
             origin: dvec3(0.0, 1.0, 0.0),
             direction: dvec3(0.0, -1.0, 0.0)
         };
         let xs = p.intersect(&r);
-        assert_eq!(xs.len(), 1);
-        assert_eq!(xs[0], 1.0);
+        assert_eq!(xs.count(), 1);
+        assert_eq!(xs[0].t(), 1.0);
     }
 
     #[test]
     fn a_ray_intersecting_a_plane_from_below() {
-        let p = Plane::default();
+        let p = Object::new(Shape::Plane(Plane::default()));
         let r = Ray {
             origin: dvec3(0.0, -1.0, 0.0),
             direction: dvec3(0.0, 1.0, 1.0)
         };
         let xs = p.intersect(&r);
-        assert_eq!(xs.len(), 1);
-        assert_eq!(xs[0], 1.0);
+        assert_eq!(xs.count(), 1);
+        assert_eq!(xs[0].t(), 1.0);
     }
 }

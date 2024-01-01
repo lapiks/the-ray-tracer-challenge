@@ -1,6 +1,6 @@
 use glam::DVec3;
 
-use crate::ray::Ray;
+use crate::{ray::Ray, intersection::{Intersections, Intersection}, Object};
 use super::shape::Hittable;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -30,23 +30,29 @@ impl Triangle {
 }
 
 impl Hittable for Triangle {
-    fn intersect(&self, ray: &Ray) -> Vec<f64> {
+    fn intersect<'a>(&self, ray: &Ray, object: &'a Object) -> Intersections<'a> {
+        let mut xs = Intersections::new();
+        
         let dir_cross_e2 = ray.direction.cross(self.e2);
         let det = self.e1.dot(dir_cross_e2);
-        if det.abs() < f64::EPSILON { return vec![] }
+        if det.abs() < f64::EPSILON { return xs }
 
         let f = 1.0 / det;
         let p1_to_origin = ray.origin - self.p1;
         let u = f * p1_to_origin.dot(dir_cross_e2);
-        if u < 0.0 || u > 1.0 { return vec![] }
+        if u < 0.0 || u > 1.0 { return xs }
 
         let origin_cross_e1 = p1_to_origin.cross(self.e1);
         let v = f * ray.direction.dot(origin_cross_e1);
-        if v < 0.0 || u + v > 1.0 { return vec![] }
+        if v < 0.0 || u + v > 1.0 { return xs }
 
-        vec![
-            f * self.e2.dot(origin_cross_e1)
-        ]
+        xs.push(
+            Intersection::new(
+                f * self.e2.dot(origin_cross_e1), 
+                object
+            )
+        );
+        xs
     }
 
     fn normal_at(&self, _: DVec3) -> DVec3 {
@@ -57,6 +63,8 @@ impl Hittable for Triangle {
 #[cfg(test)]
 mod tests {
     use glam::dvec3;
+    use crate::shapes::Shape;
+
     use super::*;
 
     #[test]
@@ -95,12 +103,13 @@ mod tests {
             dvec3(-1.0, 0.0, 0.0),
             dvec3(1.0, 0.0, 0.0)
         );
+        let o = Object::new(Shape::Triangle(t));
         let r = Ray::new(
             dvec3(0.0, -1.0, -2.0),
             dvec3(0.0, 1.0, 0.0)
         );
-        let xs = t.intersect(&r);
-        assert!(xs.is_empty());
+        let xs = o.intersect(&r);
+        assert_eq!(xs.count(), 0);
     }
 
     #[test]
@@ -110,12 +119,13 @@ mod tests {
             dvec3(-1.0, 0.0, 0.0),
             dvec3(1.0, 0.0, 0.0)
         );
+        let o = Object::new(Shape::Triangle(t));
         let r = Ray::new(
             dvec3(1.0, 1.0, -2.0),
             dvec3(0.0, 0.0, 1.0)
         );
-        let xs = t.intersect(&r);
-        assert!(xs.is_empty());
+        let xs = o.intersect(&r);
+        assert_eq!(xs.count(), 0);
     }
 
     #[test]
@@ -125,12 +135,13 @@ mod tests {
             dvec3(-1.0, 0.0, 0.0),
             dvec3(1.0, 0.0, 0.0)
         );
+        let o = Object::new(Shape::Triangle(t));
         let r = Ray::new(
             dvec3(-1.0, 1.0, -2.0),
             dvec3(0.0, 0.0, 1.0)
         );
-        let xs = t.intersect(&r);
-        assert!(xs.is_empty());
+        let xs = o.intersect(&r);
+        assert_eq!(xs.count(), 0);
     }
 
     #[test]
@@ -140,12 +151,13 @@ mod tests {
             dvec3(-1.0, 0.0, 0.0),
             dvec3(1.0, 0.0, 0.0)
         );
+        let o = Object::new(Shape::Triangle(t));
         let r = Ray::new(
             dvec3(0.0, -1.0, -2.0),
             dvec3(0.0, 0.0, 1.0)
         );
-        let xs = t.intersect(&r);
-        assert!(xs.is_empty());
+        let xs = o.intersect(&r);
+        assert_eq!(xs.count(), 0);
     }
 
     #[test]
@@ -155,12 +167,13 @@ mod tests {
             dvec3(-1.0, 0.0, 0.0),
             dvec3(1.0, 0.0, 0.0)
         );
+        let o = Object::new(Shape::Triangle(t));
         let r = Ray::new(
             dvec3(0.0, 0.5, -2.0),
             dvec3(0.0, 0.0, 1.0)
         );
-        let xs = t.intersect(&r);
-        assert_eq!(xs.len(), 1);
-        assert_eq!(xs[0], 2.0);
+        let xs = o.intersect(&r);
+        assert_eq!(xs.count(), 1);
+        assert_eq!(xs[0].t(), 2.0);
     }
 }

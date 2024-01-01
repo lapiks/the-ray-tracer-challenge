@@ -3,7 +3,8 @@ use glam::{DMat4, DVec3};
 use crate::{
     shapes::shape::{Shape, Hittable}, 
     ray::Ray, 
-    intersection::{Intersections, Intersection}, material::Material
+    intersection::Intersections, 
+    material::Material
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -83,18 +84,7 @@ impl Object {
 
     pub fn intersect(&self, ray: &Ray) -> Intersections {
         let transformed_ray = ray.transform(&self.inverse_transform);
-        let ts = self.shape.intersect(&transformed_ray);
-        let mut xs = Intersections::from_capacity(ts.len());
-        for t in ts {
-            xs.push(
-                &Intersection::new(
-                    t,
-                    &self
-                )
-            )
-        }
-
-        xs
+        self.shape.intersect(&transformed_ray, &self)
     }
 
     pub fn normal_at(&self, world_point: DVec3) -> DVec3 {

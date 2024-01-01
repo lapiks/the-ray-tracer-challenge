@@ -73,8 +73,8 @@ impl<'a> Intersections<'a> {
         self
     }
 
-    pub fn push(&mut self, intersection: &Intersection<'a>) {
-        self.intersections.push(intersection.clone());
+    pub fn push(&mut self, intersection: Intersection<'a>) {
+        self.intersections.push(intersection);
     }
 
     pub fn append(&mut self, other: Intersections<'a>) {
@@ -108,6 +108,15 @@ impl<'a> Intersections<'a> {
 
     pub fn get_all(&self) -> &Vec<Intersection<'a>> {
         &self.intersections
+    }
+}
+
+impl<'a> std::ops::Index<usize> for Intersections<'a> {
+    type Output = Intersection<'a>;
+
+    // row major
+    fn index(&self, index: usize) -> &Intersection<'a> {
+        &self.intersections[index]
     }
 }
 

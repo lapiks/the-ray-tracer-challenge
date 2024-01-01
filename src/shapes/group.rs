@@ -1,6 +1,6 @@
 use glam::DVec3;
 
-use crate::{ray::Ray, Object};
+use crate::{ray::Ray, Object, intersection::Intersections};
 use super::shape::Hittable;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -9,8 +9,9 @@ pub struct Group {
 }
 
 impl Hittable for Group {
-    fn intersect(&self, _: &Ray) -> Vec<f64> {
-        vec![]
+    fn intersect<'a>(&self, _: &Ray, _: &'a Object) -> Intersections<'a> {
+        let xs = Intersections::new();
+        xs 
     }
 
     fn normal_at(&self, _: DVec3) -> DVec3 {
