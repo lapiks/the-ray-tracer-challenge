@@ -31,12 +31,10 @@ impl Default for Group {
 }
 
 impl Group {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn add_object(&mut self, object: Object) {
-        self.objects.push(object);
+    pub fn new(objects: Vec<Object>) -> Self {
+        Self {
+            objects
+        }
     }
 }
 
@@ -57,9 +55,8 @@ mod tests {
 
     #[test]
     fn adding_a_child_to_a_group() {
-        let mut g = Group::default();
         let s = Object::new(Shape::Sphere(Sphere::default()));
-        g.add_object(s.clone());
+        let g = Group::new(vec![s.clone()]);
         assert_eq!(g.objects.len(), 1);
         assert_eq!(g.objects[0], s);
     }
@@ -77,25 +74,36 @@ mod tests {
 
     #[test]
     fn intersecting_a_ray_with_a_non_empty_group() {
-        let mut g = Group::default();
         let s1 = Object::new(Shape::Sphere(Sphere::default()));
         let s2 = Object::new(Shape::Sphere(Sphere::default()))
             .with_translation(0.0, 0.0, -3.0);
         let s3 = Object::new(Shape::Sphere(Sphere::default()))
             .with_translation(5.0, 0.0, 0.0);
-        g.add_object(s1.clone());
-        g.add_object(s2.clone());
-        g.add_object(s3.clone());
+        let g = Object::new(Shape::Group(Group::new(vec![s1.clone(), s2.clone(), s3.clone()])));
+
         let r = Ray::new(
             dvec3(0.0, 0.0, -5.0),
             dvec3(0.0, 0.0, 1.0)
         );
-        let o = Object::new(Shape::Group(g));
-        let xs = o.intersect(&r).sort();
+        let xs = g.intersect(&r).sort();
         assert_eq!(xs.count(), 4);
         assert_eq!(*xs[0].object(), s2);
         assert_eq!(*xs[1].object(), s2);
         assert_eq!(*xs[2].object(), s1);
         assert_eq!(*xs[3].object(), s1);
+    }
+
+    #[test]
+    fn intersecting_a_transformed_roup() {
+        let s = Object::new(Shape::Sphere(Sphere::default()))
+            .with_translation(5.0, 0.0, 0.0);
+        let g = Object::new(Shape::Group(Group::new(vec![s])))
+            .with_scale(2.0, 2.0, 2.0);
+        let r = Ray::new(
+            dvec3(10.0, 0.0, -10.0),
+            dvec3(0.0, 0.0, 1.0)
+        );
+        let xs = g.intersect(&r).sort();
+        assert_eq!(xs.count(), 2);
     }
 }
