@@ -54,14 +54,13 @@ impl World {
         }
     }
 
-    fn intersects(&self, ray: &Ray) -> Intersections{
+    fn intersects(&self, ray: &Ray) -> Intersections {
         let mut intersections = Intersections::new();
         for object in &self.objects {
             intersections
                 .append(
                     object.intersect(ray)
                 );
-                
         }
 
         intersections.sort()

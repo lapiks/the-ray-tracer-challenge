@@ -14,12 +14,12 @@ pub enum Shape {
 }
 
 pub trait Hittable {
-    fn intersect<'a>(&self, ray: &Ray, object: &'a Object) -> Intersections<'a>;
+    fn intersect<'a>(&'a self, ray: &Ray, object: &'a Object) -> Intersections<'a>;
     fn normal_at(&self, world_point: DVec3) -> DVec3;
 }
 
 impl Hittable for Shape {
-    fn intersect<'a>(&self, ray: &Ray, object: &'a Object) -> Intersections<'a> {
+    fn intersect<'a>(&'a self, ray: &Ray, object: &'a Object) -> Intersections<'a> {
         match self {
             Shape::Sphere(s) => s.intersect(ray, object),
             Shape::Plane(p) => p.intersect(ray, object),
