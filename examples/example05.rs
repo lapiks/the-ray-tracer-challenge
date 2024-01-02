@@ -56,38 +56,7 @@ fn main() {
         .with_rotation_y(PI/4.0)
         .with_translation(0.0, 0.0, 5.0);
 
-    let back_left_wall = Object::new(Shape::Plane(Plane::default()))
-        .with_material(wall_material.clone())
-        .with_rotation_x(PI/2.0)
-        .with_rotation_y(PI/4.0)
-        .with_translation(0.0, 0.0, -15.0);
-
-    let back_right_wall = Object::new(Shape::Plane(Plane::default()))
-        .with_material(wall_material.clone())
-        .with_rotation_x(PI/2.0)
-        .with_rotation_y(-PI/4.0)
-        .with_translation(0.0, 0.0, -15.0);
-
     let s1 = Object::new(Shape::Sphere(Sphere::default()))
-        .with_material(
-            Material::default()
-                .with_pattern(
-                    PatternObject::new(
-                        Pattern::Plain(
-                            PlainPattern::new(Color::black()))
-                    )
-                )
-                .with_diffuse(0.0)
-                .with_specular(0.0)
-                .with_ambient(0.0)
-                .with_reflective(1.0)
-                .with_transparency(1.0)
-                .with_refractive_index(1.5)
-        )
-        .with_scale(0.75, 0.75, 0.75)
-        .with_translation(3.0, 0.75, -3.0);
-
-    let s2 = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
             Material::default()
                 .with_pattern(
@@ -111,59 +80,44 @@ fn main() {
         .with_scale(0.5, 0.5, 0.5)
         .with_translation(1.5, 0.5, -0.5);
 
-    let s3 = Object::new(Shape::Sphere(Sphere::default()))
-        .with_material(
-            Material::default()
-                .with_pattern(
-                    PatternObject::new(
-                        Pattern::Plain(PlainPattern::new(Color::new(1.0, 1.0, 0.0)))
-                    )
-                )
-                .with_diffuse(0.2)
-                .with_specular(0.0)
-                .with_reflective(0.8)
-                .with_transparency(1.0)
-                .with_refractive_index(1.5)
+    let transparent_material = Material::default()
+        .with_pattern(
+            PatternObject::new(
+                Pattern::Plain(
+                    PlainPattern::new(Color::black()))
+            )
         )
+        .with_diffuse(0.0)
+        .with_specular(0.0)
+        .with_ambient(0.0)
+        .with_reflective(1.0)
+        .with_transparency(1.0)
+        .with_refractive_index(1.5);
+
+    let s2 = Object::new(Shape::Sphere(Sphere::default()))
+        .with_material(transparent_material.clone())
+        .with_scale(0.75, 0.75, 0.75)
+        .with_translation(3.0, 0.75, -3.0);
+
+    
+
+    let s3 = Object::new(Shape::Sphere(Sphere::default()))
+        .with_material(transparent_material.clone())
         .with_scale(0.33, 0.33, 0.33)
         .with_translation(-1.5, 0.33, -0.75);
 
     let s4 = Object::new(Shape::Sphere(Sphere::default()))
-        .with_material(
-            Material::default()
-                .with_pattern(
-                    PatternObject::new(
-                        Pattern::Plain(PlainPattern::new(Color::new(1.0, 1.0, 1.0)))
-                    )
-                )
-                .with_diffuse(0.0)
-                .with_specular(0.0)
-                .with_reflective(0.8)
-                .with_transparency(1.0)
-                .with_refractive_index(1.5)
-        )
+        .with_material(transparent_material.clone())
         .with_scale(0.5, 0.5, 0.5)
         .with_translation(-1.5, 0.5, -3.0);
 
     let s5 = Object::new(Shape::Sphere(Sphere::default()))
-        .with_material(
-            Material::default()
-                .with_pattern(
-                    PatternObject::new(
-                        Pattern::Plain(PlainPattern::new(Color::new(1.0, 1.0, 1.0)))
-                    )
-                )
-                .with_diffuse(0.0)
-                .with_specular(0.0)
-                .with_reflective(0.8)
-                .with_transparency(1.0)
-                .with_refractive_index(1.5)
-        )
+        .with_material(transparent_material.clone())
         .with_scale(0.5, 0.5, 0.5)
         .with_translation(2.0, 0.5, -4.0);
 
     let world = World::new()
-        .with_objects(vec![floor, roof, left_wall, right_wall, back_left_wall, back_right_wall, s1, s2, s3, s4, s5])
+        .with_objects(vec![floor, roof, left_wall, right_wall, s1, s2, s3, s4, s5])
         .with_lights(vec![l1, l2]);
 
     let width = if LOW_RES { 180 } else { 1920 };
