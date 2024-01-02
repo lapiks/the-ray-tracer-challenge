@@ -25,6 +25,9 @@ Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge
 - [ ] smooth triangles
 - [ ] constructive solid geometry
 - [ ] yaml scene descriptions importing
+- [ ] antialiasing
+- [ ] area lights
+- [ ] focal blur
 
 ## Examples
 ### Shadows
