@@ -25,7 +25,6 @@ fn main() {
     let floor = Object::new(Shape::Plane(Plane::default()))
         .with_material(
             Material::default()
-                .with_reflective(0.3)
                 .with_pattern(
                     PatternObject::new(
                         Pattern::Checker(
