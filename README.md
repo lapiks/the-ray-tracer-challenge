@@ -17,10 +17,10 @@ Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge
 - [x] reflections
 - [x] refractions
 - [x] cubes
-- [] cylinders
-- [] cones
-- [] group of objects
+- [ ] cylinders
+- [ ] cones
+- [ ] group of objects
 - [x] triangles
-- [] obj importing
-- [] smooth triangles
-- [] constructive solid geometry
+- [ ] obj importing
+- [ ] smooth triangles
+- [ ] constructive solid geometry
