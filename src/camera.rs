@@ -59,6 +59,14 @@ impl Camera {
         self
     }
 
+    pub fn width(&self) -> usize {
+        self.width
+    }
+ 
+    pub fn height(&self) -> usize {
+        self.height
+    }
+
     pub fn render(&self, world: &World, max_recursions: u8) -> Canvas {
         let mut canvas = Canvas::new(self.width, self.height);
         let now = Instant::now();

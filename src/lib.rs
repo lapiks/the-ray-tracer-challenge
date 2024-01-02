@@ -23,6 +23,7 @@ pub use camera::Camera;
 pub use canvas::Canvas;
 pub use color::Color;
 pub use pattern::Pattern;
+pub use yaml::YamlLoader;
 
 mod ray;
 mod intersection;
@@ -35,3 +36,4 @@ pub mod canvas;
 pub mod color;
 pub mod camera;
 pub mod pattern;
+pub mod yaml;
