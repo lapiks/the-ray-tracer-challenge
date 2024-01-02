@@ -24,3 +24,4 @@ Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge
 - [ ] obj importing
 - [ ] smooth triangles
 - [ ] constructive solid geometry
+- [ ] yaml scene descriptions importing
