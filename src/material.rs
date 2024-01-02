@@ -99,6 +99,10 @@ impl Material {
         self
     }
 
+    pub fn pattern(&self) -> &PatternObject {
+        &self.pattern
+    }
+
     pub fn ambient(&self) -> f64 {
         self.ambient
     }

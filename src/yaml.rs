@@ -77,8 +77,8 @@ impl YamlLoader {
 
     fn load_light(hash: &Hash) -> PointLight {
         PointLight::new(
-            Self::load_dvec3_from_hash(hash, "position").expect("Camera is missing the position parameter"), 
-            Self::load_color_from_hash(hash, "intensity").expect("Camera is missing the intensity parameter")
+            Self::load_dvec3_from_hash(hash, "position").expect("The light is missing the position parameter"), 
+            Self::load_color_from_hash(hash, "intensity").expect("The light is missing the intensity parameter")
         )
     }
 
@@ -118,44 +118,26 @@ impl YamlLoader {
     }
 
     fn load_material(hash: &Hash) -> Material {
-        let mut m = Material::default();
+        let default = Material::default();
 
-        if let Some(ambient) = Self::load_f64_from_hash(hash, "ambient") {
-            m.set_ambient(ambient);
-        }
-        if let Some(diffuse) = Self::load_f64_from_hash(hash, "diffuse") {
-            m.set_diffuse(diffuse);
-        }
-        if let Some(specular) = Self::load_f64_from_hash(hash, "specular") {
-            m.set_specular(specular);
-        }
-        if let Some(shininess) = Self::load_f64_from_hash(hash, "shininess") {
-            m.set_shininess(shininess);
-        }
-        if let Some(reflective) = Self::load_f64_from_hash(hash, "reflective") {
-            m.set_reflective(reflective);
-        }
-        if let Some(refractive_index) = Self::load_f64_from_hash(hash, "refractive_index") {
-            m.set_refractive_index(refractive_index);
-        }
-        if let Some(transparency) = Self::load_f64_from_hash(hash, "transparency") {
-            m.set_transparency(transparency);
-        }
-        if let Some(color) = Self::load_color_from_hash(hash, "color") {
-            m.set_pattern(
-                PatternObject::new(
-                    crate::Pattern::Plain(PlainPattern::new(color))
-                )
-            );
-        }
-        if let Some(pattern) = Self::load_pattern(hash) {
-            m.set_pattern(pattern);
-        }
-
-        m
+        Material::default()
+            .with_ambient(Self::load_f64_from_hash(hash, "ambient").unwrap_or(default.ambient()))
+            .with_diffuse(Self::load_f64_from_hash(hash, "diffuse").unwrap_or(default.diffuse()))
+            .with_specular(Self::load_f64_from_hash(hash, "specular").unwrap_or(default.specular()))
+            .with_shininess(Self::load_f64_from_hash(hash, "shininess").unwrap_or(default.shininess()))
+            .with_reflective(Self::load_f64_from_hash(hash, "reflective").unwrap_or(default.reflective()))
+            .with_refractive_index(Self::load_f64_from_hash(hash, "refractive_index").unwrap_or(default.refractive_index()))
+            .with_transparency(Self::load_f64_from_hash(hash, "transparency").unwrap_or(default.transparency()))
+            .with_pattern(Self::load_pattern(hash).unwrap_or(default.pattern().clone()))
     }
 
     fn load_pattern(hash: &Hash) -> Option<PatternObject> {
+        if let Some(color) = Self::load_color_from_hash(hash, "color") {
+            return Some(PatternObject::new(
+                crate::Pattern::Plain(PlainPattern::new(color))
+            ));
+        }
+
         None
     }
 
