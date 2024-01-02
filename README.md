@@ -25,3 +25,16 @@ Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge
 - [ ] smooth triangles
 - [ ] constructive solid geometry
 - [ ] yaml scene descriptions importing
+
+## Examples
+### Shadows
+![Alt text](examples/example02.png?raw=true "Shadows")
+
+### Patterns
+![Alt text](examples/example03.png?raw=true "Patterns")
+
+### Reflections
+![Alt text](examples/example04.png?raw=true "Reflections")
+
+### Refractions
+![Alt text](examples/example05.png?raw=true "Refractions")
