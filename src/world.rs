@@ -1,6 +1,6 @@
 use glam::DVec3;
 
-use crate::{object::Object, ray::Ray, Color, PointLight, intersection::{Intersections, IntersectionInfos}};
+use crate::{object::Object, ray::Ray, Color, PointLight, intersection::{Intersections, IntersectionInfos, ShadowHit, StandardHit}};
 
 pub struct World {
     objects: Vec<Object>,
@@ -45,7 +45,7 @@ impl World {
 
     pub fn color_at(&self, ray: &Ray, remaining: u8) -> Option<Color> {
         let intersections = self.intersects(ray);
-        match intersections.hit_index() {
+        match intersections.hit_index(StandardHit {}) {
             Some(index) => {
                 let infos = IntersectionInfos::new(&intersections, index, &ray);
                 Some(self.shade_hit(&infos, remaining))
@@ -100,7 +100,7 @@ impl World {
             origin: world_point,
             direction: ray_dir.normalize()
         };
-        if let Some(hit) = self.intersects(&shadow_ray).hit() {
+        if let Some(hit) = self.intersects(&shadow_ray).hit(ShadowHit {}) {
             return hit.t() < distance;
         }
         false

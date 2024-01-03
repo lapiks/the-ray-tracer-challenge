@@ -6,6 +6,35 @@ use crate::{object::Object, ray::Ray};
 
 const EPSILON: f64 = 0.00001;
 
+pub trait HitPredicate {
+    fn hit_predicate(&self) -> Box<dyn FnMut(&&Intersection<'_>) -> bool>;
+    fn hit_index_predicate(&self) -> Box<dyn FnMut(&Intersection<'_>) -> bool>;
+}
+
+pub struct StandardHit {}
+
+impl HitPredicate for StandardHit {
+    fn hit_predicate(&self) -> Box<dyn FnMut(&&Intersection<'_>) -> bool> {
+       Box::new(|i| i.t >= 0.0)
+    }
+
+    fn hit_index_predicate(&self) -> Box<dyn FnMut(&Intersection<'_>) -> bool> {
+        Box::new(|i| i.t >= 0.0)
+    }
+}
+
+pub struct ShadowHit {}
+
+impl HitPredicate for ShadowHit {
+    fn hit_predicate(&self) -> Box<dyn FnMut(&&Intersection<'_>) -> bool> {
+        Box::new(|i| i.object.shadow() && i.t >= 0.0)
+    }
+
+    fn hit_index_predicate(&self) -> Box<dyn FnMut(&Intersection<'_>) -> bool> {
+        Box::new(|i| i.object.shadow() && i.t >= 0.0)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Intersection<'a> {
     t: f64,
@@ -86,12 +115,12 @@ impl<'a> Intersections<'a> {
         self
     }
 
-    pub fn hit(&self) -> Option<&Intersection> {
-        self.intersections.iter().find(|i| i.t >= 0.0)
+    pub fn hit(&self, predicate: impl HitPredicate) -> Option<&Intersection> {
+        self.intersections.iter().find(predicate.hit_predicate())
     }
 
-    pub fn hit_index(&self) -> Option<usize> {
-        self.intersections.iter().position(|i| i.t >= 0.0)
+    pub fn hit_index(&self, predicate: impl HitPredicate) -> Option<usize> {
+        self.intersections.iter().position(predicate.hit_index_predicate())
     }
 
     pub fn count(&self) -> usize {
@@ -249,7 +278,7 @@ mod tests {
         let i1 = Intersection::new(1.0, &o);
         let i2 = Intersection::new(2.0, &o);
         let xs = Intersections::new().with_intersections(vec![i1.clone(), i2.clone()]).sort();
-        let i = xs.hit();
+        let i = xs.hit(StandardHit {});
         assert_eq!(i, Some(&i1));
     }
 
@@ -260,7 +289,7 @@ mod tests {
         let i1 = Intersection::new(-1.0, &o);
         let i2 = Intersection::new(1.0, &o);
         let xs = Intersections::new().with_intersections(vec![i1.clone(), i2.clone()]).sort();
-        let i = xs.hit();
+        let i = xs.hit(StandardHit {});
         assert_eq!(i, Some(&i2));
     }
 
@@ -271,7 +300,7 @@ mod tests {
         let i1 = Intersection::new(-2.0, &o);
         let i2 = Intersection::new(-1.0, &o);
         let xs = Intersections::new().with_intersections(vec![i1.clone(), i2.clone()]).sort();
-        let i = xs.hit();
+        let i = xs.hit(StandardHit {});
         assert_eq!(i, None);
     }
 
@@ -284,7 +313,7 @@ mod tests {
         let i3 = Intersection::new(-3.0, &o);
         let i4 = Intersection::new(2.0, &o);
         let xs = Intersections::new().with_intersections(vec![i1.clone(), i2.clone(), i3.clone(), i4.clone()]).sort();
-        let i = xs.hit();
+        let i = xs.hit(StandardHit {});
         assert_eq!(i, Some(&i4));
     }
 
