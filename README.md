@@ -28,6 +28,7 @@ Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge
 - [ ] antialiasing
 - [ ] area lights
 - [ ] focal blur
+- [x] parallel rendering
 
 ## Examples
 ### Shadows
