@@ -18,21 +18,27 @@
 
 - add: light
   position: [-1, 2, 4]
+  #corner: [-1, 2, 4]
+  #uvec: [2, 0, 0]
+  #vvec: [0, 2, 0]
+  #usteps: 10
+  #vsteps: 10
+  #jitter: true
   intensity: [1.5, 1.5, 1.5]
 
 # Put the light in the middle of a "shining" cube so that it can show
 # up in reflections as a physical thing. Naturally, the cube must
 # opt out of shadow tests...
-#- add: cube
-#  material:
-#    color: [1.5, 1.5, 1.5]
-#    ambient: 1
-#    diffuse: 0
-#    specular: 0
-#  transform:
-#    - [ scale, 1, 1, 0.01 ]
-#    - [ translate, 0, 3, 4 ]
-#  shadow: false
+- add: cube
+  material:
+    color: [1.5, 1.5, 1.5]
+    ambient: 1
+    diffuse: 0
+    specular: 0
+  transform:
+    - [ scale, 1, 1, 0.01 ]
+    - [ translate, 0, 3, 4 ]
+  shadow: false
 
 - add: plane
   material:
