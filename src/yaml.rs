@@ -203,8 +203,9 @@ impl YamlLoader {
 
         let mut pattern_object = None;
 
-        match hash.get(&Yaml::from_str("pattern")).unwrap().as_hash() {
-            Some(pattern_hash) => {
+        match hash.get(&Yaml::from_str("pattern")) {
+            Some(pattern_yaml) => {
+                let pattern_hash = pattern_yaml.as_hash().unwrap();
                 match pattern_hash.get(&Yaml::from_str("type")).unwrap().as_str().unwrap() {
                     "stripes" => {
                         let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
@@ -451,7 +452,7 @@ pub mod tests {
     use super::*;
 
     #[test]
-    fn importing_a_yaml_scene() {
+    fn importing_a_camera_from_a_yaml_scene() {
         let source = "
             - add: camera
               width: 1920
@@ -460,42 +461,59 @@ pub mod tests {
               from: [-3, 1, 2.5]
               to: [0, 0.5, 0]
               up: [0, 1, 0]
-
-            - add: light
-              position: [-1, 2, 4]
-              intensity: [1.5, 1.5, 1.5]
-
-            - add: sphere
-              transform:
-              - [ scale, 0.33, 0.33, 0.33 ]
-              - [ translate, -0.25, 0.33, 0 ]
-              material:
-               color: [0.5, 0.5, 1]
-               ambient: 0.1
-               diffuse: 0.6
-               specular: 0.4
-               reflective: 0.3
-               transparency: 0.5
-               refractive_index: 1.5
         ";
 
         let loader = YamlLoader::load_from_str(source);
-        let objects = loader.objects();
-        let lights = loader.lights();
         let camera = loader.camera();
 
         assert!(camera.is_some());
         assert_eq!(camera.unwrap().width(), 1920);
         assert_eq!(camera.unwrap().height(), 1080);
+        assert_eq!(camera.unwrap().field_of_view(), 0.7854);
+    }
+    
+    #[test]
+    fn importing_a_light_from_a_yaml_scene() {
+        let source = "
+            - add: light
+              position: [-1, 2, 4]
+              intensity: [1.5, 1.5, 1.5]
+        ";
+
+        let loader = YamlLoader::load_from_str(source);
+        let lights = loader.lights();
 
         assert_eq!(lights.len(), 1);
         assert_eq!(lights[0].position(), dvec3(-1.0, 2.0, 4.0));
         assert_eq!(lights[0].intensity(), Color::new(1.5, 1.5, 1.5));
+    }
+
+    #[test]
+    fn importing_a_sphere_from_a_yaml_scene() {
+        let source = "
+            - add: sphere
+              transform:
+              - [ scale, 0.33, 0.33, 0.33 ]
+              - [ translate, -0.25, 0.33, 0 ]
+              material:
+                color: [0.5, 0.5, 1]
+                ambient: 0.1
+                diffuse: 0.6
+                specular: 0.4
+                shininess: 250
+                reflective: 0.3
+                transparency: 0.5
+                refractive-index: 1.5
+        ";
+
+        let loader = YamlLoader::load_from_str(source);
+        let objects = loader.objects();
 
         assert_eq!(objects.len(), 1);
         assert_eq!(objects[0].material().ambient(), 0.1);
         assert_eq!(objects[0].material().diffuse(), 0.6);
         assert_eq!(objects[0].material().specular(), 0.4);
+        assert_eq!(objects[0].material().shininess(), 250.0);
         assert_eq!(objects[0].material().reflective(), 0.3);
         assert_eq!(objects[0].material().transparency(), 0.5);
         assert_eq!(objects[0].material().refractive_index(), 1.5);
@@ -505,8 +523,9 @@ pub mod tests {
         assert_eq!(s_r_t.2, dvec3(-0.25, 0.33, 0.0));
     }
 
+
     #[test]
-    fn importing_a_yaml_scene_with_material_extends() {
+    fn importing_a_yaml_scene_with_material_definitions() {
         let source = "
             - define: a
               value:
@@ -534,7 +553,7 @@ pub mod tests {
     }
 
     #[test]
-    fn importing_a_yaml_scene_with_transform_extends() {
+    fn importing_a_yaml_scene_with_transform_definitions_as_extends() {
         let source = "
             - define: a
               value:
@@ -563,7 +582,7 @@ pub mod tests {
     }
 
     #[test]
-    fn importing_a_yaml_scene_with_transform_extends_bis() {
+    fn importing_a_yaml_scene_with_transform_definitions_as_arrays() {
         let source = "
             - define: a
               value:

@@ -67,6 +67,10 @@ impl Camera {
         self.height
     }
 
+    pub fn field_of_view(&self) -> f64 {
+        self.fov
+    }
+
     pub fn render(&self, world: &World, max_recursions: u8) -> Canvas {
         let mut canvas = Canvas::new(self.width, self.height);
         let now = Instant::now();
