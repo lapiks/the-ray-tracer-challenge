@@ -1,7 +1,7 @@
 # The Ray Tracer Challenge
 Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge" book by Jamis Buck.
 
-![Alt text](examples/example06.png?raw=true "Example")
+![Alt text](examples/yaml_scenes/cover.png?raw=true "Cover")
 
 ## Progression
 - [x] colors representation
@@ -41,3 +41,6 @@ Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge
 
 ### Refractions
 ![Alt text](examples/example05.png?raw=true "Refractions")
+
+### From the book
+![Alt text](examples/yaml_scenes/reflect-refract.png?raw=true "reflect-refract")
