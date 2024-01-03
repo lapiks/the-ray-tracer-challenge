@@ -19,7 +19,7 @@ Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge
 - [x] cubes
 - [ ] cylinders
 - [ ] cones
-- [ ] group of objects
+- [ ] object groups
 - [x] triangles
 - [ ] obj importing
 - [ ] smooth triangles
@@ -28,7 +28,7 @@ Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge
 - [ ] antialiasing
 - [ ] area lights
 - [ ] focal blur
-- [x] parallel rendering
+- [x] CPU parallel rendering
 
 ## Examples
 ### Shadows
