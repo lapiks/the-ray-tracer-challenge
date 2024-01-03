@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use glam::{DVec3, DMat4};
 use yaml_rust::{Yaml, yaml::Hash};
 
-use crate::{Object, PointLight, Camera, transformations, Color, shapes::{Sphere, Plane, Cube, Group, Shape}, Material, pattern::{PatternObject, PlainPattern, StrippedPattern, RingPattern, CheckerPattern}, Pattern};
+use crate::{Object, PointLight, Camera, transformations, Color, shapes::{Sphere, Plane, Cube, Group, Shape}, Material, pattern::{PatternObject, PlainPattern, StrippedPattern, RingPattern, CheckerPattern, GradientPattern}, Pattern};
 
 extern crate yaml_rust;
 
@@ -194,6 +194,7 @@ impl YamlLoader {
     }
 
     fn load_pattern(hash: &Hash, defines: &Defines) -> Option<PatternObject> {
+        // if there is a color value, its considered like a plane pattern with this color
         if let Some(color) = Self::load_color_from_hash(hash, "color") {
             return Some(PatternObject::new(
                 crate::Pattern::Plain(PlainPattern::new(color))
@@ -202,60 +203,76 @@ impl YamlLoader {
 
         let mut pattern_object = None;
 
-        if let Some(pattern_hash) = hash.get(&Yaml::from_str("pattern")).unwrap().as_hash() {
-            match pattern_hash.get(&Yaml::from_str("type")).unwrap().as_str().unwrap() {
-                "stripes" => {
-                    let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
-                    pattern_object = Some(
-                        PatternObject::new(
-                            Pattern::Stripped(
-                                StrippedPattern::new(
-                                    Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
-                                    Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+        match hash.get(&Yaml::from_str("pattern")).unwrap().as_hash() {
+            Some(pattern_hash) => {
+                match pattern_hash.get(&Yaml::from_str("type")).unwrap().as_str().unwrap() {
+                    "stripes" => {
+                        let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
+                        pattern_object = Some(
+                            PatternObject::new(
+                                Pattern::Stripped(
+                                    StrippedPattern::new(
+                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
+                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                                    )
                                 )
                             )
                         )
-                    )
-                },
-                "rings" => {
-                    let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
-                    pattern_object = Some(
-                        PatternObject::new(
-                            Pattern::Ring(
-                                RingPattern::new(
-                                    Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
-                                    Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                    },
+                    "rings" => {
+                        let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
+                        pattern_object = Some(
+                            PatternObject::new(
+                                Pattern::Ring(
+                                    RingPattern::new(
+                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
+                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                                    )
                                 )
                             )
                         )
-                    )
-                },
-                "checkers" => {
-                    let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
-                    pattern_object = Some(
-                        PatternObject::new(
-                            Pattern::Checker(
-                                CheckerPattern::new(
-                                    Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
-                                    Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                    },
+                    "checkers" => {
+                        let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
+                        pattern_object = Some(
+                            PatternObject::new(
+                                Pattern::Checker(
+                                    CheckerPattern::new(
+                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
+                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                                    )
                                 )
                             )
                         )
-                    )
-                },
-                &_ => {
-                    panic!("Unsupported pattern")
+                    },
+                    "gradient" => {
+                        let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
+                        pattern_object = Some(
+                            PatternObject::new(
+                                Pattern::Gradient(
+                                    GradientPattern::new(
+                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
+                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                                    )
+                                )
+                            )
+                        )
+                    },
+                    &_ => {
+                        panic!("Unsupported pattern")
+                    }
                 }
-            }
+    
+                pattern_object
+                .map(|o| {
+                    o
+                    .with_transform(
+                        &Self::load_transform(pattern_hash, defines)
+                    )
+                })
+            },
+            None => pattern_object,
         }
-
-        pattern_object
-        .map(|o| {
-            o
-            .with_transform(
-                &Self::load_transform(hash, defines)
-            )
-        })        
     }
 
     fn load_transform(hash: &Hash, defines: &Defines) -> DMat4 {
