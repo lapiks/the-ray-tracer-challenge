@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use glam::{DVec3, DMat4};
 use yaml_rust::{Yaml, yaml::Hash};
 
-use crate::{Object, PointLight, Camera, transformations, Color, shapes::{Sphere, Plane, Cube, Group, Shape}, Material, pattern::{PatternObject, PlainPattern}};
+use crate::{Object, PointLight, Camera, transformations, Color, shapes::{Sphere, Plane, Cube, Group, Shape}, Material, pattern::{PatternObject, PlainPattern, StrippedPattern, RingPattern, CheckerPattern}, Pattern};
 
 extern crate yaml_rust;
 
@@ -186,21 +186,76 @@ impl YamlLoader {
                         Self::load_f64_from_hash(&material_hash, "refractive-index")
                         .unwrap_or(default.refractive_index()))
                     .with_pattern(
-                        Self::load_pattern(&material_hash)
+                        Self::load_pattern(&material_hash, defines)
                         .unwrap_or(default.pattern().clone()))
             },
             None => default,
         }
     }
 
-    fn load_pattern(hash: &Hash) -> Option<PatternObject> {
+    fn load_pattern(hash: &Hash, defines: &Defines) -> Option<PatternObject> {
         if let Some(color) = Self::load_color_from_hash(hash, "color") {
             return Some(PatternObject::new(
                 crate::Pattern::Plain(PlainPattern::new(color))
             ));
         }
 
-        None
+        let mut pattern_object = None;
+
+        if let Some(pattern_hash) = hash.get(&Yaml::from_str("pattern")).unwrap().as_hash() {
+            match pattern_hash.get(&Yaml::from_str("type")).unwrap().as_str().unwrap() {
+                "stripes" => {
+                    let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
+                    pattern_object = Some(
+                        PatternObject::new(
+                            Pattern::Stripped(
+                                StrippedPattern::new(
+                                    Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
+                                    Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                                )
+                            )
+                        )
+                    )
+                },
+                "rings" => {
+                    let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
+                    pattern_object = Some(
+                        PatternObject::new(
+                            Pattern::Ring(
+                                RingPattern::new(
+                                    Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
+                                    Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                                )
+                            )
+                        )
+                    )
+                },
+                "checkers" => {
+                    let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
+                    pattern_object = Some(
+                        PatternObject::new(
+                            Pattern::Checker(
+                                CheckerPattern::new(
+                                    Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
+                                    Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                                )
+                            )
+                        )
+                    )
+                },
+                &_ => {
+                    panic!("Unsupported pattern")
+                }
+            }
+        }
+
+        pattern_object
+        .map(|o| {
+            o
+            .with_transform(
+                &Self::load_transform(hash, defines)
+            )
+        })        
     }
 
     fn load_transform(hash: &Hash, defines: &Defines) -> DMat4 {
@@ -341,13 +396,16 @@ impl YamlLoader {
 
     fn load_color_from_hash(hash: &Hash, key: &str) -> Option<Color> {
         hash.get(&Yaml::from_str(key)).map(|yaml| {
-            let vec = yaml.as_vec().unwrap();
-            Color::new(
-                Self::unwrap_f64(&vec[0]),
-                Self::unwrap_f64(&vec[1]),
-                Self::unwrap_f64(&vec[2])
-            )
+            Self::load_color_from_vec(yaml.as_vec().unwrap())
         })
+    }
+
+    fn load_color_from_vec(vec: &Vec<Yaml>) -> Color {
+        Color::new(
+            Self::unwrap_f64(&vec[0]),
+            Self::unwrap_f64(&vec[1]),
+            Self::unwrap_f64(&vec[2])
+        )
     }
 
     fn unwrap_i64(yaml: &Yaml) -> i64 {
