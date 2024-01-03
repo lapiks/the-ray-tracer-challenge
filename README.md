@@ -45,3 +45,5 @@ Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge
 
 ### From the book
 ![Alt text](examples/yaml_scenes/reflect-refract.png?raw=true "reflect-refract")
+
+![Alt text](examples/yaml_scenes/shadow-glamour-shot.png?raw=true "shadow-glamour-shot")
