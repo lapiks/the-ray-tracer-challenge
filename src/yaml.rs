@@ -118,33 +118,79 @@ impl YamlLoader {
 
         object
         .map(|o| {
-            let material_hash = match hash.get(&Yaml::from_str("material")).unwrap().as_str() {
-                Some(define_name) => Self::unwrap_define(defines, define_name),
-                None => hash.get(&Yaml::from_str("material")).unwrap().as_hash().unwrap().clone(),
-            };
-
             o
             .with_material(
-                Self::load_material(&material_hash)
+                Self::load_material(hash, defines)
             )
             .with_transform(
-                &Self::load_transform(hash)
+                &Self::load_transform(hash, defines)
             )
         })
     }
 
-    fn load_material(hash: &Hash) -> Material {
+    fn load_material(hash: &Hash, defines: &Defines) -> Material {
+        /// Extends material hash with define's values
+        fn extend_with_defines(defines: &Defines, name: &str, hash: &mut Hash) {
+            defines
+            .get(name)
+            .map(|define_hash| {
+                match define_hash.get(&Yaml::from_str("extend")) {
+                    Some(extend) => match extend.as_str() {
+                        Some(define_name) => {
+                            extend_with_defines(defines, define_name, hash);
+                        }
+                        None => panic!("The extend should have a name"),
+                    },
+                    None => (),
+                }
+            
+                hash.extend(define_hash.get(&Yaml::from_str("value")).unwrap().as_hash().unwrap().clone());
+            });
+        }
+
         let default = Material::default();
 
-        Material::default()
-            .with_ambient(Self::load_f64_from_hash(hash, "ambient").unwrap_or(default.ambient()))
-            .with_diffuse(Self::load_f64_from_hash(hash, "diffuse").unwrap_or(default.diffuse()))
-            .with_specular(Self::load_f64_from_hash(hash, "specular").unwrap_or(default.specular()))
-            .with_shininess(Self::load_f64_from_hash(hash, "shininess").unwrap_or(default.shininess()))
-            .with_reflective(Self::load_f64_from_hash(hash, "reflective").unwrap_or(default.reflective()))
-            .with_refractive_index(Self::load_f64_from_hash(hash, "refractive_index").unwrap_or(default.refractive_index()))
-            .with_transparency(Self::load_f64_from_hash(hash, "transparency").unwrap_or(default.transparency()))
-            .with_pattern(Self::load_pattern(hash).unwrap_or(default.pattern().clone()))
+        match hash.get(&Yaml::from_str("material")) {
+            Some(material_yaml) => {
+                let mut material_hash = Hash::new();
+                match material_yaml.as_str() {
+                    Some(define_name) => {
+                        extend_with_defines(defines, define_name, &mut material_hash);
+                    },
+                    None => material_hash = material_yaml.as_hash().unwrap().clone(),
+                }
+
+                Material::default()
+                    .with_ambient(
+                        Self::load_f64_from_hash(&material_hash, "ambient")
+                        .unwrap_or(default.ambient())
+                    )
+                    .with_diffuse(
+                        Self::load_f64_from_hash(&material_hash, "diffuse")
+                        .unwrap_or(default.diffuse())
+                    )
+                    .with_specular(
+                        Self::load_f64_from_hash(&material_hash, "specular")
+                        .unwrap_or(default.specular())
+                    )
+                    .with_shininess(
+                        Self::load_f64_from_hash(&material_hash, "shininess")
+                        .unwrap_or(default.shininess()))
+                    .with_reflective(
+                        Self::load_f64_from_hash(&material_hash, "reflective")
+                        .unwrap_or(default.reflective()))
+                    .with_refractive_index(
+                        Self::load_f64_from_hash(&material_hash, "refractive_index")
+                        .unwrap_or(default.refractive_index()))
+                    .with_transparency(
+                        Self::load_f64_from_hash(&material_hash, "transparency")
+                        .unwrap_or(default.transparency()))
+                    .with_pattern(
+                        Self::load_pattern(&material_hash)
+                        .unwrap_or(default.pattern().clone()))
+            },
+            None => default,
+        }
     }
 
     fn load_pattern(hash: &Hash) -> Option<PatternObject> {
@@ -157,54 +203,116 @@ impl YamlLoader {
         None
     }
 
-    fn load_transform(hash: &Hash) -> DMat4 {
-        let mut matrix = DMat4::IDENTITY;
-        if let Some(transform) = hash.get(&Yaml::from_str("transform")) {
-            for transformation in transform.as_vec().unwrap().into_iter().rev() {
-                if let Some(values) = transformation.as_vec() {
-                    let operation = &values[0];
-                    matrix *= match operation.as_str().unwrap() {
-                        "translate" => {
-                            DMat4::from_translation(
-                                DVec3::new(
-                                    Self::unwrap_f64(&values[1]),
-                                    Self::unwrap_f64(&values[2]),
-                                    Self::unwrap_f64(&values[3])
-                                )
-                            )
+    fn load_transform(hash: &Hash, defines: &Defines) -> DMat4 {
+        /// Extends transform array with define's values
+        fn extend_with_defines(defines: &Defines, name: &str, vec: &mut Vec<Yaml>) {
+            defines
+            .get(name)
+            .map(|define_hash| {
+                match define_hash.get(&Yaml::from_str("extend")) {
+                    Some(extend) => match extend.as_str() {
+                        Some(define_name) => {
+                            extend_with_defines(defines, define_name, vec);
                         }
-                        "scale" => {
-                            DMat4::from_scale(
-                                DVec3::new(
-                                    Self::unwrap_f64(&values[1]),
-                                    Self::unwrap_f64(&values[2]),
-                                    Self::unwrap_f64(&values[3])
-                                )
-                            )
-                        }
-                        "rotate-x" => {
-                            DMat4::from_rotation_x(
-                                Self::unwrap_f64(&values[1])
-                            )
-                        }
-                        "rotate-y" => {
-                            DMat4::from_rotation_y(
-                                Self::unwrap_f64(&values[1])
-                            )
-                        }
-                        "rotate-z" => {
-                            DMat4::from_rotation_z(
-                                Self::unwrap_f64(&values[1])
-                            )
-                        }
-                        &_ => {
-                            panic!("Unsupported transform operation")
-                        }
-                    };
+                        None => panic!("The extend should have a name"),
+                    },
+                    None => (),
                 }
-            }
+            
+                match define_hash.get(&Yaml::from_str("value")).unwrap().as_vec() {
+                    Some(values) => {
+                        for value in values {
+                            match value.as_str() {
+                                Some(define_name) => {
+                                    extend_with_defines(defines, define_name, vec);
+                                },
+                                None => (),
+                            }
+                        }
+                    },
+                    None => (),
+                }
+
+                vec.extend(define_hash.get(&Yaml::from_str("value")).unwrap().as_vec().unwrap().clone());
+            });
         }
 
+        let mut matrix = DMat4::IDENTITY;
+
+        match hash.get(&Yaml::from_str("transform")) {
+            Some(transform_yaml) => {
+                let mut transform_vec = Vec::new();
+
+                // transform:
+                //   - other-transform
+                match transform_yaml.as_vec() {
+                    Some(values) => {
+                        for value in values {
+                            match value.as_str() {
+                                Some(define_name) => {
+                                    extend_with_defines(defines, define_name, &mut transform_vec);
+                                },
+                                None => transform_vec.push(value.clone()),
+                            }
+                        }
+                    },
+                    None => (),
+                }
+
+                // transform: other-transform 
+                match transform_yaml.as_str() {
+                    Some(define_name) => {
+                        extend_with_defines(defines, define_name, &mut transform_vec);
+                    },
+                    None => (),
+                }
+
+                for transformation in transform_vec.into_iter().rev() {
+                    if let Some(values) = transformation.as_vec() {
+                        let operation = &values[0];
+                        matrix *= match operation.as_str().unwrap() {
+                            "translate" => {
+                                DMat4::from_translation(
+                                    DVec3::new(
+                                        Self::unwrap_f64(&values[1]),
+                                        Self::unwrap_f64(&values[2]),
+                                        Self::unwrap_f64(&values[3])
+                                    )
+                                )
+                            }
+                            "scale" => {
+                                DMat4::from_scale(
+                                    DVec3::new(
+                                        Self::unwrap_f64(&values[1]),
+                                        Self::unwrap_f64(&values[2]),
+                                        Self::unwrap_f64(&values[3])
+                                    )
+                                )
+                            }
+                            "rotate-x" => {
+                                DMat4::from_rotation_x(
+                                    Self::unwrap_f64(&values[1])
+                                )
+                            }
+                            "rotate-y" => {
+                                DMat4::from_rotation_y(
+                                    Self::unwrap_f64(&values[1])
+                                )
+                            }
+                            "rotate-z" => {
+                                DMat4::from_rotation_z(
+                                    Self::unwrap_f64(&values[1])
+                                )
+                            }
+                            &_ => {
+                                panic!("Unsupported transform operation")
+                            }
+                        };
+                    }
+                }
+            },
+            None => (),
+        }
         matrix
     }
 
@@ -257,30 +365,6 @@ impl YamlLoader {
                 None => panic!("Unwrapping f64 failed, the value is not a f64 or i64"),
             }
         }
-    }
-
-    fn unwrap_define(defines: &Defines, name: &str) -> Hash { 
-        let mut hash = Hash::new();
-        Self::recursive_unwrap_define(defines, name, &mut hash);
-        hash
-    }
-
-    fn recursive_unwrap_define(defines: &Defines, name: &str, hash: &mut Hash) {
-        defines
-        .get(name)
-        .map(|define_hash| {
-            match define_hash.get(&Yaml::from_str("extend")) {
-                Some(extend) => match extend.as_str() {
-                    Some(define_name) => {
-                        Self::recursive_unwrap_define(defines, define_name, hash);
-                    }
-                    None => panic!("The extend should have a name"),
-                },
-                None => (),
-            }
-            let values = define_hash.get(&Yaml::from_str("value")).unwrap().as_hash().unwrap();
-            hash.extend(values.clone());
-        });
     }
 }
 
@@ -347,7 +431,7 @@ pub mod tests {
     }
 
     #[test]
-    fn importing_a_yaml_scene_with_extends() {
+    fn importing_a_yaml_scene_with_material_extends() {
         let source = "
             - define: a
               value:
@@ -369,7 +453,68 @@ pub mod tests {
         let objects = loader.objects();
 
         assert_eq!(objects[0].material().ambient(), 0.6);
+        assert_eq!(objects[0].material().diffuse(), Material::default().diffuse());
         assert_eq!(objects[1].material().ambient(), 0.6);
         assert_eq!(objects[1].material().diffuse(), 0.7);
+    }
+
+    #[test]
+    fn importing_a_yaml_scene_with_transform_extends() {
+        let source = "
+            - define: a
+              value:
+              - [ scale, 2, 2, 2 ]
+            
+            - define: b
+              extend: a
+              value: 
+              - [ scale, 2, 2, 2 ]
+            
+            - add: cube
+              transform: a
+
+            - add: cube
+              transform: b
+        ";
+
+        let loader = YamlLoader::load_from_str(source);
+        let objects = loader.objects();
+
+        let object1_s_r_t = objects[0].transform().to_scale_rotation_translation();
+        let object2_s_r_t = objects[1].transform().to_scale_rotation_translation();
+
+        assert_eq!(object1_s_r_t.0, dvec3(2.0, 2.0, 2.0));
+        assert_eq!(object2_s_r_t.0, dvec3(4.0, 4.0, 4.0));
+    }
+
+    #[test]
+    fn importing_a_yaml_scene_with_transform_extends_bis() {
+        let source = "
+            - define: a
+              value:
+              - [ scale, 2, 2, 2 ]
+            
+            - define: b
+              value: 
+              - a
+              - [ scale, 2, 2, 2 ]
+            
+            - add: cube
+              transform: 
+              - a
+
+            - add: cube
+              transform: 
+              - b
+        ";
+
+        let loader = YamlLoader::load_from_str(source);
+        let objects = loader.objects();
+
+        let object1_s_r_t = objects[0].transform().to_scale_rotation_translation();
+        let object2_s_r_t = objects[1].transform().to_scale_rotation_translation();
+
+        assert_eq!(object1_s_r_t.0, dvec3(2.0, 2.0, 2.0));
+        assert_eq!(object2_s_r_t.0, dvec3(4.0, 4.0, 4.0));
     }
 }
