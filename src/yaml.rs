@@ -30,25 +30,29 @@ impl YamlLoader {
         for elem in elems {
             let hash = elem.as_hash().unwrap();
             
-            if let Some(define) = hash.get(&Yaml::from_str("define")) {
-                let define_name = define.as_str().unwrap();
-                defines.insert(define_name, hash);
-            }             
-            else if let Some(add) = hash.get(&Yaml::from_str("add")) {
-                match add.as_str().unwrap() {
-                    "camera" => {
-                        camera = Some(Self::load_camera(&hash));
+            let _ = match Self::load_str_from_hash(hash, "define") {
+                Some(define_name) => defines.insert(define_name, hash),
+                None => None,
+            };
+
+            match Self::load_str_from_hash(hash, "add") {
+                Some(add_value) => {
+                    match add_value {
+                        "camera" => {
+                            camera = Some(Self::load_camera(&hash));
+                        }
+                        "light" => {
+                            lights.push(Self::load_light(&hash));
+                        }
+                        "sphere" | "plane" | "cube" | "triangle" | "group" => {
+                            objects.push(Self::load_object(&hash, &defines).expect("Unable to load object"));
+                        }
+                        &_ => {
+                            panic!("Unsupported entity to add to the scene")
+                        }
                     }
-                    "light" => {
-                        lights.push(Self::load_light(&hash));
-                    }
-                    "sphere" | "plane" | "cube" | "triangle" | "group" => {
-                        objects.push(Self::load_object(&hash, &defines).expect("Unable to load object"));
-                    }
-                    &_ => {
-                        panic!("Unsupported entity to add to the scene")
-                    }
-                }
+                },
+                None => (),
             }
         }
         
@@ -95,7 +99,7 @@ impl YamlLoader {
 
     fn load_object(hash: &Hash, defines: &Defines) -> Option<Object> {
         let mut object = None;
-        match hash.get(&Yaml::from_str("add")).unwrap().as_str().expect("The shape should be a string") {
+        match Self::load_str_from_hash(hash, "add").expect("The shape should be a string") {
             "sphere" => {
                 object = Some(Object::new(Shape::Sphere(Sphere::default())));
             }
@@ -116,6 +120,8 @@ impl YamlLoader {
             }
         }
 
+        let default = Object::new(Shape::Sphere(Sphere::default()));
+
         object
         .map(|o| {
             o
@@ -124,6 +130,9 @@ impl YamlLoader {
             )
             .with_transform(
                 &Self::load_transform(hash, defines)
+            )
+            .with_shadow(
+                Self::load_bool_from_hash(hash, "shadow").unwrap_or(default.shadow())
             )
         })
     }
@@ -203,18 +212,17 @@ impl YamlLoader {
 
         let mut pattern_object = None;
 
-        match hash.get(&Yaml::from_str("pattern")) {
-            Some(pattern_yaml) => {
-                let pattern_hash = pattern_yaml.as_hash().unwrap();
-                match pattern_hash.get(&Yaml::from_str("type")).unwrap().as_str().unwrap() {
+        match Self::load_hash_from_hash(hash, "pattern") {
+            Some(pattern_hash) => {
+                match Self::load_str_from_hash(pattern_hash, "type").expect("The pattern type should be a string") {
                     "stripes" => {
-                        let colors = pattern_hash.get(&Yaml::from_str("colors")).unwrap().as_vec().unwrap();
+                        let colors = Self::load_vec_from_hash(pattern_hash, "colors").expect("The pattern colors should be a vec");
                         pattern_object = Some(
                             PatternObject::new(
                                 Pattern::Stripped(
                                     StrippedPattern::new(
-                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
-                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be a vec")), 
+                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be a vec"))
                                     )
                                 )
                             )
@@ -226,8 +234,8 @@ impl YamlLoader {
                             PatternObject::new(
                                 Pattern::Ring(
                                     RingPattern::new(
-                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
-                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be a vec")), 
+                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be a vec"))
                                     )
                                 )
                             )
@@ -239,8 +247,8 @@ impl YamlLoader {
                             PatternObject::new(
                                 Pattern::Checker(
                                     CheckerPattern::new(
-                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
-                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be a vec")), 
+                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be a vec"))
                                     )
                                 )
                             )
@@ -252,8 +260,8 @@ impl YamlLoader {
                             PatternObject::new(
                                 Pattern::Gradient(
                                     GradientPattern::new(
-                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be an array")), 
-                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be an array"))
+                                        Self::load_color_from_vec(colors[0].as_vec().expect("A color should be a vec")), 
+                                        Self::load_color_from_vec(colors[1].as_vec().expect("A color should be a vec"))
                                     )
                                 )
                             )
@@ -389,6 +397,12 @@ impl YamlLoader {
         matrix
     }
 
+    fn load_str_from_hash<'a>(hash: &'a Hash, key: &str) -> Option<&'a str> {
+        hash
+        .get(&Yaml::from_str(key))
+        .map(|yaml| Self::unwrap_str(yaml))
+    }
+
     fn load_i64_from_hash(hash: &Hash, key: &str) -> Option<i64> {
         hash
         .get(&Yaml::from_str(key))
@@ -399,6 +413,12 @@ impl YamlLoader {
         hash
         .get(&Yaml::from_str(key))
         .map(|yaml| Self::unwrap_f64(yaml))
+    }
+
+    fn load_bool_from_hash(hash: &Hash, key: &str) -> Option<bool> {
+        hash
+        .get(&Yaml::from_str(key))
+        .map(|yaml| Self::unwrap_bool(yaml))
     }
 
     fn load_dvec3_from_hash(hash: &Hash, key: &str) -> Option<DVec3> {
@@ -418,12 +438,31 @@ impl YamlLoader {
         })
     }
 
+    fn load_hash_from_hash<'a>(hash: &'a Hash, key: &'a str) -> Option<&'a Hash> {
+        hash
+        .get(&Yaml::from_str(key))
+        .map(|yaml| Self::unwrap_hash(yaml))
+    }
+
+    fn load_vec_from_hash<'a>(hash: &'a Hash, key: &'a str) -> Option<&'a Vec<Yaml>> {
+        hash
+        .get(&Yaml::from_str(key))
+        .map(|yaml| Self::unwrap_vec(yaml))
+    }
+
     fn load_color_from_vec(vec: &Vec<Yaml>) -> Color {
         Color::new(
             Self::unwrap_f64(&vec[0]),
             Self::unwrap_f64(&vec[1]),
             Self::unwrap_f64(&vec[2])
         )
+    }
+
+    fn unwrap_str(yaml: &Yaml) -> &str {
+        match yaml.as_str() {
+            Some(value) => value,
+            None => panic!("Unwrapping str failed, the value is not a str"),
+        }
     }
 
     fn unwrap_i64(yaml: &Yaml) -> i64 {
@@ -440,6 +479,27 @@ impl YamlLoader {
                 Some(value) => value as f64,
                 None => panic!("Unwrapping f64 failed, the value is not a f64 or i64"),
             }
+        }
+    }
+
+    fn unwrap_bool(yaml: &Yaml) -> bool {
+        match yaml.as_bool() {
+            Some(value) => value,
+            None => panic!("Unwrapping bool failed, the value is not a bool"),
+        }
+    }
+
+    fn unwrap_vec(yaml: &Yaml) -> &Vec<Yaml> {
+        match yaml.as_vec() {
+            Some(value) => value,
+            None => panic!("Unwrapping vec failed, the value is not a vec"),
+        }
+    }
+
+    fn unwrap_hash(yaml: &Yaml) -> &Hash {
+        match yaml.as_hash() {
+            Some(value) => value,
+            None => panic!("Unwrapping hash failed, the value is not an hash"),
         }
     }
 }
@@ -504,6 +564,7 @@ pub mod tests {
                 reflective: 0.3
                 transparency: 0.5
                 refractive-index: 1.5
+              shadow: false
         ";
 
         let loader = YamlLoader::load_from_str(source);
@@ -517,6 +578,7 @@ pub mod tests {
         assert_eq!(objects[0].material().reflective(), 0.3);
         assert_eq!(objects[0].material().transparency(), 0.5);
         assert_eq!(objects[0].material().refractive_index(), 1.5);
+        assert_eq!(objects[0].shadow(), false);
 
         let s_r_t = objects[0].transform().to_scale_rotation_translation();
         assert_eq!(s_r_t.0, dvec3(0.33, 0.33, 0.33));

@@ -13,6 +13,7 @@ pub struct Object {
     material: Material,
     transform: DMat4,
     inverse_transform: DMat4,
+    shadow: bool,
 }
 
 impl Object {
@@ -21,12 +22,18 @@ impl Object {
             shape,
             material: Material::default(),
             transform: DMat4::IDENTITY,
-            inverse_transform: DMat4::IDENTITY
+            inverse_transform: DMat4::IDENTITY,
+            shadow: true,
         }
     }
 
     pub fn with_material(mut self, material: Material) -> Self {
         self.material = material;
+        self
+    }
+
+    pub fn with_shadow(mut self, shadow: bool) -> Self {
+        self.shadow = shadow;
         self
     }
 
@@ -73,6 +80,10 @@ impl Object {
     pub fn material_mut(&mut self) -> &mut Material {
         &mut self.material
     }
+
+    pub fn shadow(&self) -> bool {
+        self.shadow
+    } 
 
     pub fn transform(&self) -> &DMat4 {
         &self.transform
