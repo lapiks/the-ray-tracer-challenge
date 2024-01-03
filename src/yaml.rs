@@ -179,12 +179,12 @@ impl YamlLoader {
                     .with_reflective(
                         Self::load_f64_from_hash(&material_hash, "reflective")
                         .unwrap_or(default.reflective()))
-                    .with_refractive_index(
-                        Self::load_f64_from_hash(&material_hash, "refractive_index")
-                        .unwrap_or(default.refractive_index()))
                     .with_transparency(
-                        Self::load_f64_from_hash(&material_hash, "transparency")
-                        .unwrap_or(default.transparency()))
+                            Self::load_f64_from_hash(&material_hash, "transparency")
+                            .unwrap_or(default.transparency()))
+                    .with_refractive_index(
+                        Self::load_f64_from_hash(&material_hash, "refractive-index")
+                        .unwrap_or(default.refractive_index()))
                     .with_pattern(
                         Self::load_pattern(&material_hash)
                         .unwrap_or(default.pattern().clone()))
