@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use glam::{DVec3, DMat4};
 use yaml_rust::{Yaml, yaml::Hash};
 
@@ -11,6 +13,8 @@ pub struct YamlLoader {
     camera: Option<Camera>,
 }
 
+type Defines<'a> = HashMap<&'a str, &'a Hash>;
+
 impl YamlLoader {
     pub fn load_from_str(source: &str) -> Self {
         let docs = yaml_rust::yaml::YamlLoader::load_from_str(source).unwrap();
@@ -20,23 +24,30 @@ impl YamlLoader {
         let mut objects = Vec::default();
         let mut lights = Vec::default();
 
+        let mut defines: Defines = HashMap::default();
+
         let elems = doc.as_vec().expect("The yaml should be an array of elements to add to the scene");
         for elem in elems {
             let hash = elem.as_hash().unwrap();
-            let add = hash.get(&Yaml::from_str("add")).expect("Each element of the hash array should contains a add key");
-
-            match add.as_str().unwrap() {
-                "camera" => {
-                    camera = Some(Self::load_camera(&hash));
-                }
-                "light" => {
-                    lights.push(Self::load_light(&hash));
-                }
-                "sphere" | "plane" | "cube" | "triangle" | "group" => {
-                    objects.push(Self::load_object(&hash).expect("Unable to load object"));
-                }
-                &_ => {
-                    panic!("Unsupported entity to add to the scene")
+            
+            if let Some(define) = hash.get(&Yaml::from_str("define")) {
+                let define_name = define.as_str().unwrap();
+                defines.insert(define_name, hash);
+            }             
+            else if let Some(add) = hash.get(&Yaml::from_str("add")) {
+                match add.as_str().unwrap() {
+                    "camera" => {
+                        camera = Some(Self::load_camera(&hash));
+                    }
+                    "light" => {
+                        lights.push(Self::load_light(&hash));
+                    }
+                    "sphere" | "plane" | "cube" | "triangle" | "group" => {
+                        objects.push(Self::load_object(&hash, &defines).expect("Unable to load object"));
+                    }
+                    &_ => {
+                        panic!("Unsupported entity to add to the scene")
+                    }
                 }
             }
         }
@@ -82,7 +93,7 @@ impl YamlLoader {
         )
     }
 
-    fn load_object(hash: &Hash) -> Option<Object> {
+    fn load_object(hash: &Hash, defines: &Defines) -> Option<Object> {
         let mut object = None;
         match hash.get(&Yaml::from_str("add")).unwrap().as_str().expect("The shape should be a string") {
             "sphere" => {
@@ -107,9 +118,14 @@ impl YamlLoader {
 
         object
         .map(|o| {
+            let material_hash = match hash.get(&Yaml::from_str("material")).unwrap().as_str() {
+                Some(define_name) => Self::unwrap_define(defines, define_name),
+                None => hash.get(&Yaml::from_str("material")).unwrap().as_hash().unwrap().clone(),
+            };
+
             o
             .with_material(
-                Self::load_material(hash.get(&Yaml::from_str("material")).unwrap().as_hash().unwrap())
+                Self::load_material(&material_hash)
             )
             .with_transform(
                 &Self::load_transform(hash)
@@ -242,6 +258,30 @@ impl YamlLoader {
             }
         }
     }
+
+    fn unwrap_define(defines: &Defines, name: &str) -> Hash { 
+        let mut hash = Hash::new();
+        Self::recursive_unwrap_define(defines, name, &mut hash);
+        hash
+    }
+
+    fn recursive_unwrap_define(defines: &Defines, name: &str, hash: &mut Hash) {
+        defines
+        .get(name)
+        .map(|define_hash| {
+            match define_hash.get(&Yaml::from_str("extend")) {
+                Some(extend) => match extend.as_str() {
+                    Some(define_name) => {
+                        Self::recursive_unwrap_define(defines, define_name, hash);
+                    }
+                    None => panic!("The extend should have a name"),
+                },
+                None => (),
+            }
+            let values = define_hash.get(&Yaml::from_str("value")).unwrap().as_hash().unwrap();
+            hash.extend(values.clone());
+        });
+    }
 }
 
 
@@ -304,6 +344,32 @@ pub mod tests {
         let s_r_t = objects[0].transform().to_scale_rotation_translation();
         assert_eq!(s_r_t.0, dvec3(0.33, 0.33, 0.33));
         assert_eq!(s_r_t.2, dvec3(-0.25, 0.33, 0.0));
+    }
 
+    #[test]
+    fn importing_a_yaml_scene_with_extends() {
+        let source = "
+            - define: a
+              value:
+                ambient: 0.6
+            
+            - define: b
+              extend: a
+              value: 
+                diffuse: 0.7
+            
+            - add: cube
+              material: a
+
+            - add: cube
+              material: b
+        ";
+
+        let loader = YamlLoader::load_from_str(source);
+        let objects = loader.objects();
+
+        assert_eq!(objects[0].material().ambient(), 0.6);
+        assert_eq!(objects[1].material().ambient(), 0.6);
+        assert_eq!(objects[1].material().diffuse(), 0.7);
     }
 }
