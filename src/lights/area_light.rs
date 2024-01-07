@@ -1,10 +1,11 @@
 use glam::DVec3;
+use rand::Rng;
 
-use crate::Color;
+use crate::{Color, sequence::Sequence};
 
 use super::light::LightSource;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct AreaLight {
     corner: DVec3,
     uvec: DVec3,
@@ -38,10 +39,26 @@ impl AreaLight {
     }
 
     // returns the point in the middle of the cell at the given coordinates
-    fn point_on_light(&self, u: usize, v: usize) -> DVec3{
+    fn point_on_light(&self, u: usize, v: usize, jitter_by: &mut Sequence<f64>) -> DVec3 {
         self.corner + 
-        self.uvec * (u as f64 + 0.5) +
-        self.vvec * (v as f64 + 0.5) 
+        self.uvec * (u as f64 + jitter_by.next().unwrap()) +
+        self.vvec * (v as f64 + jitter_by.next().unwrap()) 
+    }
+
+    fn intensity_at_impl(&self, world_point: DVec3, world: &crate::World, jitter_by: &mut Sequence<f64>) -> f64 {
+        let mut total = 0.0;
+        for v in 0..self.vsteps {
+            for u in 0..self.usteps {
+                total += match world.is_shadowed(
+                    world_point,
+                    self.point_on_light(u, v, jitter_by)
+                ) {
+                    true => 0.0,
+                    false => 1.0,
+                }
+            }
+        }
+        total / self.samples as f64
     }
 }
 
@@ -55,19 +72,13 @@ impl LightSource for AreaLight {
     }
 
     fn intensity_at(&self, world_point: DVec3, world: &crate::World) -> f64 {
-        let mut total = 0.0;
-        for v in 0..self.vsteps {
-            for u in 0..self.usteps {
-                total += match world.is_shadowed(
-                    world_point,
-                    self.point_on_light(u, v)
-                ) {
-                    true => 0.0,
-                    false => 1.0,
-                }
-            }
+        let mut rng = rand::thread_rng();
+        let mut random_values: Vec<f64> = Vec::with_capacity(self.samples);
+        for _ in 0..self.samples {
+            random_values.push(rng.gen());
         }
-        total / self.samples as f64
+        let mut jitter_by = Sequence::new(random_values);
+        self.intensity_at_impl(world_point, world, &mut jitter_by)
     }
 }
 
@@ -75,7 +86,7 @@ impl LightSource for AreaLight {
 mod tests {
     use glam::dvec3;
 
-    use crate::world::tests::default_world;
+    use crate::{world::tests::default_world, sequence::Sequence};
 
     use super::*;
 
@@ -119,8 +130,10 @@ mod tests {
             (3, 1, dvec3(1.75, 0.0, 0.75)),
         ];
 
+        let mut jitter_by = Sequence::new(vec![0.5]);
+
         for data in u_v_result {
-            assert_eq!(light.point_on_light(data.0, data.1), data.2);
+            assert_eq!(light.point_on_light(data.0, data.1, &mut jitter_by), data.2);
         }
     }
 
@@ -144,8 +157,36 @@ mod tests {
             (dvec3(0.0, 0.0, -2.0), 1.0),
         ];
 
+        let mut jitter_by = Sequence::new(vec![0.5]);
+
         for data in point_result {
-            assert_eq!(light.intensity_at(data.0, &w), data.1);
+            assert_eq!(light.intensity_at_impl(data.0, &w, &mut jitter_by), data.1);
+        }
+    }
+
+    #[test]
+    fn finding_a_single_point_on_a_jittered_area_light() {
+        let light = AreaLight::new(
+            dvec3(0.0, 0.0, 0.0),
+            dvec3(2.0, 0.0, 0.0),
+            4,
+            dvec3(0.0, 0.0, 1.0),
+            2,
+            Color::white()
+        );
+
+        let u_v_result = vec![
+            (0, 0, dvec3(0.15, 0.0, 0.35)),
+            (1, 0, dvec3(0.65, 0.0, 0.35)),
+            (0, 1, dvec3(0.15, 0.0, 0.85)),
+            (2, 0, dvec3(1.15, 0.0, 0.35)),
+            (3, 1, dvec3(1.65, 0.0, 0.85)),
+        ];
+
+        let mut jitter_by = Sequence::new(vec![0.3, 0.7]);
+
+        for data in u_v_result {
+            assert_eq!(light.point_on_light(data.0, data.1, &mut jitter_by), data.2);
         }
     }
 }

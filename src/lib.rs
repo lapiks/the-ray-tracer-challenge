@@ -44,4 +44,5 @@ pub mod canvas;
 pub mod color;
 pub mod camera;
 pub mod pattern;
+mod sequence;
 pub mod yaml;

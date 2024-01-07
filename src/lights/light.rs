@@ -4,7 +4,7 @@ use crate::{Color, World};
 
 use super::{PointLight, AreaLight};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Light {
     PointLight(PointLight),
     AreaLight(AreaLight),
