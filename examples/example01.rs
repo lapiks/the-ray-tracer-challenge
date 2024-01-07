@@ -11,7 +11,8 @@ fn main() {
                 dvec3(0.0, 0.0, 0.0),
                 dvec3(0.0, 1.0, 0.0)
             )
-        );
+        )
+        .with_antialiasing(3);
 
     let l1 = PointLight::new(
         dvec3(-10.0, 10.0, -10.0), 

@@ -130,7 +130,8 @@ fn main() {
                 dvec3(0.0, 1.0, 0.0),
                 dvec3(0.0, 1.0, 0.0)
             )
-        );
+        )
+        .with_antialiasing(3);
 
     let canvas = camera.render(&world, 5);
     canvas.export("examples/example05.png").unwrap();

@@ -76,17 +76,25 @@ impl YamlLoader {
     }
 
     fn load_camera(hash: &Hash) -> Camera {
+        let default = Camera::new(100, 100, 1.0);
+
+        let from = Self::load_dvec3_from_hash(hash, "from");
+        let to = Self::load_dvec3_from_hash(hash, "to");
+        let up = Self::load_dvec3_from_hash(hash, "up");
+        
+        let transform = match from.is_none() || to.is_none() || up.is_none() {
+            true => *default.transform(),
+            false => transformations::view_transform(from.unwrap(), to.unwrap(), up.unwrap()),
+        };
+
         Camera::new(
             Self::load_i64_from_hash(hash, "width").expect("Camera is missing the width parameter") as usize,
             Self::load_i64_from_hash(hash, "height").expect("Camera is missing the height parameter") as usize,
             Self::load_f64_from_hash(hash, "field-of-view").expect("Camera is missing the field-of-view parameter"),
         )
-        .with_transform(
-            transformations::view_transform(
-                Self::load_dvec3_from_hash(hash, "from").expect("Camera is missing the from parameter"),
-                Self::load_dvec3_from_hash(hash, "to").expect("Camera is missing the to parameter"),
-                Self::load_dvec3_from_hash(hash, "up").expect("Camera is missing the up parameter"),
-            )
+        .with_transform(transform)
+        .with_antialiasing(
+            Self::load_i64_from_hash(hash, "antialiasing").unwrap_or(default.antialiasing() as i64) as usize,
         )
     }
 
@@ -521,6 +529,7 @@ pub mod tests {
               from: [-3, 1, 2.5]
               to: [0, 0.5, 0]
               up: [0, 1, 0]
+              antialiasing: 4
         ";
 
         let loader = YamlLoader::load_from_str(source);
@@ -530,6 +539,7 @@ pub mod tests {
         assert_eq!(camera.unwrap().width(), 1920);
         assert_eq!(camera.unwrap().height(), 1080);
         assert_eq!(camera.unwrap().field_of_view(), 0.7854);
+        assert_eq!(camera.unwrap().antialiasing(), 4);
     }
     
     #[test]

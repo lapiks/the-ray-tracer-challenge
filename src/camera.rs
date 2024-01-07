@@ -15,6 +15,7 @@ pub struct Camera {
     half_width: f64,
     half_height: f64,
     background: Color,
+    antialiasing_offsets: Vec<f64>,
 }
 
 impl Camera {
@@ -45,6 +46,7 @@ impl Camera {
             half_width,
             half_height,
             background: Color::black(),
+            antialiasing_offsets: vec![0.0]
         }
     }
 
@@ -56,6 +58,18 @@ impl Camera {
 
     pub fn with_background(mut self, color: Color) -> Self {
         self.background = color;
+        self
+    }
+
+    pub fn with_antialiasing(mut self, level: usize) -> Self {
+        if level > 5 { println!("maximum supported antialising is level 5")}
+        self.antialiasing_offsets = match level {
+            2 => vec![-0.25, 0.25],
+            3 => vec![-0.25, 0.0, 0.25],
+            4 => vec![-0.25, -0.12, 0.12, 0.25],
+            5 => vec![-0.25, -0.12, 0.0, 0.12, 0.25],
+            _ => vec![0.0],
+        };
         self
     }
 
@@ -71,6 +85,14 @@ impl Camera {
         self.fov
     }
 
+    pub fn antialiasing(&self) -> usize {
+        self.antialiasing_offsets.len()
+    }
+
+    pub fn transform(&self) -> &DMat4 {
+        &self.transform
+    }
+ 
     pub fn render(&self, world: &World, max_recursions: u8) -> Canvas {
         let mut canvas = Canvas::new(self.width, self.height);
         let now = Instant::now();
@@ -82,10 +104,15 @@ impl Camera {
             .for_each(|(i, color)| {
                 let y = i / self.width;
                 let x = i - y * self.width;
-                let ray = self.ray_for_pixel(x, y);
-                *color = world
-                    .color_at(&ray, max_recursions)
-                    .unwrap_or(self.background);
+                for yoffset in &self.antialiasing_offsets {
+                    for xoffset in &self.antialiasing_offsets {
+                        let ray = self.ray_for_pixel(x as f64 + *xoffset, y as f64 + *yoffset);
+                        *color += world
+                            .color_at(&ray, max_recursions)
+                            .unwrap_or(self.background);
+                    }
+                }
+                *color /= (self.antialiasing_offsets.len() * self.antialiasing_offsets.len()) as f64; 
             });
 
         println!("Rendering finished in {:.2?} seconds", now.elapsed());
@@ -93,7 +120,7 @@ impl Camera {
         canvas
     }
 
-    fn ray_for_pixel(&self, x: usize, y: usize) -> Ray {
+    fn ray_for_pixel(&self, x: f64, y: f64) -> Ray {
         let world_x = self.half_width - (x as f64 + 0.5) * self.pixel_size;
         let world_y = self.half_height - (y as f64 + 0.5) * self.pixel_size;
         let pixel = self.transform_inverse.transform_point3(dvec3(world_x, world_y, -1.0));
@@ -143,7 +170,7 @@ mod tests {
     #[test]
     fn constructing_a_ray_through_the_center_of_the_canvas() {
         let c = Camera::new(201, 101, PI / 2.0);
-        let r = c.ray_for_pixel(100, 50);
+        let r = c.ray_for_pixel(100.0, 50.0);
         assert!(r.origin.abs_diff_eq(dvec3(0.0, 0.0, 0.0), EPSILON));
         assert!(r.direction.abs_diff_eq(dvec3(0.0, 0.0, -1.0), EPSILON));
     }
@@ -151,7 +178,7 @@ mod tests {
     #[test]
     fn constructing_a_ray_through_a_corner_of_the_canvas() {
         let c = Camera::new(201,101,PI / 2.0);
-        let r = c.ray_for_pixel(0, 0);
+        let r = c.ray_for_pixel(0.0, 0.0);
         assert!(r.origin.abs_diff_eq(dvec3(0.0, 0.0, 0.0), EPSILON));
         assert!(r.direction.abs_diff_eq(dvec3(0.66519, 0.33259, -0.66851), EPSILON));
     }
@@ -163,7 +190,7 @@ mod tests {
                 DMat4::from_rotation_y(PI / 4.0) 
               * DMat4::from_translation(dvec3(0.0, -2.0, 5.0))
             );
-        let r = c.ray_for_pixel(100, 50);
+        let r = c.ray_for_pixel(100.0, 50.0);
         assert!(r.origin.abs_diff_eq(dvec3(0.0, 2.0, -5.0), EPSILON));
         assert!(r.direction.abs_diff_eq(dvec3(2.0_f64.sqrt() / 2.0, 0.0, -2.0_f64.sqrt() / 2.0), EPSILON));
     }
