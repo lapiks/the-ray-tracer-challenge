@@ -1,6 +1,7 @@
 # The Ray Tracer Challenge
 Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge" book by Jamis Buck.
 
+Here is the book's cover image, rendered with the ray tracer.
 ![Alt text](examples/yaml_scenes/cover.png?raw=true "Cover")
 
 ## Progression
@@ -25,7 +26,7 @@ Implementation in Rust of the ray tracer presented in "The Ray Tracing Challenge
 - [ ] smooth triangles
 - [ ] constructive solid geometry
 - [x] yaml scene descriptions importing
-- [ ] antialiasing
+- [X] antialiasing (supersampling method)
 - [ ] area lights
 - [ ] focal blur
 - [x] CPU parallel rendering
