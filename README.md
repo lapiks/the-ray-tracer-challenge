@@ -27,7 +27,7 @@ Here is the book's cover image, rendered with the ray tracer.
 - [ ] constructive solid geometry
 - [x] yaml scene descriptions importing
 - [X] antialiasing (supersampling method)
-- [ ] area lights
+- [X] area lights
 - [ ] focal blur
 - [x] CPU parallel rendering
 
