@@ -131,13 +131,9 @@ impl Material {
         self.refractive_index
     }
 
-    pub fn lighting(&self, object: &Object, light: &PointLight, point: DVec3, eyev: DVec3, normal: DVec3, is_in_shadow: bool) -> Color {
+    pub fn lighting(&self, object: &Object, light: &PointLight, point: DVec3, eyev: DVec3, normal: DVec3, intensity: f64) -> Color {
         let effective_color = self.pattern.color_at_object(object, point) * light.intensity();
         let ambient = effective_color * self.ambient;
-        
-        if is_in_shadow {
-            return ambient;
-        }
 
         let mut diffuse = Color::black();
         let mut specular = Color::black();
@@ -154,7 +150,7 @@ impl Material {
             }
         }
 
-        ambient + diffuse + specular
+        ambient + diffuse * intensity + specular * intensity
     }
 }
 
@@ -177,7 +173,7 @@ impl Default for Material {
 mod tests {
     use glam::dvec3;
 
-    use crate::{Object, shapes::{Sphere, Shape}, light::PointLight, pattern::StrippedPattern};
+    use crate::{Object, shapes::{Sphere, Shape}, light::PointLight, pattern::StrippedPattern, world::tests::default_world};
 
     use super::*;
 
@@ -213,7 +209,7 @@ mod tests {
                 position, 
                 eyev, 
                 normalv, 
-                false
+                1.0
             ), 
             Color::new(1.9, 1.9, 1.9)
         );
@@ -236,7 +232,7 @@ mod tests {
                 position, 
                 eyev, 
                 normalv, 
-                false
+                1.0
             ), 
             Color::new(1.0, 1.0, 1.0)
         );
@@ -259,7 +255,7 @@ mod tests {
                 position, 
                 eyev, 
                 normalv, 
-                false
+                1.0
             ), 
             Color::new(0.7364, 0.7364, 0.7364)
         );
@@ -282,7 +278,7 @@ mod tests {
                 position, 
                 eyev, 
                 normalv, 
-                false
+                1.0
             ), 
             Color::new(1.6364, 1.6364, 1.6364)
         );
@@ -305,7 +301,7 @@ mod tests {
                 position, 
                 eyev, 
                 normalv, 
-                false
+                1.0
             ), 
             Color::new(0.1, 0.1, 0.1)
         );
@@ -328,7 +324,7 @@ mod tests {
                 position, 
                 eyev, 
                 normalv, 
-                true
+                0.0
             ), 
             Color::new(0.1, 0.1, 0.1)
         );
@@ -359,7 +355,7 @@ mod tests {
                 dvec3(0.9, 0.0, 0.0), 
                 eyev, 
                 normalv, 
-                true
+                1.0
             ), 
             Color::white()
         );
@@ -370,7 +366,7 @@ mod tests {
                 dvec3(1.1, 0.0, 0.0), 
                 eyev, 
                 normalv, 
-                true
+                1.0
             ), 
             Color::black()
         );
@@ -388,5 +384,39 @@ mod tests {
         assert_eq!(m.transparency, 0.0);
         assert_eq!(m.refractive_index, 1.0);
     }
+
+    #[test]
+    fn lighting_uses_light_intensity_to_attenuate_color() {
+        let mut objects = default_world().objects().clone();
+        let first_object = &objects[0];
+        objects[0] = first_object.clone()
+            .with_material(
+                first_object.material().clone()
+                .with_ambient(0.1)
+                .with_diffuse(0.9)
+                .with_specular(0.0)
+                .with_pattern(
+                    PatternObject::new(Pattern::Plain(PlainPattern::new(Color::white())))
+                )
+            );
+
+        let w = default_world()
+        .with_lights(vec![
+            PointLight::new(dvec3(0.0, 0.0, -10.0), Color::new(1.0, 1.0, 1.0))
+        ])
+        .with_objects(objects);
+
+        let object = w.object(0).unwrap();
+        let light = w.light(0).unwrap();
+
+        let pt = dvec3(0.0, 0.0, -1.0);
+        let eyev = dvec3(0.0, 0.0, -1.0);
+        let normalv = dvec3(0.0, 0.0, -1.0);
+
+        assert_eq!(object.material().lighting(object, light, pt, eyev, normalv, 1.0), Color::white());
+        assert_eq!(object.material().lighting(object, light, pt, eyev, normalv, 0.5), Color::new(0.55, 0.55, 0.55));
+        assert_eq!(object.material().lighting(object, light, pt, eyev, normalv, 0.0), Color::new(0.1, 0.1, 0.1));
+    }
+
 }
 

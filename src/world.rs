@@ -35,12 +35,20 @@ impl World {
         self.objects.push(object)
     }
 
+    pub fn objects(&self) -> &Vec<Object> {
+        &self.objects
+    }
+
     pub fn object(&self, index: usize) -> Option<&Object> {
         self.objects.get(index)
     }
 
     pub fn object_mut(&mut self, index: usize) -> Option<&mut Object> {
         self.objects.get_mut(index)
+    }
+
+    pub fn light(&self, index: usize) -> Option<&PointLight> {
+        self.lights.get(index)
     }
 
     pub fn color_at(&self, ray: &Ray, remaining: u8) -> Option<Color> {
@@ -77,7 +85,7 @@ impl World {
                     infos.over_point, 
                     infos.eyev, 
                     infos.normalv,
-                    self.is_shadowed(infos.over_point, light.position())
+                    light.intensity_at(infos.over_point, self)
                 );
         }
 
@@ -93,7 +101,7 @@ impl World {
         }
     }
 
-    fn is_shadowed(&self, world_point: DVec3, light_pos: DVec3) -> bool {
+    pub fn is_shadowed(&self, world_point: DVec3, light_pos: DVec3) -> bool {
         let ray_dir = light_pos - world_point;
         let distance = ray_dir.length();
         let shadow_ray = Ray {
@@ -659,5 +667,4 @@ pub mod tests {
         let comps = IntersectionInfos::new(&xs, 0, &r);
         assert_eq!(w.shade_hit(&comps, 5), Color::new(0.93391, 0.69643, 0.69243));
     }
-
 }
