@@ -11,16 +11,16 @@ pub enum Light {
 }
 
 pub trait LightSource {
-    fn position(&self) -> DVec3;
+    fn positions(&self) -> &[DVec3];
     fn intensity(&self) -> Color;
     fn intensity_at(&self, world_point: DVec3, world: &World) -> f64;
 }
 
 impl LightSource for Light {
-    fn position(&self) -> DVec3 {
+    fn positions(&self) -> &[DVec3] {
         match self {
-            Light::PointLight(l) => l.position(),
-            Light::AreaLight(l) => l.position(),
+            Light::PointLight(l) => l.positions(),
+            Light::AreaLight(l) => l.positions(),
         }
     }
 

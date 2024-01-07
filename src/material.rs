@@ -138,19 +138,22 @@ impl Material {
         let mut diffuse = Color::black();
         let mut specular = Color::black();
 
-        let lightv = (light.position() - point).normalize();
-        let l_dot_n = lightv.dot(normal);
-
-        if l_dot_n >= 0.0 {
-            diffuse = effective_color * self.diffuse * l_dot_n;
-            let reflectv = -lightv - normal * 2.0 * -lightv.dot(normal);
-            let r_dot_e = reflectv.dot(eyev);
-            if r_dot_e > 0.0 {
-                specular = light.intensity() * self.specular * r_dot_e.powf(self.shininess);
+        let samples = light.positions().len();
+        for light_position in light.positions() {
+            let lightv = (*light_position - point).normalize();
+            let l_dot_n = lightv.dot(normal);
+    
+            if l_dot_n >= 0.0 {
+                diffuse += effective_color * self.diffuse * l_dot_n;
+                let reflectv = -lightv - normal * 2.0 * -lightv.dot(normal);
+                let r_dot_e = reflectv.dot(eyev);
+                if r_dot_e > 0.0 {
+                    specular += light.intensity() * self.specular * r_dot_e.powf(self.shininess);
+                }
             }
         }
-
-        ambient + diffuse * intensity + specular * intensity
+        
+        ambient + ((diffuse + specular) / samples as f64) * intensity
     }
 }
 
@@ -173,7 +176,7 @@ impl Default for Material {
 mod tests {
     use glam::dvec3;
 
-    use crate::{Object, shapes::{Sphere, Shape}, pattern::StrippedPattern, world::tests::default_world, lights::PointLight};
+    use crate::{Object, shapes::{Sphere, Shape}, pattern::StrippedPattern, world::tests::default_world, lights::{PointLight, AreaLight}};
 
     use super::*;
 
@@ -420,5 +423,39 @@ mod tests {
         assert_eq!(object.material().lighting(object, light, pt, eyev, normalv, 0.0), Color::new(0.1, 0.1, 0.1));
     }
 
+    #[test]
+    fn lighting_samples_the_area_light() {
+        let light = Light::AreaLight(AreaLight::new(
+            dvec3(-0.5, -0.5, -5.0),
+            dvec3(1.0, 0.0, 0.0),
+            2,
+            dvec3(0.0, 1.0, 0.0),
+            2,
+            Color::white()
+        ));
+
+        let s = Object::new(Shape::Sphere(Sphere::default()))
+        .with_material(
+            Material::default()
+            .with_ambient(0.1)
+            .with_diffuse(0.9)
+            .with_specular(0.0)
+            .with_pattern(PatternObject::new(Pattern::Plain(PlainPattern::new(Color::white()))))
+        );
+        
+        let eye = dvec3(0.0, 0.0, -5.0);
+
+        let point_result = vec![
+            (dvec3(0.0, 0.0, -1.0), Color::new(0.9965, 0.9965, 0.9965)),
+            (dvec3(0.0, 0.7071, -0.7071), Color::new(0.6232, 0.6232, 0.6232))
+        ];
+
+        for data in point_result {
+            let eyev = (eye - data.0).normalize();
+            let normalv = data.0;
+            assert_eq!(s.material().lighting(&s, &light, data.0, eyev, normalv, 1.0), data.1);
+        }
+        
+    }
 }
 

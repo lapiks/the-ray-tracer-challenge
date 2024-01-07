@@ -357,25 +357,25 @@ pub mod tests {
     #[test]
     fn there_is_no_shadow_when_nothing_is_collinear_with_point_and_light() {
         let w = default_world();
-        assert_eq!(w.is_shadowed(dvec3(0.0, 10.0, 0.0), w.lights[0].position()), false);
+        assert_eq!(w.is_shadowed(dvec3(0.0, 10.0, 0.0), w.lights[0].positions()[0]), false);
     }
 
     #[test]
     fn the_shadow_when_an_object_is_between_the_point_and_the_light() {
         let w = default_world();
-        assert_eq!(w.is_shadowed(dvec3(10.0, -10.0, 10.0), w.lights[0].position()), true);
+        assert_eq!(w.is_shadowed(dvec3(10.0, -10.0, 10.0), w.lights[0].positions()[0]), true);
     }
 
     #[test]
     fn there_is_no_shadow_when_an_object_is_behind_the_light() {
         let w = default_world();
-        assert_eq!(w.is_shadowed(dvec3(-20.0, 20.0, -20.0), w.lights[0].position()), false);
+        assert_eq!(w.is_shadowed(dvec3(-20.0, 20.0, -20.0), w.lights[0].positions()[0]), false);
     }
 
     #[test]
     fn there_is_no_shadow_when_an_object_is_behind_the_point() {
         let w = default_world();
-        assert_eq!(w.is_shadowed(dvec3(-2.0, 2.0, -2.0), w.lights[0].position()), false);
+        assert_eq!(w.is_shadowed(dvec3(-2.0, 2.0, -2.0), w.lights[0].positions()[0]), false);
     }
 
     #[test]

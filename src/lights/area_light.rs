@@ -14,7 +14,7 @@ pub struct AreaLight {
     vsteps: usize,
     intensity: Color,
     samples: usize,
-    position: DVec3,
+    positions: Vec<DVec3>,
 }
 
 impl AreaLight {
@@ -26,15 +26,25 @@ impl AreaLight {
         vsteps: usize,
         color: Color) 
     -> Self {
+        let samples = usteps * vsteps;
+        let uvec = full_uvec / usteps as f64;
+        let vvec = full_vvec / vsteps as f64;
+        let mut positions = Vec::with_capacity(samples);
+        for v in 0..vsteps {
+            for u in 0..usteps {
+                positions.push(corner + uvec * (u as f64 + 0.5) + vvec * (v as f64 + 0.5));
+            }
+        }
+
         Self {
             corner,
-            uvec: full_uvec / usteps as f64,
+            uvec,
             usteps,
-            vvec: full_vvec / vsteps as f64,
+            vvec,
             vsteps,
             intensity: color,
-            samples: usteps * vsteps,
-            position: corner + full_uvec / 2.0 + full_vvec / 2.0,
+            samples,
+            positions,
         }
     }
 
@@ -63,8 +73,8 @@ impl AreaLight {
 }
 
 impl LightSource for AreaLight {
-    fn position(&self) -> DVec3 {
-        self.position
+    fn positions(&self) -> &[DVec3] {
+        self.positions.as_slice()
     }
 
     fn intensity(&self) -> crate::Color {
@@ -108,7 +118,6 @@ mod tests {
         assert_eq!(light.vsteps, 2);
         assert_eq!(light.intensity, Color::white());
         assert_eq!(light.samples, 8);
-        assert_eq!(light.position, dvec3(1.0, 0.0, 0.5));
     }
 
     #[test]
@@ -187,6 +196,33 @@ mod tests {
 
         for data in u_v_result {
             assert_eq!(light.point_on_light(data.0, data.1, &mut jitter_by), data.2);
+        }
+    }
+
+    #[test]
+    fn the_area_light_with_jittered_samples() {
+        let w = default_world();
+        let light = AreaLight::new(
+            dvec3(-0.5, -0.5, -5.0),
+            dvec3(1.0, 0.0, 0.0),
+            2,
+            dvec3(0.0, 1.0, 0.0),
+            2,
+            Color::white()
+        );
+
+        let point_result = vec![
+            (dvec3(0.0, 0.0, 2.0), 0.0),
+            (dvec3(1.0, -1.0, 2.0), 0.5),
+            (dvec3(1.5, 0.0, 2.0), 0.75),
+            (dvec3(1.25, 1.25, 3.0), 0.75),
+            (dvec3(0.0, 0.0, -2.0), 1.0),
+        ];
+
+        let mut jitter_by = Sequence::new(vec![0.7, 0.3, 0.9, 0.1, 0.5]);
+
+        for data in point_result {
+            assert_eq!(light.intensity_at_impl(data.0, &w, &mut jitter_by), data.1);
         }
     }
 }

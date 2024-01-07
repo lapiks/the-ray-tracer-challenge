@@ -574,7 +574,7 @@ pub mod tests {
         let lights = loader.lights();
 
         assert_eq!(lights.len(), 1);
-        assert_eq!(lights[0].position(), dvec3(-1.0, 2.0, 4.0));
+        assert_eq!(lights[0].positions()[0], dvec3(-1.0, 2.0, 4.0));
         assert_eq!(lights[0].intensity(), Color::new(1.5, 1.5, 1.5));
     }
 
