@@ -1,17 +1,17 @@
 use std::f64::consts::PI;
 
 use glam::{dvec3, DMat4};
-use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape, Plane}, Color, Material, PointLight, transformations, Pattern, pattern::{PlainPattern, PatternObject, StrippedPattern, CheckerPattern}};
+use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape, Plane}, Color, Material, transformations, Pattern, pattern::{PlainPattern, PatternObject, StrippedPattern, CheckerPattern}, lights::{Light, PointLight}};
 
 fn main() {
-    let l1 = PointLight::new(
+    let l1 = Light::PointLight(PointLight::new(
         dvec3(-5.0, 5.0, -5.0), 
         Color::white() * 0.6
-    );
-    let l2 = PointLight::new(
+    ));
+    let l2 = Light::PointLight(PointLight::new(
         dvec3(5.0, 5.0, -5.0), 
         Color::white() * 0.4
-    );
+    ));
 
     let wall_material = Material::default()
         .with_pattern(

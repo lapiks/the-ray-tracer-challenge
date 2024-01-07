@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 use glam::dvec3;
-use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}, Color, Material, PointLight, transformations, Pattern, pattern::{PlainPattern, PatternObject}};
+use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape}, Color, Material, transformations, Pattern, pattern::{PlainPattern, PatternObject}, lights::{Light, PointLight}};
 
 fn main() {
     let camera = Camera::new(1920, 1080, PI / 3.0)
@@ -14,15 +14,15 @@ fn main() {
         )
         .with_antialiasing(3);
 
-    let l1 = PointLight::new(
+    let l1 = Light::PointLight(PointLight::new(
         dvec3(-10.0, 10.0, -10.0), 
         Color::white()
-    );
+    ));
 
-    let l2 = PointLight::new(
+    let l2 = Light::PointLight(PointLight::new(
         dvec3(10.0, 10.0, 10.0), 
         Color::white()
-    );
+    ));
 
     let s = Sphere::default();
     let o1 = Object::new(Shape::Sphere(s))

@@ -17,7 +17,7 @@
   up: [0, 1, 0]
   antialiasing: 3
 
-- add: light
+- add: point-light
   position: [-1, 2, 4]
   #corner: [-1, 2, 4]
   #uvec: [2, 0, 0]

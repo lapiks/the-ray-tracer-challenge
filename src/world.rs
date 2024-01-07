@@ -1,10 +1,10 @@
 use glam::DVec3;
 
-use crate::{object::Object, ray::Ray, Color, PointLight, intersection::{Intersections, IntersectionInfos, ShadowHit, StandardHit}};
+use crate::{object::Object, ray::Ray, Color, intersection::{Intersections, IntersectionInfos, ShadowHit, StandardHit}, lights::{light::LightSource, Light}};
 
 pub struct World {
     objects: Vec<Object>,
-    lights: Vec<PointLight>,
+    lights: Vec<Light>,
 }
 
 impl Default for World {
@@ -26,7 +26,7 @@ impl World {
         self
     }
 
-    pub fn with_lights(mut self, lights: Vec<PointLight>) -> Self {
+    pub fn with_lights(mut self, lights: Vec<Light>) -> Self {
         self.lights = lights;
         self
     }
@@ -47,7 +47,7 @@ impl World {
         self.objects.get_mut(index)
     }
 
-    pub fn light(&self, index: usize) -> Option<&PointLight> {
+    pub fn light(&self, index: usize) -> Option<&Light> {
         self.lights.get(index)
     }
 
@@ -159,7 +159,7 @@ impl World {
 pub mod tests {
     use glam::{DVec3, dvec3};
 
-    use crate::{shapes::{Sphere, Shape, Plane}, Material, intersection::{Intersection, IntersectionInfos}, Pattern, pattern::{PlainPattern, PatternObject, TestPattern}};
+    use crate::{shapes::{Sphere, Shape, Plane}, Material, intersection::{Intersection, IntersectionInfos}, Pattern, pattern::{PlainPattern, PatternObject, TestPattern}, lights::PointLight};
 
     use super::*;
 
@@ -171,10 +171,10 @@ pub mod tests {
     }
 
     pub fn default_world() -> World {
-        let l = PointLight::new(
+        let l = Light::PointLight(PointLight::new(
             DVec3::new(-10.0, 10.0, -10.0), 
             Color::white()
-        );
+        ));
         let m = Material::new()
             .with_pattern(
                 PatternObject::new(
@@ -198,10 +198,10 @@ pub mod tests {
     fn the_default_world() {
         let w = default_world();
 
-        let l = PointLight::new(
+        let l = Light::PointLight(PointLight::new(
             DVec3::new(-10.0, 10.0, -10.0), 
             Color::white()
-        );
+        ));
 
         let m = Material::new()
             .with_pattern(
@@ -260,10 +260,10 @@ pub mod tests {
     fn shading_an_intersection_from_the_inside() {
         let w = World {
             lights: vec![
-                PointLight::new(
+                Light::PointLight(PointLight::new(
                     dvec3(0.0, 0.25, 0.0), 
                     Color::white()
-                )
+                ))
             ],
             ..default_world()
         };
@@ -288,10 +288,10 @@ pub mod tests {
         let w = World::default()
             .with_lights(
                 vec![
-                    PointLight::new(
+                    Light::PointLight(PointLight::new(
                         dvec3(0.0, 0.0, -10.0), 
                         Color::white()
-                    )
+                    ))
                 ]
             )
             .with_objects(vec![s1, s2.clone()]);

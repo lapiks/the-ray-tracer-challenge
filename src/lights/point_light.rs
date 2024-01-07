@@ -2,29 +2,35 @@ use glam::DVec3;
 
 use crate::{Color, World};
 
+use super::light::LightSource;
+
+
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PointLight {
     position: DVec3,
-    intensity: Color,
+    color: Color,
 }
 
 impl PointLight {
-    pub fn new(position: DVec3, intensity: Color) -> Self {
+    pub fn new(position: DVec3, color: Color) -> Self {
         Self {
             position,
-            intensity
+            color
         }
     }
+}
 
-    pub fn position(&self) -> DVec3 {
+impl LightSource for PointLight {
+    fn position(&self) -> DVec3 {
         self.position
     }
 
-    pub fn intensity(&self) -> Color {
-        self.intensity
+    fn color(&self) -> Color {
+        self.color
     }
 
-    pub fn intensity_at(&self, world_point: DVec3, world: &World) -> f64 {
+    fn intensity_at(&self, world_point: DVec3, world: &World) -> f64 {
         match world.is_shadowed(world_point, self.position) {
             true => 0.0,
             false => 1.0,
@@ -41,10 +47,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn a_point_light_as_a_position_and_intensity() {
+    fn a_point_light_as_a_position_and_color() {
         let l = PointLight::new(DVec3::ZERO, Color::white());
         assert_eq!(l.position, DVec3::ZERO);
-        assert_eq!(l.intensity, Color::white());
+        assert_eq!(l.color, Color::white());
     }
 
     #[test]

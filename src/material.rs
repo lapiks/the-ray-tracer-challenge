@@ -1,6 +1,6 @@
 use glam::DVec3;
 
-use crate::{Color, light::PointLight, Pattern, pattern::{PlainPattern, PatternObject}, Object};
+use crate::{Color, lights::{Light, light::LightSource}, Pattern, pattern::{PlainPattern, PatternObject}, Object};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Material {
@@ -131,8 +131,8 @@ impl Material {
         self.refractive_index
     }
 
-    pub fn lighting(&self, object: &Object, light: &PointLight, point: DVec3, eyev: DVec3, normal: DVec3, intensity: f64) -> Color {
-        let effective_color = self.pattern.color_at_object(object, point) * light.intensity();
+    pub fn lighting(&self, object: &Object, light: &Light, point: DVec3, eyev: DVec3, normal: DVec3, intensity: f64) -> Color {
+        let effective_color = self.pattern.color_at_object(object, point) * light.color();
         let ambient = effective_color * self.ambient;
 
         let mut diffuse = Color::black();
@@ -146,7 +146,7 @@ impl Material {
             let reflectv = -lightv - normal * 2.0 * -lightv.dot(normal);
             let r_dot_e = reflectv.dot(eyev);
             if r_dot_e > 0.0 {
-                specular = light.intensity() * self.specular * r_dot_e.powf(self.shininess);
+                specular = light.color() * self.specular * r_dot_e.powf(self.shininess);
             }
         }
 
@@ -173,7 +173,7 @@ impl Default for Material {
 mod tests {
     use glam::dvec3;
 
-    use crate::{Object, shapes::{Sphere, Shape}, light::PointLight, pattern::StrippedPattern, world::tests::default_world};
+    use crate::{Object, shapes::{Sphere, Shape}, pattern::StrippedPattern, world::tests::default_world, lights::PointLight};
 
     use super::*;
 
@@ -198,10 +198,10 @@ mod tests {
         let position = dvec3(0.0, 0.0, 0.0);
         let eyev = dvec3(0.0, 0.0, -1.0);
         let normalv = dvec3(0.0, 0.0, -1.0);
-        let l = PointLight::new(
+        let l = Light::PointLight(PointLight::new(
             dvec3(0.0, 0.0, -10.0),
             Color::white()
-        );
+        ));
         assert_eq!(
             m.lighting(
                 &Object::new(Shape::Sphere(Sphere::default())),
@@ -221,10 +221,10 @@ mod tests {
         let position = dvec3(0.0, 0.0, 0.0);
         let eyev = dvec3(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0);
         let normalv = dvec3(0.0, 0.0, -1.0);
-        let l = PointLight::new(
+        let l = Light::PointLight(PointLight::new(
             dvec3(0.0, 0.0, -10.0),
             Color::white()
-        );
+        ));
         assert_eq!(
             m.lighting(
                 &Object::new(Shape::Sphere(Sphere::default())), 
@@ -244,10 +244,10 @@ mod tests {
         let position = dvec3(0.0, 0.0, 0.0);
         let eyev = dvec3(0.0, 0.0, -1.0);
         let normalv = dvec3(0.0, 0.0, -1.0);
-        let l = PointLight::new(
+        let l = Light::PointLight(PointLight::new(
             dvec3(0.0, 10.0, -10.0),
             Color::white()
-        );
+        ));
         assert_eq!(
             m.lighting(
                 &Object::new(Shape::Sphere(Sphere::default())),
@@ -267,10 +267,10 @@ mod tests {
         let position = dvec3(0.0, 0.0, 0.0);
         let eyev = dvec3(0.0, -2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0);
         let normalv = dvec3(0.0, 0.0, -1.0);
-        let l = PointLight::new(
+        let l = Light::PointLight(PointLight::new(
             dvec3(0.0, 10.0, -10.0),
             Color::white()
-        );
+        ));
         assert_eq!(
             m.lighting(
                 &Object::new(Shape::Sphere(Sphere::default())),
@@ -290,10 +290,10 @@ mod tests {
         let position = dvec3(0.0, 0.0, 0.0);
         let eyev = dvec3(0.0, 0.0, -1.0);
         let normalv = dvec3(0.0, 0.0, -1.0);
-        let l = PointLight::new(
+        let l = Light::PointLight(PointLight::new(
             dvec3(0.0, 0.0, 10.0),
             Color::white()
-        );
+        ));
         assert_eq!(
             m.lighting(
                 &Object::new(Shape::Sphere(Sphere::default())),
@@ -313,10 +313,10 @@ mod tests {
         let position = dvec3(0.0, 0.0, 0.0);
         let eyev = dvec3(0.0, 0.0, -1.0);
         let normalv = dvec3(0.0, 0.0, -1.0);
-        let l = PointLight::new(
+        let l = Light::PointLight(PointLight::new(
             dvec3(0.0, 0.0, -10.0),
             Color::white()
-        );
+        ));
         assert_eq!(
             m.lighting(
                 &Object::new(Shape::Sphere(Sphere::default())),
@@ -344,10 +344,10 @@ mod tests {
 
         let eyev = dvec3(0.0, 0.0, -1.0);
         let normalv = dvec3(0.0, 0.0, -1.0);
-        let l = PointLight::new(
+        let l = Light::PointLight(PointLight::new(
             dvec3(0.0, 0.0, -10.0),
             Color::white()
-        );
+        ));
         assert_eq!(
             m.lighting(
                 &Object::new(Shape::Sphere(Sphere::default())),
@@ -402,7 +402,9 @@ mod tests {
 
         let w = default_world()
         .with_lights(vec![
-            PointLight::new(dvec3(0.0, 0.0, -10.0), Color::new(1.0, 1.0, 1.0))
+            Light::PointLight(
+                PointLight::new(dvec3(0.0, 0.0, -10.0), Color::new(1.0, 1.0, 1.0))
+            )
         ])
         .with_objects(objects);
 

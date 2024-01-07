@@ -15,9 +15,16 @@ pub mod shapes {
     mod test_shape;
 }
 
+pub mod lights {
+    pub use light::Light;
+    pub use point_light::PointLight;
+
+    pub mod light;
+    pub mod point_light;
+}
+
 pub use object::Object;
 pub use world::World;
-pub use light::PointLight;
 pub use material::Material;
 pub use camera::Camera;
 pub use canvas::Canvas;
@@ -29,7 +36,6 @@ mod ray;
 mod intersection;
 pub mod transformations;
 pub mod object;
-pub mod light;
 pub mod material;
 pub mod world;
 pub mod canvas;

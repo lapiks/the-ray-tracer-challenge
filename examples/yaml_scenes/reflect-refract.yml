@@ -25,7 +25,7 @@
 # light sources
 # ======================================================
 
-- add: light
+- add: point_light
   position: [-4.9, 4.9, -1]
   intensity: [1, 1, 1]
 

@@ -3,13 +3,13 @@ use std::collections::HashMap;
 use glam::{DVec3, DMat4};
 use yaml_rust::{Yaml, yaml::Hash};
 
-use crate::{Object, PointLight, Camera, transformations, Color, shapes::{Sphere, Plane, Cube, Group, Shape}, Material, pattern::{PatternObject, PlainPattern, StrippedPattern, RingPattern, CheckerPattern, GradientPattern}, Pattern};
+use crate::{Object, Camera, transformations, Color, shapes::{Sphere, Plane, Cube, Group, Shape}, Material, pattern::{PatternObject, PlainPattern, StrippedPattern, RingPattern, CheckerPattern, GradientPattern}, Pattern, lights::{Light, PointLight}};
 
 extern crate yaml_rust;
 
 pub struct YamlLoader {
     objects: Vec<Object>,
-    lights: Vec<PointLight>,
+    lights: Vec<Light>,
     camera: Option<Camera>,
 }
 
@@ -41,7 +41,7 @@ impl YamlLoader {
                         "camera" => {
                             camera = Some(Self::load_camera(&hash));
                         }
-                        "light" => {
+                        "point-light" => {
                             lights.push(Self::load_light(&hash));
                         }
                         "sphere" | "plane" | "cube" | "triangle" | "group" => {
@@ -67,7 +67,7 @@ impl YamlLoader {
         &self.objects
     }
 
-    pub fn lights(&self) -> &Vec<PointLight> {
+    pub fn lights(&self) -> &Vec<Light> {
         &self.lights
     }
 
@@ -98,11 +98,19 @@ impl YamlLoader {
         )
     }
 
-    fn load_light(hash: &Hash) -> PointLight {
-        PointLight::new(
-            Self::load_dvec3_from_hash(hash, "position").expect("The light is missing the position parameter"), 
-            Self::load_color_from_hash(hash, "intensity").expect("The light is missing the intensity parameter")
-        )
+    fn load_light(hash: &Hash) -> Light {
+        match Self::load_str_from_hash(hash, "add").expect("The light type should be a string") {
+            "point-light" => {
+                Light::PointLight(PointLight::new(
+                    Self::load_dvec3_from_hash(hash, "position").expect("The light is missing the position parameter"), 
+                    Self::load_color_from_hash(hash, "intensity").expect("The light is missing the intensity parameter")
+                ))
+            }
+            &_ => {
+                panic!("Unsupported light type")
+            }
+        }
+        
     }
 
     fn load_object(hash: &Hash, defines: &Defines) -> Option<Object> {
@@ -517,6 +525,8 @@ impl YamlLoader {
 pub mod tests {
     use glam::dvec3;
 
+    use crate::lights::light::LightSource;
+
     use super::*;
 
     #[test]
@@ -543,9 +553,9 @@ pub mod tests {
     }
     
     #[test]
-    fn importing_a_light_from_a_yaml_scene() {
+    fn importing_a_point_light_from_a_yaml_scene() {
         let source = "
-            - add: light
+            - add: point-light
               position: [-1, 2, 4]
               intensity: [1.5, 1.5, 1.5]
         ";
@@ -555,7 +565,7 @@ pub mod tests {
 
         assert_eq!(lights.len(), 1);
         assert_eq!(lights[0].position(), dvec3(-1.0, 2.0, 4.0));
-        assert_eq!(lights[0].intensity(), Color::new(1.5, 1.5, 1.5));
+        assert_eq!(lights[0].color(), Color::new(1.5, 1.5, 1.5));
     }
 
     #[test]
