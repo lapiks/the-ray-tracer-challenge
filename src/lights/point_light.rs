@@ -9,14 +9,14 @@ use super::light::LightSource;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PointLight {
     position: DVec3,
-    color: Color,
+    intensity: Color,
 }
 
 impl PointLight {
-    pub fn new(position: DVec3, color: Color) -> Self {
+    pub fn new(position: DVec3, intensity: Color) -> Self {
         Self {
             position,
-            color
+            intensity
         }
     }
 }
@@ -26,8 +26,8 @@ impl LightSource for PointLight {
         self.position
     }
 
-    fn color(&self) -> Color {
-        self.color
+    fn intensity(&self) -> Color {
+        self.intensity
     }
 
     fn intensity_at(&self, world_point: DVec3, world: &World) -> f64 {
@@ -50,7 +50,7 @@ mod tests {
     fn a_point_light_as_a_position_and_color() {
         let l = PointLight::new(DVec3::ZERO, Color::white());
         assert_eq!(l.position, DVec3::ZERO);
-        assert_eq!(l.color, Color::white());
+        assert_eq!(l.intensity, Color::white());
     }
 
     #[test]

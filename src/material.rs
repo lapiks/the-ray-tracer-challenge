@@ -132,7 +132,7 @@ impl Material {
     }
 
     pub fn lighting(&self, object: &Object, light: &Light, point: DVec3, eyev: DVec3, normal: DVec3, intensity: f64) -> Color {
-        let effective_color = self.pattern.color_at_object(object, point) * light.color();
+        let effective_color = self.pattern.color_at_object(object, point) * light.intensity();
         let ambient = effective_color * self.ambient;
 
         let mut diffuse = Color::black();
@@ -146,7 +146,7 @@ impl Material {
             let reflectv = -lightv - normal * 2.0 * -lightv.dot(normal);
             let r_dot_e = reflectv.dot(eyev);
             if r_dot_e > 0.0 {
-                specular = light.color() * self.specular * r_dot_e.powf(self.shininess);
+                specular = light.intensity() * self.specular * r_dot_e.powf(self.shininess);
             }
         }
 

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use glam::{DVec3, DMat4};
 use yaml_rust::{Yaml, yaml::Hash};
 
-use crate::{Object, Camera, transformations, Color, shapes::{Sphere, Plane, Cube, Group, Shape}, Material, pattern::{PatternObject, PlainPattern, StrippedPattern, RingPattern, CheckerPattern, GradientPattern}, Pattern, lights::{Light, PointLight}};
+use crate::{Object, Camera, transformations, Color, shapes::{Sphere, Plane, Cube, Group, Shape}, Material, pattern::{PatternObject, PlainPattern, StrippedPattern, RingPattern, CheckerPattern, GradientPattern}, Pattern, lights::{Light, PointLight, AreaLight}};
 
 extern crate yaml_rust;
 
@@ -41,7 +41,7 @@ impl YamlLoader {
                         "camera" => {
                             camera = Some(Self::load_camera(&hash));
                         }
-                        "point-light" => {
+                        "point-light" | "area-light" => {
                             lights.push(Self::load_light(&hash));
                         }
                         "sphere" | "plane" | "cube" | "triangle" | "group" => {
@@ -104,6 +104,16 @@ impl YamlLoader {
                 Light::PointLight(PointLight::new(
                     Self::load_dvec3_from_hash(hash, "position").expect("The light is missing the position parameter"), 
                     Self::load_color_from_hash(hash, "intensity").expect("The light is missing the intensity parameter")
+                ))
+            }
+            "area-light" => {
+                Light::AreaLight(AreaLight::new(
+                    Self::load_dvec3_from_hash(hash, "corner").expect("The light is missing the corner parameter"), 
+                    Self::load_dvec3_from_hash(hash, "uvec").expect("The light is missing the uvec parameter"), 
+                    Self::load_i64_from_hash(hash, "usteps").expect("The light is missing the usteps parameter") as usize, 
+                    Self::load_dvec3_from_hash(hash, "vvec").expect("The light is missing the vvec parameter"),
+                    Self::load_i64_from_hash(hash, "vsteps").expect("The light is missing the vsteps parameter") as usize, 
+                    Self::load_color_from_hash(hash, "intensity").expect("The light is missing the intensity parameter"),
                 ))
             }
             &_ => {
@@ -565,7 +575,7 @@ pub mod tests {
 
         assert_eq!(lights.len(), 1);
         assert_eq!(lights[0].position(), dvec3(-1.0, 2.0, 4.0));
-        assert_eq!(lights[0].color(), Color::new(1.5, 1.5, 1.5));
+        assert_eq!(lights[0].intensity(), Color::new(1.5, 1.5, 1.5));
     }
 
     #[test]

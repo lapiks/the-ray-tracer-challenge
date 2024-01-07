@@ -17,13 +17,12 @@
   up: [0, 1, 0]
   antialiasing: 3
 
-- add: point-light
-  position: [-1, 2, 4]
-  #corner: [-1, 2, 4]
-  #uvec: [2, 0, 0]
-  #vvec: [0, 2, 0]
-  #usteps: 10
-  #vsteps: 10
+- add: area-light
+  corner: [-1, 2, 4]
+  uvec: [2, 0, 0]
+  vvec: [0, 2, 0]
+  usteps: 10
+  vsteps: 10
   #jitter: true
   intensity: [1.5, 1.5, 1.5]
 

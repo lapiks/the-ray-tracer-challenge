@@ -18,9 +18,11 @@ pub mod shapes {
 pub mod lights {
     pub use light::Light;
     pub use point_light::PointLight;
+    pub use area_light::AreaLight;
 
     pub mod light;
     pub mod point_light;
+    pub mod area_light;
 }
 
 pub use object::Object;
