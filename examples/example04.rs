@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use glam::{dvec3, DMat4};
+use glam::dvec3;
 use ray_tracer::{Camera, World, Object, shapes::{Sphere, Shape, Plane}, Color, Material, transformations, Pattern, pattern::{PlainPattern, PatternObject, StrippedPattern, CheckerPattern}, lights::{Light, PointLight}};
 
 fn main() {
@@ -32,39 +32,43 @@ fn main() {
                             CheckerPattern::new(Color::white(), Color::black())
                         )
                     )
-                    .with_transform(
-                        &DMat4::from_rotation_y(PI / 4.0)
-                    )
+                    .with_rotation_y(PI/ 4.0)
+                    .transform()
                 )
         );
 
     let roof = Object::new(Shape::Plane(Plane::default()))
         .with_material(wall_material.clone())
-        .with_translation(0.0, 10.0, 0.0);
+        .with_translation(0.0, 10.0, 0.0)
+        .transform();
 
     let left_wall = Object::new(Shape::Plane(Plane::default()))
         .with_material(wall_material.clone())
         .with_rotation_x(PI/2.0)
         .with_rotation_y(-PI/4.0)
-        .with_translation(0.0, 0.0, 5.0);
+        .with_translation(0.0, 0.0, 5.0)
+        .transform();
 
     let right_wall = Object::new(Shape::Plane(Plane::default()))
         .with_material(wall_material.clone())
         .with_rotation_x(PI/2.0)
         .with_rotation_y(PI/4.0)
-        .with_translation(0.0, 0.0, 5.0);
+        .with_translation(0.0, 0.0, 5.0)
+        .transform();
 
     let back_left_wall = Object::new(Shape::Plane(Plane::default()))
         .with_material(wall_material.clone())
         .with_rotation_x(PI/2.0)
         .with_rotation_y(PI/4.0)
-        .with_translation(0.0, 0.0, -15.0);
+        .with_translation(0.0, 0.0, -15.0)
+        .transform();
 
     let back_right_wall = Object::new(Shape::Plane(Plane::default()))
         .with_material(wall_material.clone())
         .with_rotation_x(PI/2.0)
         .with_rotation_y(-PI/4.0)
-        .with_translation(0.0, 0.0, -15.0);
+        .with_translation(0.0, 0.0, -15.0)
+        .transform();
 
     let middle = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
@@ -74,20 +78,18 @@ fn main() {
                         Pattern::Plain(
                             PlainPattern::new(Color::black()))
                     )
-                    .with_transform(
-                        &(
-                            DMat4::from_rotation_z(PI / 4.0) * 
-                            DMat4::from_translation(dvec3(-1.0, 0.0, 0.0)) * 
-                            DMat4::from_scale(dvec3(2.0, 2.0, 2.0))
-                        )
-                    )
+                    .with_scale(2.0, 2.0, 2.0)
+                    .with_translation(-1.0, 0.0, 0.0)
+                    .with_rotation_z(PI / 4.0)
+                    .transform()
                 )
                 .with_diffuse(0.0)
                 .with_specular(0.0)
                 .with_ambient(0.0)
                 .with_reflective(1.0)
         )
-        .with_translation(-0.5, 1.0, 0.5);
+        .with_translation(-0.5, 1.0, 0.5)
+        .transform();
 
     let right = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
@@ -96,14 +98,11 @@ fn main() {
                     PatternObject::new(
                         Pattern::Stripped(StrippedPattern::new(Color::new(1.0, 0.0, 0.0), Color::new(1.0, 1.0, 0.0)))
                     )
-                    .with_transform(
-                        &(
-                            DMat4::from_rotation_y(-PI / 4.0) * 
-                            DMat4::from_rotation_z(-PI / 4.0) * 
-                            DMat4::from_translation(dvec3(-1.0, 0.0, 0.0)) * 
-                            DMat4::from_scale(dvec3(0.2, 0.2, 0.2))
-                        )
-                    )
+                    .with_scale(0.2, 0.2, 0.2)
+                    .with_translation(-1.0, 0.0, 0.0)
+                    .with_rotation_z(-PI / 4.0)
+                    .with_rotation_y(-PI / 4.0)
+                    .transform()
                 )
                 .with_diffuse(0.5)
                 .with_specular(0.5)
@@ -111,7 +110,8 @@ fn main() {
                 .with_reflective(0.5)
         )
         .with_scale(0.5, 0.5, 0.5)
-        .with_translation(1.5, 0.5, -0.5);
+        .with_translation(1.5, 0.5, -0.5)
+        .transform();
 
     let left = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
@@ -126,7 +126,8 @@ fn main() {
                 .with_reflective(0.8)
         )
         .with_scale(0.33, 0.33, 0.33)
-        .with_translation(-1.5, 0.33, -0.75);
+        .with_translation(-1.5, 0.33, -0.75)
+        .transform();
 
     let world = World::new()
         .with_objects(vec![floor, roof, left_wall, right_wall, back_left_wall, back_right_wall, middle, right, left])

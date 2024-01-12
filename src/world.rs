@@ -188,7 +188,8 @@ pub mod tests {
         let s1 = Object::new(Shape::Sphere(Sphere::default()))
             .with_material(m);
         let s2 = Object::new(Shape::Sphere(Sphere::default()))
-            .with_scale(0.5, 0.5, 0.5);
+            .with_scale(0.5, 0.5, 0.5)
+            .transform();
         World::default()
             .with_objects(vec![s1, s2])
             .with_lights(vec![l])
@@ -217,7 +218,8 @@ pub mod tests {
         let s1 = Object::new(Shape::Sphere(Sphere::default()))
             .with_material(m);
         let s2 = Object::new(Shape::Sphere(Sphere::default()))
-            .with_scale(0.5, 0.5, 0.5);
+            .with_scale(0.5, 0.5, 0.5)
+            .transform();
 
         assert_eq!(w.objects.len(), 2);
         assert_eq!(w.lights.len(), 1);
@@ -283,7 +285,8 @@ pub mod tests {
     fn shade_hit_is_given_an_intersection_in_shadow() {
         let s1 = Object::new(Shape::Sphere(Sphere::default()));
         let s2 = Object::new(Shape::Sphere(Sphere::default()))
-            .with_translation(0.0, 0.0, 10.0);
+            .with_translation(0.0, 0.0, 10.0)
+            .transform();
 
         let w = World::default()
             .with_lights(
@@ -406,6 +409,7 @@ pub mod tests {
                         .with_reflective(0.5)
                 )
                 .with_translation(0.0, -1.0, 0.0)
+                .transform()
         );
         let o = w.object(2).unwrap();
         let r = Ray::new(
@@ -428,6 +432,7 @@ pub mod tests {
                         .with_reflective(0.5)
                 )
                 .with_translation(0.0, -1.0, 0.0)
+                .transform()
         );
         let o = w.object(2).unwrap();
         let r = Ray::new(
@@ -449,13 +454,15 @@ pub mod tests {
                         Material::default()
                             .with_reflective(1.0)
                     )
-                    .with_translation(0.0, 1.0, 0.0),
+                    .with_translation(0.0, 1.0, 0.0)
+                    .transform(),
                 Object::new(Shape::Plane(Plane::default()))
                     .with_material(
                         Material::default()
                             .with_reflective(1.0)
                     )
-                    .with_translation(0.0, -1.0, 0.0),
+                    .with_translation(0.0, -1.0, 0.0)
+                    .transform(),
             ],
             ..default_world()
         };
@@ -480,6 +487,7 @@ pub mod tests {
                         .with_reflective(0.5)
                 )
                 .with_translation(0.0, -1.0, 0.0)
+                .transform()
         );
         let o = w.object(2).unwrap();
         let r = Ray::new(
@@ -600,7 +608,8 @@ pub mod tests {
         let mut w = default_world();
         w.push_object(
             Object::new(Shape::Plane(Plane::default()))
-            .   with_translation(0.0, -1.0, 0.0)
+                .with_translation(0.0, -1.0, 0.0)
+                .transform()
                 .with_material(
                     Material::default()
                         .with_transparency(0.5)
@@ -610,6 +619,7 @@ pub mod tests {
         w.push_object(
             Object::new(Shape::Sphere(Sphere::default()))
                 .with_translation(0.0, -3.5, -0.5)
+                .transform()
                 .with_material(
                     Material::default()
                         .with_pattern(
@@ -636,7 +646,8 @@ pub mod tests {
         let mut w = default_world();
         w.push_object(
             Object::new(Shape::Plane(Plane::default()))
-            .   with_translation(0.0, -1.0, 0.0)
+                .with_translation(0.0, -1.0, 0.0)
+                .transform()
                 .with_material(
                     Material::default()
                         .with_reflective(0.5)
@@ -647,6 +658,7 @@ pub mod tests {
         w.push_object(
             Object::new(Shape::Sphere(Sphere::default()))
                 .with_translation(0.0, -3.5, -0.5)
+                .transform()
                 .with_material(
                     Material::default()
                         .with_pattern(

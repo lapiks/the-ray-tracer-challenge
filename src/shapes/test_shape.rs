@@ -61,7 +61,8 @@ mod tests {
         );
         let s = TestShape::default();
         let o = Object::new(Shape::TestShape(s.clone()))
-            .with_scale(2.0, 2.0, 2.0);
+            .with_scale(2.0, 2.0, 2.0)
+            .transform();
         o.intersect(&r);
         assert_eq!(s.saved_ray.lock().unwrap().unwrap().origin, dvec3(0.0, 0.0, -2.5));
         assert_eq!(s.saved_ray.lock().unwrap().unwrap().direction, dvec3(0.0, 0.0, 0.5));
@@ -75,7 +76,8 @@ mod tests {
         );
         let s = TestShape::default();
         let o = Object::new(Shape::TestShape(s.clone()))
-            .with_translation(5.0, 0.0, 0.0);
+            .with_translation(5.0, 0.0, 0.0)
+            .transform();
         o.intersect(&r);
         assert_eq!(s.saved_ray.lock().unwrap().unwrap().origin, dvec3(-5.0, 0.0, -5.0));
         assert_eq!(s.saved_ray.lock().unwrap().unwrap().direction, dvec3(0.0, 0.0, 1.0));
@@ -85,7 +87,8 @@ mod tests {
     fn computing_the_normal_on_a_translated_shape() {
         let s = TestShape::default();
         let o = Object::new(Shape::TestShape(s.clone()))
-            .with_translation(0.0, 1.0, 0.0);
+            .with_translation(0.0, 1.0, 0.0)
+            .transform();
         let n = o.normal_at(dvec3(0.0, 1.70711, -0.70711));
         assert!(n.abs_diff_eq(dvec3(0.0, 0.70711, -0.70711), EPSILON));
     }
@@ -95,7 +98,8 @@ mod tests {
         let s = TestShape::default();
         let o = Object::new(Shape::TestShape(s.clone()))
             .with_rotation_z(PI / 5.0)
-            .with_scale(1.0, 0.5, 1.0);
+            .with_scale(1.0, 0.5, 1.0)
+            .transform();
         let n = o.normal_at(dvec3(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0));
         assert!(n.abs_diff_eq(dvec3(0.0, 0.97014, -0.24254), EPSILON));
     }

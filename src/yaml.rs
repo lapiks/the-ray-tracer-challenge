@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use glam::{DVec3, DMat4};
+use glam::DVec3;
 use yaml_rust::{Yaml, yaml::Hash};
 
-use crate::{Object, Camera, transformations, Color, shapes::{Sphere, Plane, Cube, Group, Shape}, Material, pattern::{PatternObject, PlainPattern, StrippedPattern, RingPattern, CheckerPattern, GradientPattern}, Pattern, lights::{Light, PointLight, AreaLight}};
+use crate::{Object, Camera, transformations::{self, Transform}, Color, shapes::{Sphere, Plane, Cube, Group, Shape}, Material, pattern::{PatternObject, PlainPattern, StrippedPattern, RingPattern, CheckerPattern, GradientPattern}, Pattern, lights::{Light, PointLight, AreaLight}};
 
 extern crate yaml_rust;
 
@@ -155,7 +155,7 @@ impl YamlLoader {
                 Self::load_material(hash, defines)
             )
             .with_transform(
-                &Self::load_transform(hash, defines)
+                Self::load_transform(hash, defines)
             )
             .with_shadow(
                 Self::load_bool_from_hash(hash, "shadow").unwrap_or(default.shadow())
@@ -302,7 +302,7 @@ impl YamlLoader {
                 .map(|o| {
                     o
                     .with_transform(
-                        &Self::load_transform(pattern_hash, defines)
+                        Self::load_transform(pattern_hash, defines)
                     )
                 })
             },
@@ -310,7 +310,7 @@ impl YamlLoader {
         }
     }
 
-    fn load_transform(hash: &Hash, defines: &Defines) -> DMat4 {
+    fn load_transform(hash: &Hash, defines: &Defines) -> Transform {
         /// Extends transform array with define's values
         fn extend_with_defines(defines: &Defines, name: &str, vec: &mut Vec<Yaml>) {
             defines
@@ -344,7 +344,7 @@ impl YamlLoader {
             });
         }
 
-        let mut matrix = DMat4::IDENTITY;
+        let mut transform = Transform::default();
 
         match hash.get(&Yaml::from_str("transform")) {
             Some(transform_yaml) => {
@@ -374,42 +374,38 @@ impl YamlLoader {
                     None => (),
                 }
 
-                for transformation in transform_vec.into_iter().rev() {
+                for transformation in transform_vec.into_iter() {
                     if let Some(values) = transformation.as_vec() {
                         let operation = &values[0];
-                        matrix *= match operation.as_str().unwrap() {
+                        match operation.as_str().unwrap() {
                             "translate" => {
-                                DMat4::from_translation(
-                                    DVec3::new(
-                                        Self::unwrap_f64(&values[1]),
-                                        Self::unwrap_f64(&values[2]),
-                                        Self::unwrap_f64(&values[3])
-                                    )
-                                )
+                                transform = transform.with_translation(
+                                    Self::unwrap_f64(&values[1]),
+                                    Self::unwrap_f64(&values[2]),
+                                    Self::unwrap_f64(&values[3])
+                                );
                             }
                             "scale" => {
-                                DMat4::from_scale(
-                                    DVec3::new(
-                                        Self::unwrap_f64(&values[1]),
-                                        Self::unwrap_f64(&values[2]),
-                                        Self::unwrap_f64(&values[3])
-                                    )
-                                )
+                                transform = transform.with_scale(
+                                    Self::unwrap_f64(&values[1]),
+                                    Self::unwrap_f64(&values[2]),
+                                    Self::unwrap_f64(&values[3])
+                                );
                             }
                             "rotate-x" => {
-                                DMat4::from_rotation_x(
+                                transform = transform.with_rotation_x(
                                     Self::unwrap_f64(&values[1])
-                                )
+                                );
                             }
                             "rotate-y" => {
-                                DMat4::from_rotation_y(
+                                transform = transform.with_rotation_y(
                                     Self::unwrap_f64(&values[1])
-                                )
+                                );
                             }
                             "rotate-z" => {
-                                DMat4::from_rotation_z(
+                                transform = transform.with_rotation_z(
                                     Self::unwrap_f64(&values[1])
-                                )
+                                );
                             }
                             &_ => {
                                 panic!("Unsupported transform operation")
@@ -420,7 +416,7 @@ impl YamlLoader {
             },
             None => (),
         }
-        matrix
+        transform
     }
 
     fn load_str_from_hash<'a>(hash: &'a Hash, key: &str) -> Option<&'a str> {
@@ -610,9 +606,10 @@ pub mod tests {
         assert_eq!(objects[0].material().refractive_index(), 1.5);
         assert_eq!(objects[0].shadow(), false);
 
-        let s_r_t = objects[0].transform().to_scale_rotation_translation();
-        assert_eq!(s_r_t.0, dvec3(0.33, 0.33, 0.33));
-        assert_eq!(s_r_t.2, dvec3(-0.25, 0.33, 0.0));
+        let translation = objects[0].transform().translation();
+        let scale = objects[0].transform().scale();
+        assert_eq!(scale, dvec3(0.33, 0.33, 0.33));
+        assert_eq!(translation, dvec3(-0.25, 0.33, 0.0));
     }
 
 
@@ -666,11 +663,8 @@ pub mod tests {
         let loader = YamlLoader::load_from_str(source);
         let objects = loader.objects();
 
-        let object1_s_r_t = objects[0].transform().to_scale_rotation_translation();
-        let object2_s_r_t = objects[1].transform().to_scale_rotation_translation();
-
-        assert_eq!(object1_s_r_t.0, dvec3(2.0, 2.0, 2.0));
-        assert_eq!(object2_s_r_t.0, dvec3(4.0, 4.0, 4.0));
+        assert_eq!(objects[0].transform().scale(), dvec3(2.0, 2.0, 2.0));
+        assert_eq!(objects[1].transform().scale(), dvec3(4.0, 4.0, 4.0));
     }
 
     #[test]
@@ -697,10 +691,7 @@ pub mod tests {
         let loader = YamlLoader::load_from_str(source);
         let objects = loader.objects();
 
-        let object1_s_r_t = objects[0].transform().to_scale_rotation_translation();
-        let object2_s_r_t = objects[1].transform().to_scale_rotation_translation();
-
-        assert_eq!(object1_s_r_t.0, dvec3(2.0, 2.0, 2.0));
-        assert_eq!(object2_s_r_t.0, dvec3(4.0, 4.0, 4.0));
+        assert_eq!(objects[0].transform().scale(), dvec3(2.0, 2.0, 2.0));
+        assert_eq!(objects[1].transform().scale(), dvec3(4.0, 4.0, 4.0));
     }
 }

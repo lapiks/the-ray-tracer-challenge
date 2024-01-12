@@ -27,13 +27,15 @@ fn main() {
         .with_material(m.clone())
         .with_rotation_x(PI/2.0)
         .with_rotation_y(-PI/4.0)
-        .with_translation(0.0, 0.0, 5.0);
+        .with_translation(0.0, 0.0, 5.0)
+        .transform();
 
     let right_wall = Object::new(Shape::Plane(Plane::default()))
         .with_material(m.clone())
         .with_rotation_x(PI/2.0)
         .with_rotation_y(PI/4.0)
-        .with_translation(0.0, 0.0, 5.0);
+        .with_translation(0.0, 0.0, 5.0)
+        .transform();
 
     let middle = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
@@ -46,7 +48,8 @@ fn main() {
                 .with_diffuse(0.7)
                 .with_specular(0.3)
         )
-        .with_translation(-0.5, 1.0, 0.5);
+        .with_translation(-0.5, 1.0, 0.5)
+        .transform();
 
     let right = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
@@ -60,7 +63,8 @@ fn main() {
                 .with_specular(0.3)
         )
         .with_scale(0.5, 0.5, 0.5)
-        .with_translation(1.5, 0.5, -0.5);
+        .with_translation(1.5, 0.5, -0.5)
+        .transform();
 
     let left = Object::new(Shape::Sphere(Sphere::default()))
         .with_material(
@@ -74,7 +78,8 @@ fn main() {
                 .with_specular(0.3)
         )
         .with_scale(0.33, 0.33, 0.33)
-        .with_translation(-1.5, 0.33, -0.75);
+        .with_translation(-1.5, 0.33, -0.75)
+        .transform();
 
     let world = World::new()
         .with_objects(vec![floor, left_wall, right_wall, middle, right, left])

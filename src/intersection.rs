@@ -372,7 +372,8 @@ mod tests {
             dvec3(0.0, 0.0, 1.0)
         );
         let o = Object::new(Shape::Sphere(Sphere::default()))
-            .with_translation(0.0, 0.0, 1.0);
+            .with_translation(0.0, 0.0, 1.0)
+            .transform();
         let i = Intersection::new(5.0,&o);
         let xs = Intersections::new().with_intersections(vec![i.clone()]);
         let comps = IntersectionInfos::new(&xs, 0, &r);
@@ -406,15 +407,18 @@ mod tests {
     #[test]
     fn finding_n1_and_n2_at_various_intersections() {
         let a = glass_sphere()
-            .with_scale(2.0, 2.0, 2.0);
+            .with_scale(2.0, 2.0, 2.0)
+            .transform();
         let b = glass_sphere()
             .with_translation(0.0, 0.0, -0.25)
+            .transform()
             .with_material(
                 a.material().clone()
                     .with_refractive_index(2.0)
             );
         let c = glass_sphere()
             .with_translation(0.0, 0.0, 0.25)
+            .transform()
             .with_material(
                 a.material().clone()
                     .with_refractive_index(2.5)
@@ -451,7 +455,8 @@ mod tests {
             dvec3(0.0, 0.0, 1.0)
         );
         let s = glass_sphere()
-            .with_translation(0.0, 0.0, 1.0);
+            .with_translation(0.0, 0.0, 1.0)
+            .transform();
         let xs = Intersections::new().with_intersections(vec![Intersection::new(5.0, &s)]);
         let infos = IntersectionInfos::new(&xs, 0, &r);
         assert!(infos.under_point.z > EPSILON / 2.0);

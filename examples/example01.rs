@@ -28,6 +28,7 @@ fn main() {
     let o1 = Object::new(Shape::Sphere(s))
         .with_scale(0.75, 0.75, 0.75)
         .with_translation(1.0, 0.0, 0.0)
+        .transform()
         .with_material(
             Material::default()
                 .with_pattern(
@@ -39,6 +40,7 @@ fn main() {
 
     let o2 = Object::new(Shape::Sphere(s))
         .with_translation(-1.0, 0.0, 0.0)
+        .transform()
         .with_material(
             Material::default()
                 .with_pattern(

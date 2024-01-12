@@ -1,12 +1,20 @@
 use glam::{DVec3, DMat4};
 
-use crate::{Color, Object};
+use crate::{Color, Object, transformations::{Transform, TransformBuilder, Transformable}};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PatternObject {
     pattern: Pattern,
-    transform: DMat4,
-    inverse_transform: DMat4,
+    transform: Transform,
+}
+
+impl Default for PatternObject {
+    fn default() -> Self {
+        Self { 
+            pattern: Pattern::Plain(PlainPattern::new(Color::white())), 
+            transform: Default::default(), 
+        }
+    }
 }
 
 impl PatternObject {
@@ -17,29 +25,70 @@ impl PatternObject {
         }
     }
 
-    pub fn with_transform(mut self, mat: &DMat4) -> Self {
-        self.transform = *mat;
-        self.inverse_transform = mat.inverse();
+    pub fn with_transform(mut self, transform: Transform) -> Self {
+        self.transform = transform;
         self
     }
 
-    pub fn transform(&self) -> &DMat4 {
+    pub fn with_translation(self, x: f64, y: f64, z: f64) -> TransformBuilder<PatternObject> {
+        TransformBuilder::new(
+            Transform::default(),
+            self,
+        )
+        .with_translation(x, y, z)
+    }
+
+    pub fn with_scale(self, x: f64, y: f64, z: f64) -> TransformBuilder<PatternObject> {
+        TransformBuilder::new(
+            Transform::default(),
+            self,
+        )
+        .with_scale(x, y, z)
+    }
+
+    pub fn with_rotation_x(self, angle: f64) -> TransformBuilder<PatternObject> {
+        TransformBuilder::new(
+            Transform::default(),
+            self,
+        )
+        .with_rotation_x(angle)
+    }
+
+    pub fn with_rotation_y(self, angle: f64) -> TransformBuilder<PatternObject> {
+        TransformBuilder::new(
+            Transform::default(),
+            self,
+        )
+        .with_rotation_y(angle)
+    }
+
+    pub fn with_rotation_z(self, angle: f64) -> TransformBuilder<PatternObject> {
+        TransformBuilder::new(
+            Transform::default(),
+            self,
+        )
+        .with_rotation_z(angle)
+    }
+
+
+    pub fn transform(&self) -> &Transform {
         &self.transform
+    }
+
+    pub fn inverse_transform(&self) -> &DMat4 {
+        &self.transform.inverse_matrix
     }
 
     pub fn color_at_object(&self, object: &Object, world_point: DVec3) -> Color {
         let object_point = object.inverse_transform().transform_point3(world_point);
-        let pattern_point = self.inverse_transform.transform_point3(object_point);
+        let pattern_point = self.inverse_transform().transform_point3(object_point);
         self.pattern.color_at(pattern_point)
     }
 }
 
-impl Default for PatternObject {
-    fn default() -> Self {
-        Self { 
-            pattern: Pattern::Plain(PlainPattern::new(Color::white())), 
-            transform: Default::default(), 
-            inverse_transform: Default::default() }
+impl Transformable for PatternObject {
+    fn apply_transform(self, transform: Transform) -> Self {
+        self.with_transform(transform)
     }
 }
 
@@ -252,20 +301,24 @@ mod tests {
     #[test]
     fn the_default_pattern_transformation() {
         let pattern = PatternObject::new(Pattern::Test(TestPattern::new()));
-        assert_eq!(*pattern.transform(), DMat4::IDENTITY);
+        assert_eq!(pattern.transform().matrix, DMat4::IDENTITY);
     }
 
     #[test]
     fn assigning_a_transformation() {
         let pattern = PatternObject::new(Pattern::Test(TestPattern::new()))
-            .with_transform(&DMat4::from_translation(dvec3(1.0, 2.0, 3.0)));
-        assert_eq!(*pattern.transform(), DMat4::from_translation(dvec3(1.0, 2.0, 3.0)));
+            .with_translation(1.0, 2.0, 3.0)
+            .transform();
+
+        assert_eq!(pattern.transform().translation(), dvec3(1.0, 2.0, 3.0));
     }
 
     #[test]
     fn a_pattern_with_an_object_transformation() {
         let o = Object::new(Shape::Sphere(Sphere::default()))
-            .with_scale(2.0, 2.0, 2.0);
+        .with_scale(2.0, 2.0, 2.0)
+        .transform();
+
         let pattern = PatternObject::new(
             Pattern::Test(
                 TestPattern::new()
@@ -282,7 +335,8 @@ mod tests {
                 TestPattern::new()
             )
         )
-            .with_transform(&DMat4::from_scale(dvec3(2.0, 2.0, 2.0)));
+        .with_scale(2.0, 2.0, 2.0)
+        .transform();
 
         assert_eq!(pattern.color_at_object(&o, dvec3(2.0, 3.0, 4.0)), Color::new(1.0, 1.5, 2.0));
     }
@@ -290,13 +344,16 @@ mod tests {
     #[test]
     fn a_pattern_with_both_an_object_and_a_pattern_transformation() {
         let o = Object::new(Shape::Sphere(Sphere::default()))
-            .with_scale(2.0, 2.0, 2.0);
+        .with_scale(2.0, 2.0, 2.0)
+        .transform();
+
         let pattern = PatternObject::new(
             Pattern::Test(
                 TestPattern::new()
             )
         )
-            .with_transform(&DMat4::from_translation(dvec3(0.5, 1.0, 1.5)));
+        .with_translation(0.5, 1.0, 1.5)
+        .transform();
         
         assert_eq!(pattern.color_at_object(&o, dvec3(2.5, 3.0, 3.5)), Color::new(0.75, 0.5, 0.25));
     }
@@ -304,7 +361,9 @@ mod tests {
     #[test]
     fn stripes_with_an_object_transformation() {
         let o = Object::new(Shape::Sphere(Sphere::default()))
-            .with_scale(2.0, 2.0, 2.0);
+        .with_scale(2.0, 2.0, 2.0)
+        .transform();
+
         let pattern = PatternObject::new(
             Pattern::Stripped(
                 StrippedPattern::new(Color::white(), Color::black())
@@ -321,7 +380,8 @@ mod tests {
                 StrippedPattern::new(Color::white(), Color::black())
             )
         )
-            .with_transform(&DMat4::from_scale(dvec3(2.0, 2.0, 2.0)));
+        .with_scale(2.0, 2.0, 2.0)
+        .transform();
 
         assert_eq!(pattern.color_at_object(&o, dvec3(1.5, 0.0, 0.0)), Color::white());
     }
@@ -329,13 +389,16 @@ mod tests {
     #[test]
     fn stripes_with_both_an_object_and_a_pattern_transformation() {
         let o = Object::new(Shape::Sphere(Sphere::default()))
-            .with_scale(2.0, 2.0, 2.0);
+        .with_scale(2.0, 2.0, 2.0)
+        .transform();
+
         let pattern = PatternObject::new(
             Pattern::Stripped(
                 StrippedPattern::new(Color::white(), Color::black())
             )
         )
-            .with_transform(&DMat4::from_translation(dvec3(0.5, 0.0, 0.0)));
+        .with_translation(0.5, 0.0, 0.0)
+        .transform();
         
         assert_eq!(pattern.color_at_object(&o, dvec3(2.5, 0.0, 0.0)), Color::white());
     }

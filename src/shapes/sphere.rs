@@ -140,7 +140,8 @@ mod tests {
         );
         let s = Sphere::default();
         let o = Object::new(Shape::Sphere(s))
-            .with_scale(2.0, 2.0, 2.0);
+            .with_scale(2.0, 2.0, 2.0)
+            .transform();
         let xs = o.intersect(&r);
         assert_eq!(xs.count(), 2);
         assert_eq!(xs.get(0).unwrap().t(), 3.0);
@@ -155,7 +156,8 @@ mod tests {
         );
         let s = Sphere::default();
         let o = Object::new(Shape::Sphere(s))
-            .with_translation(5.0, 0.0, 0.0);
+            .with_translation(5.0, 0.0, 0.0)
+            .transform();
         let xs = o.intersect(&r);
         assert_eq!(xs.count(), 0);
     } 
@@ -198,7 +200,8 @@ mod tests {
     #[test]
     fn computing_normal_on_a_translated_sphere() {
         let o = Object::new(Shape::Sphere(Sphere::default()))
-            .with_translation(0.0, 1.0, 0.0);
+            .with_translation(0.0, 1.0, 0.0)
+            .transform();
         let n = o.normal_at(DVec3::new(0.0, 1.70711, -0.70711));
         assert!(n.abs_diff_eq(DVec3::new(0.0, 0.70711, -0.70711), EPSILON));
     } 
@@ -207,7 +210,8 @@ mod tests {
     fn computing_normal_on_a_transformed_sphere() {
         let o = Object::new(Shape::Sphere(Sphere::default()))
             .with_rotation_z(PI / 5.0)
-            .with_scale(1.0, 0.5, 1.0);
+            .with_scale(1.0, 0.5, 1.0)
+            .transform();
             
         let n = o.normal_at(DVec3::new(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0));
         assert!(n.abs_diff_eq(DVec3::new(0.0, 0.97014, -0.24254), EPSILON));
