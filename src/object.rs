@@ -114,7 +114,7 @@ impl Object {
         self.normal_to_world(object_normal)
     }
 
-    fn world_to_object(&self, world_point: DVec3) -> DVec3 {
+    pub fn world_to_object(&self, world_point: DVec3) -> DVec3 {
         self.transform.inverse_matrix.transform_point3(world_point)
     }
 

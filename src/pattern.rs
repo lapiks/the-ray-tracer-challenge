@@ -70,7 +70,6 @@ impl PatternObject {
         .with_rotation_z(angle)
     }
 
-
     pub fn transform(&self) -> &Transform {
         &self.transform
     }
@@ -80,7 +79,7 @@ impl PatternObject {
     }
 
     pub fn color_at_object(&self, object: &Object, world_point: DVec3) -> Color {
-        let object_point = object.inverse_transform().transform_point3(world_point);
+        let object_point = object.world_to_object(world_point);
         let pattern_point = self.inverse_transform().transform_point3(object_point);
         self.pattern.color_at(pattern_point)
     }
