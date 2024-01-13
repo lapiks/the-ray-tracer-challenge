@@ -110,12 +110,8 @@ impl Object {
     }
 
     pub fn normal_at(&self, world_point: DVec3) -> DVec3 {
-        let object_normal = self.shape.normal_at(self.transform.inverse_matrix.transform_point3(world_point));
-        self.transform
-            .inverse_matrix
-            .transpose()
-            .transform_vector3(object_normal)
-            .normalize()
+        let object_normal = self.shape.normal_at(self.world_to_object(world_point));
+        self.normal_to_world(object_normal)
     }
 
     fn world_to_object(&self, world_point: DVec3) -> DVec3 {
