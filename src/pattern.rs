@@ -87,8 +87,8 @@ impl PatternObject {
 }
 
 impl Transformable for PatternObject {
-    fn apply_transform(self, transform: Transform) -> Self {
-        self.with_transform(transform)
+    fn apply_transform(&mut self, transform: Transform) {
+        self.transform = transform;
     }
 }
 

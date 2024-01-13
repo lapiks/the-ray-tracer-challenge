@@ -1,7 +1,7 @@
 use glam::{DMat4, DVec3, dvec4};
 
 pub trait Transformable {
-    fn apply_transform(self, transform: Transform) -> Self;
+    fn apply_transform(&mut self, transform: Transform);
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -13,8 +13,8 @@ pub struct Transform {
 impl Default for Transform {
     fn default() -> Self {
         Self { 
-            matrix: Default::default(), 
-            inverse_matrix: Default::default() 
+            matrix: DMat4::IDENTITY, 
+            inverse_matrix: DMat4::IDENTITY
         }
     }
 }
@@ -22,6 +22,17 @@ impl Default for Transform {
 impl Transform {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn from_matrix(matrix: DMat4) -> Self {
+        Self {
+            matrix,
+            inverse_matrix: matrix.inverse()
+        }
+    }
+
+    pub fn apply(self, other: Transform) -> Self {
+        Transform::from_matrix(other.matrix * self.matrix)
     }
 
     pub fn with_translation(mut self, x: f64, y: f64, z: f64) -> Self {
@@ -103,8 +114,9 @@ where T: Transformable {
         self
     }
 
-    pub fn transform(self) -> T {
-        self.object.apply_transform(self.transform)
+    pub fn transform(mut self) -> T {
+        self.object.apply_transform(self.transform);
+        self.object
     }
 }
 

@@ -13,6 +13,15 @@ pub enum Shape {
     TestShape(TestShape),
 }
 
+impl Shape {
+    pub fn as_group(&self) -> Option<&Group> {
+        match self {
+            Shape::Group(g) => Some(g),
+            _ => None
+        }
+    }
+}
+
 pub trait Hittable {
     fn intersect<'a>(&'a self, ray: &Ray, object: &'a Object) -> Intersections<'a>;
     fn normal_at(&self, world_point: DVec3) -> DVec3;

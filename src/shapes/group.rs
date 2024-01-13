@@ -39,12 +39,18 @@ impl Group {
         self.objects = objects;
         self
     }
+
+    pub fn objects(&self) -> &Vec<Object> {
+        &self.objects
+    }
+
+    pub fn objects_mut(&mut self) -> &mut Vec<Object> {
+        &mut self.objects
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::f64::consts::PI;
-
     use glam::{DMat4, dvec3};
     use crate::shapes::{Shape, Sphere};
 
@@ -107,7 +113,7 @@ mod tests {
     }
 
     #[test]
-    fn intersecting_a_transformed_roup() {
+    fn intersecting_a_transformed_group() {
         let s = Object::new(Shape::Sphere(Sphere::default()))
             .with_translation(5.0, 0.0, 0.0)
             .transform();
@@ -126,32 +132,5 @@ mod tests {
         );
         let xs = g.intersect(&r).sort();
         assert_eq!(xs.count(), 2);
-    }
-
-    #[test]
-    fn convert_a_point_from_world_to_object_space() {
-        let s = Object::new(Shape::Sphere(Sphere::default()))
-        .with_translation(5.0, 0.0, 0.0)
-        .transform();
-
-        let g2 = Object::new(
-            Shape::Group(
-                Group::new()
-                .with_objects(vec![s])
-            )
-        )
-        .with_scale(2.0, 2.0, 2.0)
-        .transform();
-
-        let g1 = Object::new(
-            Shape::Group(
-                Group::new()
-                .with_objects(vec![g2])
-            )
-        )
-        .with_rotation_y(PI / 2.0)
-        .transform();
-
-        //assert_eq!(s.world_to_object(dvec3(-2.0, 0.0, -10.0)), dvec3(0.0, 0.0, -1.0));
     }
 }

@@ -80,6 +80,10 @@ impl Object {
         .with_rotation_z(angle)
     }
 
+    pub fn shape(&self) -> &Shape {
+        &self.shape
+    }
+
     pub fn material(&self) -> &Material {
         &self.material
     }
@@ -114,20 +118,33 @@ impl Object {
             .normalize()
     }
 
-    pub fn world_to_object(&self, world_point: DVec3) -> DVec3 {
-        DVec3::default()
+    fn world_to_object(&self, world_point: DVec3) -> DVec3 {
+        self.transform.inverse_matrix.transform_point3(world_point)
     } 
 }
 
 impl Transformable for Object {
-    fn apply_transform(self, transform: Transform) -> Self {
-        self.with_transform(transform)
+    fn apply_transform(&mut self, transform: Transform) {
+        match &mut self.shape {
+            Shape::Group(g) => {
+                for object in g.objects_mut() {
+                    object.apply_transform(transform.clone());
+                }
+            },
+            _other => {
+                self.transform = self.transform.clone().apply(transform);
+            }
+        };
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::shapes::sphere::Sphere;
+    use std::f64::{consts::PI, EPSILON};
+
+    use glam::dvec3;
+
+    use crate::shapes::{sphere::Sphere, Group};
     use super::*;
 
     #[test]
@@ -160,5 +177,41 @@ mod tests {
             .with_material(m.clone());
         
         assert_eq!(o.material, m);
+    }
+
+    #[test]
+    fn convert_a_point_from_world_to_object_space() {
+        let s = Object::new(Shape::Sphere(Sphere::default()))
+        .with_translation(5.0, 0.0, 0.0)
+        .transform();
+
+        let g2 = Object::new(
+            Shape::Group(
+                Group::new()
+                .with_objects(vec![s])
+            )
+        )
+        .with_scale(2.0, 2.0, 2.0)
+        .transform();
+
+        let g1 = Object::new(
+            Shape::Group(
+                Group::new()
+                .with_objects(vec![g2])
+            )
+        )
+        .with_rotation_y(PI / 2.0)
+        .transform();
+
+        let retrieved_s = &g1.shape()
+        .as_group()
+        .unwrap()
+        .objects()[0]
+        .shape()
+        .as_group()
+        .unwrap()
+        .objects()[0];
+
+        assert!(retrieved_s.world_to_object(dvec3(-2.0, 0.0, -10.0)).abs_diff_eq(dvec3(0.0, 0.0, -1.0), EPSILON));
     }
 }
