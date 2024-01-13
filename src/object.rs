@@ -120,7 +120,11 @@ impl Object {
 
     fn world_to_object(&self, world_point: DVec3) -> DVec3 {
         self.transform.inverse_matrix.transform_point3(world_point)
-    } 
+    }
+
+    fn normal_to_world(&self, normal: DVec3) -> DVec3 {
+        self.transform.inverse_transpose_matrix.transform_vector3(normal).normalize()
+    }
 }
 
 impl Transformable for Object {
@@ -140,7 +144,9 @@ impl Transformable for Object {
 
 #[cfg(test)]
 mod tests {
-    use std::f64::{consts::PI, EPSILON};
+    use std::f64::consts::PI;
+
+    const EPSILON: f64 = 0.0001;
 
     use glam::dvec3;
 
@@ -213,5 +219,82 @@ mod tests {
         .objects()[0];
 
         assert!(retrieved_s.world_to_object(dvec3(-2.0, 0.0, -10.0)).abs_diff_eq(dvec3(0.0, 0.0, -1.0), EPSILON));
+    }
+
+    #[test]
+    fn converting_a_normal_from_object_to_world_space() {
+        let s = Object::new(Shape::Sphere(Sphere::default()))
+        .with_translation(5.0, 0.0, 0.0)
+        .transform();
+
+        let g2 = Object::new(
+            Shape::Group(
+                Group::new()
+                .with_objects(vec![s])
+            )
+        )
+        .with_scale(1.0, 2.0, 3.0)
+        .transform();
+
+        let g1 = Object::new(
+            Shape::Group(
+                Group::new()
+                .with_objects(vec![g2])
+            )
+        )
+        .with_rotation_y(PI / 2.0)
+        .transform();
+
+        let retrieved_s = &g1.shape()
+        .as_group()
+        .unwrap()
+        .objects()[0]
+        .shape()
+        .as_group()
+        .unwrap()
+        .objects()[0];
+
+        assert!(
+            retrieved_s.normal_to_world(
+                dvec3(f64::sqrt(3.0)/3.0, f64::sqrt(3.0)/3.0, f64::sqrt(3.0)/3.0)
+            )
+            .abs_diff_eq(dvec3(0.2857, 0.4286, -0.8571), EPSILON)
+        );
+    }
+
+    #[test]
+    fn finding_the_normal_on_a_child_object() {
+        let s = Object::new(Shape::Sphere(Sphere::default()))
+        .with_translation(5.0, 0.0, 0.0)
+        .transform();
+
+        let g2 = Object::new(
+            Shape::Group(
+                Group::new()
+                .with_objects(vec![s])
+            )
+        )
+        .with_scale(1.0, 2.0, 3.0)
+        .transform();
+
+        let g1 = Object::new(
+            Shape::Group(
+                Group::new()
+                .with_objects(vec![g2])
+            )
+        )
+        .with_rotation_y(PI / 2.0)
+        .transform();
+
+        let retrieved_s = &g1.shape()
+        .as_group()
+        .unwrap()
+        .objects()[0]
+        .shape()
+        .as_group()
+        .unwrap()
+        .objects()[0];
+
+        assert!(retrieved_s.normal_at(dvec3(1.7321, 1.1547, -5.5774)).abs_diff_eq(dvec3(0.2857, 0.4286, -0.8571), EPSILON));
     }
 }

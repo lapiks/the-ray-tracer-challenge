@@ -8,13 +8,15 @@ pub trait Transformable {
 pub struct Transform {
     pub matrix: DMat4,
     pub inverse_matrix: DMat4,
+    pub inverse_transpose_matrix: DMat4,
 }
 
 impl Default for Transform {
     fn default() -> Self {
         Self { 
             matrix: DMat4::IDENTITY, 
-            inverse_matrix: DMat4::IDENTITY
+            inverse_matrix: DMat4::IDENTITY,
+            inverse_transpose_matrix: DMat4::IDENTITY,
         }
     }
 }
@@ -25,44 +27,36 @@ impl Transform {
     }
 
     pub fn from_matrix(matrix: DMat4) -> Self {
+        let inverse_matrix = matrix.inverse();
         Self {
             matrix,
-            inverse_matrix: matrix.inverse()
+            inverse_matrix,
+            inverse_transpose_matrix: inverse_matrix.transpose(),
         }
     }
 
     pub fn apply(self, other: Transform) -> Self {
-        Transform::from_matrix(other.matrix * self.matrix)
+        Self::from_matrix(other.matrix * self.matrix)
     }
 
-    pub fn with_translation(mut self, x: f64, y: f64, z: f64) -> Self {
-        self.matrix = DMat4::from_translation(DVec3::new(x, y, z)) * self.matrix;
-        self.inverse_matrix = self.matrix.inverse();
-        self
+    pub fn with_translation(self, x: f64, y: f64, z: f64) -> Self {
+        Self::from_matrix(DMat4::from_translation(DVec3::new(x, y, z)) * self.matrix)
     }
 
-    pub fn with_scale(mut self, x: f64, y: f64, z: f64) -> Self {
-        self.matrix = DMat4::from_scale(DVec3::new(x, y, z)) * self.matrix;
-        self.inverse_matrix = self.matrix.inverse();
-        self
+    pub fn with_scale(self, x: f64, y: f64, z: f64) -> Self {
+        Self::from_matrix(DMat4::from_scale(DVec3::new(x, y, z)) * self.matrix)
     }
 
-    pub fn with_rotation_x(mut self, angle: f64) -> Self {
-        self.matrix = DMat4::from_rotation_x(angle) * self.matrix;
-        self.inverse_matrix = self.matrix.inverse();
-        self
+    pub fn with_rotation_x(self, angle: f64) -> Self {
+        Self::from_matrix(DMat4::from_rotation_x(angle) * self.matrix)
     }
 
-    pub fn with_rotation_y(mut self, angle: f64) -> Self {
-        self.matrix = DMat4::from_rotation_y(angle) * self.matrix;
-        self.inverse_matrix = self.matrix.inverse();
-        self
+    pub fn with_rotation_y(self, angle: f64) -> Self {
+        Self::from_matrix(DMat4::from_rotation_y(angle) * self.matrix)
     }
 
-    pub fn with_rotation_z(mut self, angle: f64) -> Self {
-        self.matrix = DMat4::from_rotation_z(angle) * self.matrix;
-        self.inverse_matrix = self.matrix.inverse();
-        self
+    pub fn with_rotation_z(self, angle: f64) -> Self {
+        Self::from_matrix(DMat4::from_rotation_z(angle) * self.matrix)
     }
 
     pub fn translation(&self) -> DVec3 {
