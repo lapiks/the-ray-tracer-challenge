@@ -20,7 +20,7 @@ Here is the book's cover image, rendered with the ray tracer.
 - [x] cubes
 - [ ] cylinders
 - [ ] cones
-- [ ] object groups
+- [x] object groups
 - [x] triangles
 - [ ] obj importing
 - [ ] smooth triangles
