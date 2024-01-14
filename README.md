@@ -22,7 +22,7 @@ Here is the book's cover image, rendered with the ray tracer.
 - [ ] cones
 - [x] object groups
 - [x] triangles
-- [ ] obj importing
+- [X] obj importing
 - [ ] smooth triangles
 - [ ] constructive solid geometry
 - [x] yaml scene descriptions importing

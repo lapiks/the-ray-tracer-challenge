@@ -97,6 +97,8 @@ impl Camera {
         let mut canvas = Canvas::new(self.width, self.height);
         let now = Instant::now();
 
+        println!("Start rendering");
+
         canvas
             .pixels_mut()
             .par_iter_mut()

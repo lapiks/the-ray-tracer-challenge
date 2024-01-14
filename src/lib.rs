@@ -33,6 +33,7 @@ pub use canvas::Canvas;
 pub use color::Color;
 pub use pattern::Pattern;
 pub use yaml::YamlLoader;
+pub use obj::ObjLoader;
 
 mod ray;
 mod intersection;
@@ -46,3 +47,4 @@ pub mod camera;
 pub mod pattern;
 mod sequence;
 pub mod yaml;
+pub mod obj;
