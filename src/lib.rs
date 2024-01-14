@@ -6,6 +6,7 @@ pub mod shapes {
     pub use group::Group;
     pub use triangle::Triangle;
     pub use smooth_triangle::SmoothTriangle;
+    pub use mesh::Mesh;
 
     pub mod shape;
     pub mod sphere;
@@ -13,6 +14,7 @@ pub mod shapes {
     pub mod cube;
     pub mod triangle;
     pub mod smooth_triangle;
+    pub mod mesh;
     pub mod group;
     mod test_shape;
 }

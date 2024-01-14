@@ -23,12 +23,12 @@ Here is the book's cover image, rendered with the ray tracer.
 - [x] object groups
 - [x] bounding boxes
 - [x] triangles
-- [X] obj importing
-- [ ] smooth triangles
+- [x] obj importing
+- [x] smooth triangles
 - [ ] constructive solid geometry
 - [x] yaml scene descriptions importing
-- [X] antialiasing (supersampling method)
-- [X] area lights
+- [x] antialiasing (supersampling method)
+- [x] area lights
 - [ ] focal blur
 - [x] CPU parallel rendering
 
