@@ -55,5 +55,5 @@ fn main() {
         .with_lights(vec![l1, l2]);
 
     let canvas = camera.render(&world, 5);
-    canvas.export("examples/example01.png").unwrap();
+    canvas.export("examples/basic.png").unwrap();
 }

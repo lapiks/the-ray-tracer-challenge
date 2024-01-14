@@ -144,5 +144,5 @@ fn main() {
         .with_antialiasing(3);
 
     let canvas = camera.render(&world, 5);
-    canvas.export("examples/example04.png").unwrap();
+    canvas.export("examples/reflections.png").unwrap();
 }
