@@ -21,7 +21,7 @@ Here is the book's cover image, rendered with the ray tracer.
 - [ ] cylinders
 - [ ] cones
 - [x] object groups
-- [ ] bounding boxes
+- [x] bounding boxes
 - [x] triangles
 - [X] obj importing
 - [ ] smooth triangles
