@@ -39,7 +39,7 @@ impl Object {
     }
 
     pub fn with_transform(mut self, transform: Transform) -> Self {
-        self.bounds = self.bounds.transform(&transform.matrix);
+        self.bounds = self.shape.bounds().transform(&transform.matrix);
         self.transform = transform;
         self
     }
@@ -113,8 +113,8 @@ impl Object {
     }
 
     pub fn intersect(&self, ray: &Ray) -> Intersections {
-        let transformed_ray = ray.transform(&self.transform.inverse_matrix);
-        self.shape.intersect(&transformed_ray, &self)
+        let local_ray = ray.transform(&self.transform.inverse_matrix);
+        self.shape.intersect(&local_ray, &self)
     }
 
     pub fn normal_at(&self, world_point: DVec3) -> DVec3 {
@@ -129,6 +129,11 @@ impl Object {
     fn normal_to_world(&self, normal: DVec3) -> DVec3 {
         self.transform.inverse_transpose_matrix.transform_vector3(normal).normalize()
     }
+
+    fn set_transform(&mut self, transform: Transform) {
+        self.bounds = self.shape().bounds().transform(&transform.matrix);
+        self.transform = transform;
+    }
 }
 
 impl Transformable for Object {
@@ -138,11 +143,11 @@ impl Transformable for Object {
                 for object in g.objects_mut() {
                     object.apply_transform(transform.clone());
                 }
+                self.set_transform(Transform::identity());
             },
             _other => {
                 let new_transform = self.transform.clone().apply(transform);
-                self.bounds = self.bounds.transform(&new_transform.matrix);
-                self.transform = new_transform;
+                self.set_transform(new_transform);
             }
         };
     }

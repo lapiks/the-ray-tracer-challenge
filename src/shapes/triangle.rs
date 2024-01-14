@@ -11,7 +11,6 @@ pub struct Triangle {
     e1: DVec3,
     e2: DVec3,
     normal: DVec3,
-    bounds: Bounds,
 }
 
 impl Triangle {
@@ -19,26 +18,13 @@ impl Triangle {
         let e1 = p2 - p1;
         let e2 = p3 - p1;
         let normal = e2.cross(e1).normalize();
-        let bounds = Bounds::new(
-            dvec3(
-                f64::min(f64::min(p1.x, p2.x), p3.x),
-                f64::min(f64::min(p1.y, p2.y), p3.y),
-                f64::min(f64::min(p1.z, p2.z), p3.z)
-            ),
-            dvec3(
-                f64::max(f64::max(p1.x, p2.x), p3.x),
-                f64::max(f64::max(p1.y, p2.y), p3.y),
-                f64::max(f64::max(p1.z, p2.z), p3.z)
-            ),            
-        );
         Self {
             p1,
             p2,
             p3,
             e1,
             e2,
-            normal, 
-            bounds,
+            normal,
         }
     }
 }
@@ -74,7 +60,18 @@ impl Hittable for Triangle {
     }
 
     fn bounds(&self) -> Bounds {
-        self.bounds
+        Bounds::new(
+            dvec3(
+                f64::min(f64::min(self.p1.x, self.p2.x), self.p3.x),
+                f64::min(f64::min(self.p1.y, self.p2.y), self.p3.y),
+                f64::min(f64::min(self.p1.z, self.p2.z), self.p3.z)
+            ),
+            dvec3(
+                f64::max(f64::max(self.p1.x, self.p2.x), self.p3.x),
+                f64::max(f64::max(self.p1.y, self.p2.y), self.p3.y),
+                f64::max(f64::max(self.p1.z, self.p2.z), self.p3.z)
+            ),            
+        )
     }
 }
 

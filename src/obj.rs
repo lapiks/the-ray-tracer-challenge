@@ -71,7 +71,7 @@ impl ObjLoader {
         }
     }
 
-    pub fn objects(&self) -> &Vec<Object> {
-        &self.objects
+    pub fn objects(self) -> Vec<Object> {
+        self.objects
     }
 }

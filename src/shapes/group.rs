@@ -9,12 +9,14 @@ pub struct Group {
 }
 
 impl Hittable for Group {
-    fn intersect<'a>(&'a self, ray: &Ray, _: &'a Object) -> Intersections<'a> {
+    fn intersect<'a>(&'a self, ray: &Ray, this: &'a Object) -> Intersections<'a> {
         let mut xs = Intersections::new();
-        for object in &self.objects {
-            xs.append(object.intersect(ray));
+        if this.bounds().intersects(ray) {
+            for object in &self.objects {
+                xs.append(object.intersect(ray));
+            }
         }
-        xs 
+        xs
     }
 
     fn normal_at(&self, _: DVec3) -> DVec3 {
@@ -22,11 +24,11 @@ impl Hittable for Group {
     }
 
     fn bounds(&self) -> Bounds {
-        let mut bounds = Bounds::default();
-        for object in &self.objects {
-            bounds.expand(object.bounds());
-        }
-        bounds
+        self.objects
+            .iter()
+            .fold(Bounds::default(), |bounds, object| {
+                bounds.expand(object.bounds())
+            })
     }
 }
 

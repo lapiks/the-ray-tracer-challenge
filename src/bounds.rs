@@ -1,4 +1,8 @@
+use std::mem::swap;
+
 use glam::{DVec3, DMat4, dvec3};
+
+use crate::ray::Ray;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Bounds {
@@ -30,9 +34,10 @@ impl Bounds {
         self.max
     }
 
-    pub fn expand(&mut self, other: &Bounds) {
-        self.add_point(other.min);
-        self.add_point(other.max);
+    pub fn expand(self, other: &Bounds) -> Self {
+        self
+        .add_point(other.min)
+        .add_point(other.max)
     }
 
     pub fn add_point(mut self, new_point: DVec3) -> Self {
@@ -69,6 +74,38 @@ impl Bounds {
         .add_point(matrix.transform_point3(p6))
         .add_point(matrix.transform_point3(p7))
     }
+
+    pub fn intersects<'a>(&self, ray: &Ray) -> bool {
+        fn check_axis(origin: f64, direction: f64, min: f64, max: f64) -> (f64, f64) {
+            let tmin_numerator = min - origin;
+            let tmax_numerator = max - origin;
+
+            let mut tmin;
+            let mut tmax;
+            if direction.abs() >= f64::EPSILON {
+                tmin = tmin_numerator / direction;
+                tmax = tmax_numerator / direction;
+            } else {
+                tmin = tmin_numerator * f64::INFINITY;
+                tmax = tmax_numerator * f64::INFINITY;
+            }
+
+            if tmin > tmax {
+                swap(&mut tmin, &mut tmax);
+            }
+
+            (tmin, tmax)
+        }
+
+        let (xtmin, xtmax) = check_axis(ray.origin.x, ray.direction.x, self.min.x, self.max.x);
+        let (ytmin, ytmax) = check_axis(ray.origin.y, ray.direction.y, self.min.y, self.max.y);
+        let (ztmin, ztmax) = check_axis(ray.origin.z, ray.direction.z, self.min.z, self.max.z);
+
+        let tmin = f64::max(xtmin, f64::max(ytmin, ztmin));
+        let tmax = f64::min(xtmax, f64::min(ytmax, ztmax));
+
+        tmin < tmax
+    }
 }
 
 
@@ -76,7 +113,7 @@ impl Bounds {
 mod tests {
     use glam::dvec3;
 
-    use crate::{Object, shapes::{Sphere, Shape}};
+    use crate::{Object, shapes::{Sphere, Shape, Group}};
 
     use super::*;
 
@@ -107,5 +144,38 @@ mod tests {
 
         assert_eq!(s.bounds().min, dvec3(4.0, -1.0, -1.0));
         assert_eq!(s.bounds().max, dvec3(6.0, 1.0, 1.0));
+    }
+    
+    #[test]
+    fn bounds_with_two_transformed_spheres() {
+        let s1 = Object::new(Shape::Sphere(Sphere::default()))
+        .with_translation(5.0, 5.0, 5.0)
+        .transform();
+
+        let s2 = Object::new(Shape::Sphere(Sphere::default()))
+        .with_translation(-5.0, -5.0, -5.0)
+        .transform();
+    
+        let g = Object::new(Shape::Group(Group::default().with_objects(vec![s1, s2])));
+        assert_eq!(g.bounds().min, dvec3(-6.0, -6.0, -6.0));
+        assert_eq!(g.bounds().max, dvec3(6.0, 6.0, 6.0));
+    }
+
+    #[test]
+    fn transformed_group_with_two_transformed_spheres() {
+        let s1 = Object::new(Shape::Sphere(Sphere::default()))
+        .with_translation(5.0, 5.0, 5.0)
+        .transform();
+
+        let s2 = Object::new(Shape::Sphere(Sphere::default()))
+        .with_translation(-5.0, -5.0, -5.0)
+        .transform();
+    
+        let g = Object::new(Shape::Group(Group::default().with_objects(vec![s1, s2])))
+        .with_translation(1.0, 1.0, 1.0)
+        .transform();
+
+        assert_eq!(g.bounds().min, dvec3(-5.0, -5.0, -5.0));
+        assert_eq!(g.bounds().max, dvec3(7.0, 7.0, 7.0));
     }
 }

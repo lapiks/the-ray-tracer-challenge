@@ -26,6 +26,10 @@ impl Transform {
         Self::default()
     }
 
+    pub fn identity() -> Self {
+        Self::default()
+    }
+
     pub fn from_matrix(matrix: DMat4) -> Self {
         let inverse_matrix = matrix.inverse();
         Self {
