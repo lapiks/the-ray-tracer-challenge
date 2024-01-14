@@ -4,7 +4,7 @@ use glam::dvec3;
 use ray_tracer::{Camera, World, Color, transformations, lights::{Light, PointLight}, ObjLoader, shapes::{Shape, Cube}, Object, Material, pattern::{PatternObject, CheckerPattern, PlainPattern}, Pattern};
 
 fn main() {
-    let camera = Camera::new(1000, 800, PI / 3.0)
+    let camera = Camera::new(1000, 700, PI / 3.0)
         .with_transform(
             transformations::view_transform(
                 dvec3(0.0, 3.0, -3.0),
@@ -28,13 +28,16 @@ fn main() {
     .with_material(
         Material::new()
         .with_ambient(0.0)
-        .with_diffuse(0.0)
-        .with_specular(0.0)
-        .with_reflective(1.0)
+        .with_diffuse(0.4)
+        .with_specular(0.9)
+        .with_shininess(300.0)
+        .with_reflective(0.9)
+        .with_transparency(0.9)
+        .with_refractive_index(1.5)
         .with_pattern(
             PatternObject::new(
                 Pattern::Plain(
-                    PlainPattern::new(Color::new(0.0, 0.0, 0.0))
+                    PlainPattern::new(Color::new(0.0, 0.0, 0.2))
                 )
             )
         )
