@@ -21,6 +21,7 @@ Here is the book's cover image, rendered with the ray tracer.
 - [ ] cylinders
 - [ ] cones
 - [x] object groups
+- [ ] bounding boxes
 - [x] triangles
 - [X] obj importing
 - [ ] smooth triangles
@@ -33,16 +34,16 @@ Here is the book's cover image, rendered with the ray tracer.
 
 ## Examples
 ### Shadows
-![Alt text](examples/example02.png?raw=true "Shadows")
+![Alt text](examples/shadows.png?raw=true "Shadows")
 
 ### Patterns
-![Alt text](examples/example03.png?raw=true "Patterns")
+![Alt text](examples/patterns.png?raw=true "Patterns")
 
 ### Reflections
-![Alt text](examples/example04.png?raw=true "Reflections")
+![Alt text](examples/reflections.png?raw=true "Reflections")
 
 ### Refractions
-![Alt text](examples/example05.png?raw=true "Refractions")
+![Alt text](examples/refractions.png?raw=true "Refractions")
 
 ### From the book
 ![Alt text](examples/yaml_scenes/reflect-refract.png?raw=true "reflect-refract")
