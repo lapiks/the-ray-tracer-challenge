@@ -27,6 +27,18 @@ impl Triangle {
             normal,
         }
     }
+
+    pub fn p1(&self) -> DVec3 {
+        self.p1
+    }
+
+    pub fn p2(&self) -> DVec3 {
+        self.p2
+    }
+
+    pub fn p3(&self) -> DVec3 {
+        self.p3
+    }
 }
 
 impl Hittable for Triangle {
@@ -51,11 +63,12 @@ impl Hittable for Triangle {
                 f * self.e2.dot(origin_cross_e1), 
                 object
             )
+            .with_u_v(u, v)
         );
         xs
     }
 
-    fn normal_at(&self, _: DVec3) -> DVec3 {
+    fn normal_at(&self, _: DVec3, _: f64, _: f64) -> DVec3 {
         self.normal
     }
 
@@ -103,9 +116,9 @@ mod tests {
             dvec3(-1.0, 0.0, 0.0),
             dvec3(1.0, 0.0, 0.0)
         );
-        let n1 = t.normal_at(dvec3(0.0, 0.5, 0.0));
-        let n2 = t.normal_at(dvec3(-0.5, 0.75, 0.0));
-        let n3 = t.normal_at(dvec3(0.5, 0.25, 0.0));
+        let n1 = t.normal_at(dvec3(0.0, 0.5, 0.0), 0.0, 0.0);
+        let n2 = t.normal_at(dvec3(-0.5, 0.75, 0.0), 0.0, 0.0);
+        let n3 = t.normal_at(dvec3(0.5, 0.25, 0.0), 0.0, 0.0);
         assert_eq!(n1, t.normal);
         assert_eq!(n2, t.normal);
         assert_eq!(n3, t.normal);

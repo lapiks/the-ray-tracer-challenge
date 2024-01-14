@@ -38,7 +38,7 @@ impl Hittable for Sphere {
         xs
     }
 
-    fn normal_at(&self, point: DVec3) -> DVec3 {
+    fn normal_at(&self, point: DVec3, _: f64, _: f64) -> DVec3 {
         // for a unit sphere at 0,0,0
         point.normalize()
     }
@@ -172,35 +172,35 @@ mod tests {
     #[test]
     fn normal_on_x_axis() {
         let s = Sphere::default();
-        let n = s.normal_at(DVec3::new(1.0, 0.0, 0.0));
+        let n = s.normal_at(DVec3::new(1.0, 0.0, 0.0), 0.0, 0.0);
         assert_eq!(n, DVec3::new(1.0, 0.0, 0.0));
     } 
 
     #[test]
     fn normal_on_y_axis() {
         let s = Sphere::default();
-        let n = s.normal_at(DVec3::new(0.0, 1.0, 0.0));
+        let n = s.normal_at(DVec3::new(0.0, 1.0, 0.0), 0.0, 0.0);
         assert_eq!(n, DVec3::new(0.0, 1.0, 0.0));
     } 
 
     #[test]
     fn normal_on_z_axis() {
         let s = Sphere::default();
-        let n = s.normal_at(DVec3::new(0.0, 0.0, 1.0));
+        let n = s.normal_at(DVec3::new(0.0, 0.0, 1.0), 0.0, 0.0);
         assert_eq!(n, DVec3::new(0.0, 0.0, 1.0));
     } 
 
     #[test]
     fn normal_at_nonaxial_point() {
         let s = Sphere::default();
-        let n = s.normal_at(DVec3::new(3.0_f64.sqrt() / 3.0, 3.0_f64.sqrt() / 3.0, 3.0_f64.sqrt()/3.0));
+        let n = s.normal_at(DVec3::new(3.0_f64.sqrt() / 3.0, 3.0_f64.sqrt() / 3.0, 3.0_f64.sqrt()/3.0), 0.0, 0.0);
         assert!(n.abs_diff_eq(DVec3::new(3.0_f64.sqrt() / 3.0, 3.0_f64.sqrt() / 3.0, 3.0_f64.sqrt() / 3.0), EPSILON));
     } 
 
     #[test]
     fn the_normal_is_normalized() {
         let s = Sphere::default();
-        let n = s.normal_at(DVec3::new(3.3_f64.sqrt() / 3.0, 3.3_f64.sqrt()/3.0, 3.3_f64.sqrt()/3.0));
+        let n = s.normal_at(DVec3::new(3.3_f64.sqrt() / 3.0, 3.3_f64.sqrt()/3.0, 3.3_f64.sqrt()/3.0), 0.0, 0.0);
         assert!(n.abs_diff_eq(n.normalize(), EPSILON));
     } 
 
@@ -209,7 +209,7 @@ mod tests {
         let o = Object::new(Shape::Sphere(Sphere::default()))
             .with_translation(0.0, 1.0, 0.0)
             .transform();
-        let n = o.normal_at(DVec3::new(0.0, 1.70711, -0.70711));
+        let n = o.normal_at(DVec3::new(0.0, 1.70711, -0.70711), 0.0, 0.0);
         assert!(n.abs_diff_eq(DVec3::new(0.0, 0.70711, -0.70711), EPSILON));
     } 
 
@@ -220,7 +220,7 @@ mod tests {
             .with_scale(1.0, 0.5, 1.0)
             .transform();
             
-        let n = o.normal_at(DVec3::new(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0));
+        let n = o.normal_at(DVec3::new(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0), 0.0, 0.0);
         assert!(n.abs_diff_eq(DVec3::new(0.0, 0.97014, -0.24254), EPSILON));
     } 
 }

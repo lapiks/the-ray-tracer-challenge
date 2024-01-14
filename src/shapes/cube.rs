@@ -48,7 +48,7 @@ impl Hittable for Cube {
         }
     }
 
-    fn normal_at(&self, point: DVec3) -> DVec3 {
+    fn normal_at(&self, point: DVec3, _: f64, _: f64) -> DVec3 {
         let maxc = f64::max(point.x.abs(), f64::max(point.y.abs(), point.z.abs()));
         if maxc == point.x.abs() { 
             DVec3::new(point.x, 0.0, 0.0)
@@ -152,7 +152,7 @@ mod tests {
         ];
 
         for point_normal in points_normals {
-            assert_eq!(c.normal_at(point_normal.0), point_normal.1);
+            assert_eq!(c.normal_at(point_normal.0, 0.0, 0.0), point_normal.1);
         }
     }
 }

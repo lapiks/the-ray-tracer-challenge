@@ -38,15 +38,25 @@ impl HitPredicate for ShadowHit {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Intersection<'a> {
     t: f64,
-    object: &'a Object
+    object: &'a Object,
+    u: f64,
+    v: f64,
 }
 
 impl<'a> Intersection<'a> {
     pub fn new(t: f64, object: &'a Object) -> Self {
         Self {
             t,
-            object
+            object,
+            u: 0.0, 
+            v: 0.0,
         }
+    }
+
+    pub fn with_u_v(mut self, u: f64, v: f64) -> Self {
+        self.u = u;
+        self.v = v;
+        self
     }
 
     pub fn t(&self) -> f64 {
@@ -55,6 +65,14 @@ impl<'a> Intersection<'a> {
 
     pub fn object(&self) -> &Object {
         &self.object
+    }
+
+    pub fn u(&self) -> f64 {
+        self.u
+    }
+
+    pub fn v(&self) -> f64 {
+        self.v
     }
 }
 
@@ -169,7 +187,7 @@ impl<'a> IntersectionInfos<'a> {
         let point = ray.at(intersection.t);
         let object = intersection.object;
         let eyev = -ray.direction;
-        let mut normalv = object.normal_at(point);
+        let mut normalv = object.normal_at(point, intersection.u, intersection.v);
         let mut inside = false;
         if normalv.dot(eyev) < 0.0 {
             inside = true;

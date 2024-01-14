@@ -19,7 +19,7 @@ impl Hittable for Group {
         xs
     }
 
-    fn normal_at(&self, _: DVec3) -> DVec3 {
+    fn normal_at(&self, _: DVec3, _: f64, _: f64) -> DVec3 {
         DVec3::default()
     }
 

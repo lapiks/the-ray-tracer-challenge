@@ -117,8 +117,8 @@ impl Object {
         self.shape.intersect(&local_ray, &self)
     }
 
-    pub fn normal_at(&self, world_point: DVec3) -> DVec3 {
-        let object_normal = self.shape.normal_at(self.world_to_object(world_point));
+    pub fn normal_at(&self, world_point: DVec3, u: f64, v: f64) -> DVec3 {
+        let object_normal = self.shape.normal_at(self.world_to_object(world_point), u, v);
         self.normal_to_world(object_normal)
     }
 
@@ -306,6 +306,6 @@ mod tests {
         .unwrap()
         .objects()[0];
 
-        assert!(retrieved_s.normal_at(dvec3(1.7321, 1.1547, -5.5774)).abs_diff_eq(dvec3(0.2857, 0.4286, -0.8571), EPSILON));
+        assert!(retrieved_s.normal_at(dvec3(1.7321, 1.1547, -5.5774), 0.0, 0.0).abs_diff_eq(dvec3(0.2857, 0.4286, -0.8571), EPSILON));
     }
 }

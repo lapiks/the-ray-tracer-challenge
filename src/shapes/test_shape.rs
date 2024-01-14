@@ -16,7 +16,7 @@ impl Hittable for TestShape {
         Intersections::new()
     }
 
-    fn normal_at(&self, point: DVec3) -> DVec3 {
+    fn normal_at(&self, point: DVec3, _: f64, _: f64) -> DVec3 {
         point
     }
 
@@ -93,7 +93,7 @@ mod tests {
         let o = Object::new(Shape::TestShape(s.clone()))
             .with_translation(0.0, 1.0, 0.0)
             .transform();
-        let n = o.normal_at(dvec3(0.0, 1.70711, -0.70711));
+        let n = o.normal_at(dvec3(0.0, 1.70711, -0.70711), 0.0, 0.0);
         assert!(n.abs_diff_eq(dvec3(0.0, 0.70711, -0.70711), EPSILON));
     }
 
@@ -104,7 +104,7 @@ mod tests {
             .with_rotation_z(PI / 5.0)
             .with_scale(1.0, 0.5, 1.0)
             .transform();
-        let n = o.normal_at(dvec3(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0));
+        let n = o.normal_at(dvec3(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0), 0.0, 0.0);
         assert!(n.abs_diff_eq(dvec3(0.0, 0.97014, -0.24254), EPSILON));
     }
 }

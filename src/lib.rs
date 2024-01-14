@@ -5,12 +5,14 @@ pub mod shapes {
     pub use cube::Cube;
     pub use group::Group;
     pub use triangle::Triangle;
+    pub use smooth_triangle::SmoothTriangle;
 
     pub mod shape;
     pub mod sphere;
     pub mod plane;
     pub mod cube;
     pub mod triangle;
+    pub mod smooth_triangle;
     pub mod group;
     mod test_shape;
 }

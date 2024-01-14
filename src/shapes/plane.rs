@@ -24,7 +24,7 @@ impl Hittable for Plane {
         xs        
     }
 
-    fn normal_at(&self, _: DVec3) -> DVec3 {
+    fn normal_at(&self, _: DVec3, _: f64, _: f64) -> DVec3 {
         DVec3::new(0.0, 1.0, 0.0)
     }
 
@@ -60,9 +60,9 @@ mod tests {
     #[test]
     fn the_normal_of_a_plane_is_constant_everywhere() {
         let p = Plane::default();
-        assert_eq!(p.normal_at(dvec3(0.0, 0.0, 0.0)), dvec3(0.0, 1.0, 0.0));
-        assert_eq!(p.normal_at(dvec3(10.0, 0.0, -10.0)), dvec3(0.0, 1.0, 0.0));
-        assert_eq!(p.normal_at(dvec3(-5.0, 0.0, 150.0)), dvec3(0.0, 1.0, 0.0));
+        assert_eq!(p.normal_at(dvec3(0.0, 0.0, 0.0), 0.0, 0.0), dvec3(0.0, 1.0, 0.0));
+        assert_eq!(p.normal_at(dvec3(10.0, 0.0, -10.0), 0.0, 0.0), dvec3(0.0, 1.0, 0.0));
+        assert_eq!(p.normal_at(dvec3(-5.0, 0.0, 150.0), 0.0, 0.0), dvec3(0.0, 1.0, 0.0));
     }
 
     #[test]
