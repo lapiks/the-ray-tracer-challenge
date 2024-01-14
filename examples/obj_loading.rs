@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 use glam::dvec3;
-use ray_tracer::{Camera, World, Color, transformations, lights::{Light, PointLight}, ObjLoader, shapes::{Shape, Plane}, Object, Material, pattern::{PatternObject, CheckerPattern, PlainPattern}, Pattern};
+use ray_tracer::{Camera, World, Color, transformations, lights::{Light, PointLight}, ObjLoader, shapes::{Shape, Cube}, Object, Material, pattern::{PatternObject, CheckerPattern, PlainPattern}, Pattern};
 
 fn main() {
     let camera = Camera::new(1000, 800, PI / 3.0)
@@ -15,7 +15,7 @@ fn main() {
         .with_antialiasing(3);
 
     let l1 = Light::PointLight(PointLight::new(
-        dvec3(-10.0, 10.0, -10.0), 
+        dvec3(-5.0, 5.0, -5.0), 
         Color::white()
     ));
 
@@ -24,24 +24,26 @@ fn main() {
     objects[0] = objects[0].clone()
     .with_scale(0.1, 0.1, 0.1)
     .with_rotation_x(-PI / 2.0)
-    .transform();
-    // .with_material(
-    //     Material::new()
-    //     .with_ambient(0.0)
-    //     .with_diffuse(0.0)
-    //     .with_specular(0.0)
-    //     .with_transparency(1.0)
-    //     .with_refractive_index(1.5)
-    //     .with_pattern(
-    //         PatternObject::new(
-    //             Pattern::Plain(
-    //                 PlainPattern::new(Color::black())
-    //             )
-    //         )
-    //     )
-    // );
+    .transform()
+    .with_material(
+        Material::new()
+        .with_ambient(0.0)
+        .with_diffuse(0.0)
+        .with_specular(0.0)
+        .with_reflective(1.0)
+        .with_pattern(
+            PatternObject::new(
+                Pattern::Plain(
+                    PlainPattern::new(Color::new(0.0, 0.0, 0.0))
+                )
+            )
+        )
+    );
 
-    let floor = Object::new(Shape::Plane(Plane::default()))
+    let room = Object::new(Shape::Cube(Cube::default()))
+    .with_scale(10.0, 10.0, 10.0)
+    .with_translation(0.0, 10.0, 0.0)
+    .transform()
     .with_material(
         Material::new()
         .with_pattern(
@@ -53,16 +55,12 @@ fn main() {
                     )
                 )
             )
+            .with_scale(0.1, 0.1, 0.1)
+            .transform()
         )
     );
 
-    let wall = floor.clone()
-    .with_rotation_x(PI / 2.0)
-    .with_translation(0.0, 0.0, 10.0)
-    .transform();
-
-    objects.push(floor);
-    objects.push(wall);
+    objects.push(room);
 
     println!("min: {}, max: {}", objects[0].bounds().min(), objects[0].bounds().max());
 

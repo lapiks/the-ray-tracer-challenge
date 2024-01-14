@@ -2,7 +2,7 @@ use std::{path::Path, fmt::Debug};
 
 use glam::dvec3;
 
-use crate::{shapes::{Group, Triangle, Shape, SmoothTriangle}, Object};
+use crate::{shapes::{Triangle, Shape, SmoothTriangle, Mesh}, Object};
 
 pub struct ObjLoader {
     objects: Vec<Object>,
@@ -96,9 +96,9 @@ impl ObjLoader {
 
             objects.push(
                 Object::new(
-                    Shape::Group(
-                        Group::default()
-                        .with_objects(triangles)
+                    Shape::Mesh(
+                        Mesh::default()
+                        .with_triangles(triangles)
                     )
                 )
             );

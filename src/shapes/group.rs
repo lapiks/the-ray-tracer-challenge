@@ -3,7 +3,7 @@ use glam::DVec3;
 use crate::{ray::Ray, Object, intersection::Intersections, bounds::Bounds};
 use super::shape::Hittable;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct Group {
     objects: Vec<Object>,
 }
@@ -29,14 +29,6 @@ impl Hittable for Group {
             .fold(Bounds::default(), |bounds, object| {
                 bounds.expand(object.bounds())
             })
-    }
-}
-
-impl Default for Group {
-    fn default() -> Self {
-        Self {
-            objects: Vec::default()
-        }
     }
 }
 

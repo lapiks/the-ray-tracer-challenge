@@ -29,7 +29,18 @@ impl Object {
     }
 
     pub fn with_material(mut self, material: Material) -> Self {
-        self.material = material;
+        self.material = material.clone();
+        self.shape = match self.shape {
+            Shape::Mesh(mut m) => {
+                let mut new_triangles = Vec::with_capacity(m.triangles().len());
+                for triangle in m.triangles().iter() {
+                    new_triangles.push(triangle.clone().with_material(material.clone()));
+                }
+                m = m.with_triangles(new_triangles);
+                Shape::Mesh(m)
+            }
+            _ => { self.shape }
+        };
         self
     }
 
@@ -141,6 +152,12 @@ impl Transformable for Object {
         match &mut self.shape {
             Shape::Group(g) => {
                 for object in g.objects_mut() {
+                    object.apply_transform(transform.clone());
+                }
+                self.set_transform(Transform::identity());
+            },
+            Shape::Mesh(m) => {
+                for object in m.triangles_mut() {
                     object.apply_transform(transform.clone());
                 }
                 self.set_transform(Transform::identity());

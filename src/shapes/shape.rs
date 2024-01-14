@@ -1,7 +1,7 @@
 use glam::DVec3;
 
 use crate::{ray::Ray, intersection::Intersections, Object, bounds::Bounds};
-use super::{Sphere, test_shape::TestShape, Plane, Cube, Group, Triangle, SmoothTriangle};
+use super::{Sphere, test_shape::TestShape, Plane, Cube, Group, Triangle, SmoothTriangle, Mesh};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Shape {
@@ -10,6 +10,7 @@ pub enum Shape {
     Cube(Cube),
     Triangle(Triangle),
     SmoothTriangle(SmoothTriangle),
+    Mesh(Mesh),
     Group(Group),
     TestShape(TestShape),
 }
@@ -37,6 +38,7 @@ impl Hittable for Shape {
             Shape::Cube(c) => c.intersect(ray, object),
             Shape::Triangle(t) => t.intersect(ray, object),
             Shape::SmoothTriangle(t) => t.intersect(ray, object),
+            Shape::Mesh(m) => m.intersect(ray, object),
             Shape::Group(g) => g.intersect(ray, object),
             Shape::TestShape(s) => s.intersect(ray, object),
         }
@@ -49,6 +51,7 @@ impl Hittable for Shape {
             Shape::Cube(c) => c.normal_at(point, u, v),
             Shape::Triangle(t) => t.normal_at(point, u, v),
             Shape::SmoothTriangle(t) => t.normal_at(point, u, v),
+            Shape::Mesh(m) => m.normal_at(point, u, v),
             Shape::Group(g) => g.normal_at(point, u, v),
             Shape::TestShape(s) => s.normal_at(point, u, v),
         }
@@ -61,6 +64,7 @@ impl Hittable for Shape {
             Shape::Cube(c) => c.bounds(),
             Shape::Triangle(t) => t.bounds(),
             Shape::SmoothTriangle(t) => t.bounds(),
+            Shape::Mesh(m) => m.bounds(),
             Shape::Group(g) => g.bounds(),
             Shape::TestShape(s) => s.bounds(),
         }

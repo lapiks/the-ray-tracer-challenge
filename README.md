@@ -45,6 +45,9 @@ Here is the book's cover image, rendered with the ray tracer.
 ### Refractions
 ![Alt text](examples/refractions.png?raw=true "Refractions")
 
+### Triangular meshes
+![Alt text](examples/obj_loading.png?raw=true "obj-loading")
+
 ### From the book
 ![Alt text](examples/yaml_scenes/reflect-refract.png?raw=true "reflect-refract")
 
