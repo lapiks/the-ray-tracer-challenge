@@ -4,7 +4,7 @@ use crate::{
     shapes::shape::{Shape, Hittable}, 
     ray::Ray, 
     intersection::Intersections, 
-    material::Material, transformations::{Transform, TransformBuilder, Transformable}
+    material::Material, transformations::{Transform, TransformBuilder, Transformable}, bounds::Bounds
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -13,15 +13,18 @@ pub struct Object {
     material: Material,
     transform: Transform,
     shadow: bool,
+    bounds: Bounds,
 }
 
 impl Object {
     pub fn new(shape: Shape) -> Self {
+        let bounds = shape.bounds();        
         Self {
             shape,
             material: Material::default(),
             transform: Transform::default(),
             shadow: true,
+            bounds,
         }
     }
 
@@ -36,6 +39,7 @@ impl Object {
     }
 
     pub fn with_transform(mut self, transform: Transform) -> Self {
+        self.bounds = self.bounds.transform(&transform.matrix);
         self.transform = transform;
         self
     }
@@ -104,6 +108,10 @@ impl Object {
         &self.transform.inverse_matrix
     }
 
+    pub fn bounds(&self) -> &Bounds {
+        &self.bounds
+    }
+
     pub fn intersect(&self, ray: &Ray) -> Intersections {
         let transformed_ray = ray.transform(&self.transform.inverse_matrix);
         self.shape.intersect(&transformed_ray, &self)
@@ -132,7 +140,9 @@ impl Transformable for Object {
                 }
             },
             _other => {
-                self.transform = self.transform.clone().apply(transform);
+                let new_transform = self.transform.clone().apply(transform);
+                self.bounds = self.bounds.transform(&new_transform.matrix);
+                self.transform = new_transform;
             }
         };
     }

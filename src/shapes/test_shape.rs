@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use glam::DVec3;
 
-use crate::{ray::Ray, Object, intersection::Intersections};
+use crate::{ray::Ray, Object, intersection::Intersections, bounds::Bounds};
 use super::shape::Hittable;
 
 #[derive(Clone, Debug)]
@@ -18,6 +18,10 @@ impl Hittable for TestShape {
 
     fn normal_at(&self, point: DVec3) -> DVec3 {
         point
+    }
+
+    fn bounds(&self) -> crate::bounds::Bounds {
+        Bounds::default()
     }
 }
 

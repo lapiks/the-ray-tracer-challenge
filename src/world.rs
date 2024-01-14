@@ -1,6 +1,6 @@
-use glam::{DVec3, DMat4};
+use glam::DVec3;
 
-use crate::{object::Object, ray::Ray, Color, intersection::{Intersections, IntersectionInfos, ShadowHit, StandardHit}, lights::{light::LightSource, Light}, shapes::Shape};
+use crate::{object::Object, ray::Ray, Color, intersection::{Intersections, IntersectionInfos, ShadowHit, StandardHit}, lights::{light::LightSource, Light}};
 
 pub struct World {
     objects: Vec<Object>,
