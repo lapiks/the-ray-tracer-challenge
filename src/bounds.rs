@@ -34,7 +34,7 @@ impl BoundingBox {
         self.max
     }
 
-    pub fn expand(self, other: &BoundingBox) -> Self {
+    pub fn merge(self, other: &BoundingBox) -> Self {
         self
         .add_point(other.min)
         .add_point(other.max)
@@ -52,6 +52,15 @@ impl BoundingBox {
             f64::max(self.max.z, new_point.z),
         );
         self
+    }
+
+    pub fn contains_point(&self, point: DVec3) -> bool {
+        point.x >= self.min.x && point.y >= self.min.y && point.z >= self.min.z &&
+        point.x <= self.max.x && point.y <= self.max.y && point.z <= self.max.z
+    }
+
+    pub fn contains_box(&self, other: &BoundingBox) -> bool {
+        self.contains_point(other.min) && self.contains_point(other.max)
     }
 
     pub fn transform(self, matrix: &DMat4) -> Self {
@@ -111,43 +120,128 @@ impl BoundingBox {
 
 #[cfg(test)]
 mod tests {
+    use std::f64::{INFINITY, NEG_INFINITY, consts::PI};
+
+    const EPSILON: f64 = 0.0001;
+
     use glam::dvec3;
 
-    use crate::{Object, shapes::{Sphere, Shape, Group}};
+    use crate::{Object, shapes::{Sphere, Shape, Group}, transformations::Transform};
 
     use super::*;
+    
+    #[test]
+    fn creating_an_empty_bounding_box() {
+        let bb = BoundingBox::default();
+
+        assert_eq!(bb.min(), dvec3(INFINITY, INFINITY, INFINITY));
+        assert_eq!(bb.max(), dvec3(NEG_INFINITY, NEG_INFINITY, NEG_INFINITY));
+    }
 
     #[test]
-    fn creating_a_new_bounds() {
+    fn creating_a_bounding_box_with_volume() {
         let bb = BoundingBox::new(
-            dvec3(1.0, 0.0, 0.0), 
-            dvec3(0.0, 1.0, 0.0), 
+            dvec3(-1.0, -2.0, -3.0), 
+            dvec3(3.0, 2.0, 1.0), 
         );
 
-        assert_eq!(bb.min(), dvec3(1.0, 0.0, 0.0));
-        assert_eq!(bb.max(), dvec3(0.0, 1.0, 0.0));
+        assert_eq!(bb.min(), dvec3(-1.0, -2.0, -3.0));
+        assert_eq!(bb.max(), dvec3(3.0, 2.0, 1.0));
     }
 
     #[test]
-    fn bounds_with_an_untransformed_sphere() {
-        let s = Object::new(Shape::Sphere(Sphere::default()));
-
-        assert_eq!(s.bounds().min, dvec3(-1.0, -1.0, -1.0));
-        assert_eq!(s.bounds().max, dvec3(1.0, 1.0, 1.0));
+    fn adding_points_to_an_empty_bounding_box() {
+        let bb = BoundingBox::default()
+            .add_point(dvec3(-5.0, 2.0, 0.0))
+            .add_point(dvec3(7.0, 0.0, -3.0));
+        assert_eq!(bb.min(), dvec3(-5.0, 0.0, -3.0));
+        assert_eq!(bb.max(), dvec3(7.0, 2.0, 0.0));
     }
 
     #[test]
-    fn bounds_with_a_transformed_sphere() {
+    fn adding_one_bounding_box_to_another() {
+        let bb = BoundingBox::default()
+            .add_point(dvec3(-5.0, 2.0, 0.0))
+            .add_point(dvec3(7.0, 4.0, 4.0))
+            .merge(&BoundingBox::default()
+                .add_point(dvec3(8.0, -7.0, -2.0))
+                .add_point(dvec3(14.0, 2.0, 8.0))
+            );
+
+        assert_eq!(bb.min(), dvec3(-5.0, -7.0, -2.0));
+        assert_eq!(bb.max(), dvec3(14.0, 4.0, 8.0));
+    }
+
+    #[test]
+    fn checking_if_a_box_contains_a_given_point() {
+        let bb = BoundingBox::default()
+            .add_point(dvec3(5.0, -2.0, 0.0))
+            .add_point(dvec3(11.0, 4.0, 7.0));
+
+        assert_eq!(bb.contains_point(dvec3(5.0, -2.0, 0.0)), true);
+        assert_eq!(bb.contains_point(dvec3(11.0, 4.0, 0.0)), true);
+        assert_eq!(bb.contains_point(dvec3(8.0, 1.0, 3.0)), true);
+        assert_eq!(bb.contains_point(dvec3(3.0, 0.0, 3.0)), false);
+        assert_eq!(bb.contains_point(dvec3(8.0, -4.0, 3.0)), false);
+        assert_eq!(bb.contains_point(dvec3(8.0, 1.0, -1.0)), false);
+        assert_eq!(bb.contains_point(dvec3(13.0, 1.0, 3.0)), false);
+        assert_eq!(bb.contains_point(dvec3(8.0, 5.0, 3.0)), false);
+        assert_eq!(bb.contains_point(dvec3(8.0, 1.0, 8.0)), false);
+    }
+
+    #[test]
+    fn checking_if_a_box_contains_a_given_box() {
+        let bb = BoundingBox::default()
+            .add_point(dvec3(5.0, -2.0, 0.0))
+            .add_point(dvec3(11.0, 4.0, 7.0));
+
+        let datas = vec![
+            (dvec3(5.0, -2.0, 0.0), dvec3(11.0, 4.0, 7.0), true),
+            (dvec3(6.0, -1.0, 1.0), dvec3(10.0, 3.0, 6.0), true),
+            (dvec3(4.0, -3.0, -1.0), dvec3(10.0, 3.0, 6.0), false),
+            (dvec3(6.0, -1.0, 1.0), dvec3(12.0, 5.0, 8.0), false),
+        ];
+
+        for data in datas {
+            assert_eq!(
+                bb.contains_box(
+                    &BoundingBox::new(data.0, data.1)
+                ), 
+                data.2
+            );
+        }
+    }
+
+    #[test]
+    fn transforming_a_bounding_box() {
+        let bb = BoundingBox::new(
+            dvec3(-1.0, -1.0, -1.0),
+            dvec3(1.0, 1.0, 1.0)
+        )
+        .transform(
+            &Transform::new()
+            .with_rotation_y(PI / 4.0)
+            .with_rotation_x(PI / 4.0)
+            .matrix
+        );
+
+        assert!(bb.min.abs_diff_eq(dvec3(-1.4142, -1.7071, -1.7071), EPSILON));
+        assert!(bb.max.abs_diff_eq(dvec3(1.4142, 1.7071, 1.7071), EPSILON));
+    }
+
+    #[test]
+    fn querying_a_shape_bounding_box_in_its_parent_space() {
         let s = Object::new(Shape::Sphere(Sphere::default()))
-        .with_translation(5.0, 0.0, 0.0)
+        .with_scale(0.5, 2.0, 4.0)
+        .with_translation(1.0, -3.0, 5.0)
         .transform();
 
-        assert_eq!(s.bounds().min, dvec3(4.0, -1.0, -1.0));
-        assert_eq!(s.bounds().max, dvec3(6.0, 1.0, 1.0));
+        assert_eq!(s.bounding_box().min, dvec3(0.5, -5.0, 1.0));
+        assert_eq!(s.bounding_box().max, dvec3(1.5, -1.0, 9.0));
     }
     
     #[test]
-    fn bounds_with_two_transformed_spheres() {
+    fn a_group_has_a_bounding_box_that_contains_its_children() {
         let s1 = Object::new(Shape::Sphere(Sphere::default()))
         .with_translation(5.0, 5.0, 5.0)
         .transform();
@@ -157,12 +251,13 @@ mod tests {
         .transform();
     
         let g = Object::new(Shape::Group(Group::default().with_objects(vec![s1, s2])));
-        assert_eq!(g.bounds().min, dvec3(-6.0, -6.0, -6.0));
-        assert_eq!(g.bounds().max, dvec3(6.0, 6.0, 6.0));
+
+        assert_eq!(g.bounding_box().min, dvec3(-6.0, -6.0, -6.0));
+        assert_eq!(g.bounding_box().max, dvec3(6.0, 6.0, 6.0));
     }
 
     #[test]
-    fn transformed_group_with_two_transformed_spheres() {
+    fn a_transformed_group_has_a_bounding_box_that_contains_its_children() {
         let s1 = Object::new(Shape::Sphere(Sphere::default()))
         .with_translation(5.0, 5.0, 5.0)
         .transform();
@@ -175,7 +270,7 @@ mod tests {
         .with_translation(1.0, 1.0, 1.0)
         .transform();
 
-        assert_eq!(g.bounds().min, dvec3(-5.0, -5.0, -5.0));
-        assert_eq!(g.bounds().max, dvec3(7.0, 7.0, 7.0));
+        assert_eq!(g.bounding_box().min, dvec3(-5.0, -5.0, -5.0));
+        assert_eq!(g.bounding_box().max, dvec3(7.0, 7.0, 7.0));
     }
 }

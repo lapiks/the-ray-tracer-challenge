@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use glam::DVec3;
+use glam::{DVec3, dvec3};
 
 use crate::{ray::Ray, Object, intersection::Intersections, bounds::BoundingBox};
 use super::shape::Hittable;
@@ -21,7 +21,10 @@ impl Hittable for TestShape {
     }
 
     fn bounds(&self) -> crate::bounds::BoundingBox {
-        BoundingBox::default()
+        BoundingBox::new(
+            dvec3(-1.0, -1.0, -1.0),
+            dvec3(1.0, 1.0, 1.0)
+        )
     }
 }
 
@@ -106,5 +109,13 @@ mod tests {
             .transform();
         let n = o.normal_at(dvec3(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0), 0.0, 0.0);
         assert!(n.abs_diff_eq(dvec3(0.0, 0.97014, -0.24254), EPSILON));
+    }
+
+    #[test]
+    fn a_test_shape_has_a_bounding_box() {
+        let s = TestShape::default();
+        let bb = s.bounds();
+        assert_eq!(bb.min(), dvec3(-1.0, -1.0, -1.0));
+        assert_eq!(bb.max(), dvec3(1.0, 1.0, 1.0));
     }
 }

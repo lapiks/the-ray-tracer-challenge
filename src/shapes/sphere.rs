@@ -223,4 +223,12 @@ mod tests {
         let n = o.normal_at(DVec3::new(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0), 0.0, 0.0);
         assert!(n.abs_diff_eq(DVec3::new(0.0, 0.97014, -0.24254), EPSILON));
     } 
+
+    #[test]
+    fn a_sphere_has_a_bounding_box() {
+        let s = Sphere::default();
+        let bb = s.bounds();
+        assert_eq!(bb.min(), dvec3(-1.0, -1.0, -1.0));
+        assert_eq!(bb.max(), dvec3(1.0, 1.0, 1.0));
+    }
 }

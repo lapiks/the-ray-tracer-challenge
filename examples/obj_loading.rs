@@ -65,7 +65,7 @@ fn main() {
 
     objects.push(room);
 
-    println!("min: {}, max: {}", objects[0].bounds().min(), objects[0].bounds().max());
+    println!("min: {}, max: {}", objects[0].bounding_box().min(), objects[0].bounding_box().max());
 
     let world = World::new()
         .with_objects(objects)

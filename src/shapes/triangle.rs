@@ -204,4 +204,16 @@ mod tests {
         assert_eq!(xs.count(), 1);
         assert_eq!(xs[0].t(), 2.0);
     }
+
+    #[test]
+    fn a_triangle_has_a_bounding_box() {
+        let t = Triangle::new(
+            dvec3(-3.0, 7.0, 2.0),
+            dvec3(6.0, 2.0, -4.0),
+            dvec3(2.0, -1.0, -1.0)
+        );
+        let bb = t.bounds();
+        assert_eq!(bb.min(), dvec3(-3.0, -1.0, -4.0));
+        assert_eq!(bb.max(), dvec3(6.0, 7.0, 2.0));
+    }
 }

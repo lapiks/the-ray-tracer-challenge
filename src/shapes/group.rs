@@ -11,7 +11,7 @@ pub struct Group {
 impl Hittable for Group {
     fn intersect<'a>(&'a self, ray: &Ray, this: &'a Object) -> Intersections<'a> {
         let mut xs = Intersections::new();
-        if this.bounds().intersects(ray) {
+        if this.bounding_box().intersects(ray) {
             for object in &self.objects {
                 xs.append(object.intersect(ray));
             }
@@ -27,7 +27,7 @@ impl Hittable for Group {
         self.objects
             .iter()
             .fold(BoundingBox::default(), |bounds, object| {
-                bounds.expand(object.bounds())
+                bounds.merge(object.bounding_box())
             })
     }
 }

@@ -155,4 +155,12 @@ mod tests {
             assert_eq!(c.normal_at(point_normal.0, 0.0, 0.0), point_normal.1);
         }
     }
+    
+    #[test]
+    fn a_cube_has_a_bounding_box() {
+        let c = Cube::default();
+        let bb = c.bounds();
+        assert_eq!(bb.min(), dvec3(-1.0, -1.0, -1.0));
+        assert_eq!(bb.max(), dvec3(1.0, 1.0, 1.0));
+    }
 }

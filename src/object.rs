@@ -13,7 +13,7 @@ pub struct Object {
     material: Material,
     transform: Transform,
     shadow: bool,
-    bounds: BoundingBox,
+    bounding_box: BoundingBox,
 }
 
 impl Object {
@@ -24,7 +24,7 @@ impl Object {
             material: Material::default(),
             transform: Transform::default(),
             shadow: true,
-            bounds,
+            bounding_box: bounds,
         }
     }
 
@@ -50,7 +50,7 @@ impl Object {
     }
 
     pub fn with_transform(mut self, transform: Transform) -> Self {
-        self.bounds = self.shape.bounds().transform(&transform.matrix);
+        self.bounding_box = self.shape.bounds().transform(&transform.matrix);
         self.transform = transform;
         self
     }
@@ -119,8 +119,8 @@ impl Object {
         &self.transform.inverse_matrix
     }
 
-    pub fn bounds(&self) -> &BoundingBox {
-        &self.bounds
+    pub fn bounding_box(&self) -> &BoundingBox {
+        &self.bounding_box
     }
 
     pub fn intersect(&self, ray: &Ray) -> Intersections {
@@ -142,7 +142,7 @@ impl Object {
     }
 
     fn set_transform(&mut self, transform: Transform) {
-        self.bounds = self.shape().bounds().transform(&transform.matrix);
+        self.bounding_box = self.shape().bounds().transform(&transform.matrix);
         self.transform = transform;
     }
 }

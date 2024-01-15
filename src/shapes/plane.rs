@@ -51,6 +51,8 @@ impl Plane {
 
 #[cfg(test)]
 mod tests {
+    use std::f64::{NEG_INFINITY, INFINITY};
+
     use glam::dvec3;
 
     use crate::shapes::Shape;
@@ -109,5 +111,13 @@ mod tests {
         let xs = p.intersect(&r);
         assert_eq!(xs.count(), 1);
         assert_eq!(xs[0].t(), 1.0);
+    }
+
+    #[test]
+    fn a_plane_has_a_bounding_box() {
+        let p = Plane::default();
+        let bb = p.bounds();
+        assert_eq!(bb.min(), dvec3(NEG_INFINITY, 0.0, NEG_INFINITY));
+        assert_eq!(bb.max(), dvec3(INFINITY, 0.0, INFINITY));
     }
 }
