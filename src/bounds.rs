@@ -273,4 +273,33 @@ mod tests {
         assert_eq!(g.bounding_box().min, dvec3(-5.0, -5.0, -5.0));
         assert_eq!(g.bounding_box().max, dvec3(7.0, 7.0, 7.0));
     }
+
+    #[test]
+    fn intersecting_a_ray_with_a_bounding_box_at_the_origin() {
+        let bb = BoundingBox::new(
+            dvec3(-1.0, -1.0, -1.0),
+            dvec3(1.0, 1.0, 1.0)
+        );
+
+        let datas = vec![
+            (dvec3(5.0, 0.5, 0.0), dvec3(-1.0, 0.0, 0.0), true),
+            (dvec3(-5.0, 0.5, 0.0), dvec3(1.0, 0.0, 0.0), true),
+            (dvec3(0.5, 5.0, 0.0), dvec3(0.0, -1.0, 0.0), true),
+            (dvec3(0.5, -5.0, 0.0), dvec3(0.0, 1.0, 0.0), true),
+            (dvec3(0.5, 0.0, 5.0), dvec3(0.0, 0.0, -1.0), true),
+            (dvec3(0.5, 0.0, -5.0), dvec3(0.0, 0.0, 1.0), true),
+            (dvec3(0.0, 0.5, 0.0), dvec3(0.0, 0.0, 1.0), true),
+            (dvec3(-2.0, 0.0, 0.0), dvec3(2.0, 4.0, 6.0), false),
+            (dvec3(0.0, -2.0, 0.0), dvec3(6.0, 2.0, 4.0), false),
+            (dvec3(0.0, 0.0, -2.0), dvec3(4.0, 6.0, 2.0), false),
+            (dvec3(2.0, 0.0, 2.0), dvec3(0.0, 0.0, -1.0), false),
+            (dvec3(0.0, 2.0, 2.0), dvec3(0.0, -1.0, 0.0), false),
+            (dvec3(2.0, 2.0, 0.0), dvec3(-1.0, 0.0, 0.0), false),
+        ];
+        
+        for data in datas {
+            let r = Ray::new(data.0, data.1.normalize());
+            assert_eq!(bb.intersects(&r), data.2);
+        }
+    }
 }
