@@ -30,6 +30,8 @@ Here is the book's cover image, rendered with the ray tracer.
 - [x] antialiasing (supersampling method)
 - [x] area lights
 - [ ] focal blur
+- [ ] motion blur
+- [ ] texture mapping
 - [x] CPU parallel rendering
 
 ## Examples
