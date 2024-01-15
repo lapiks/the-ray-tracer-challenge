@@ -1,6 +1,6 @@
 use glam::DVec3;
 
-use crate::{ray::Ray, Object, intersection::Intersections, bounds::Bounds};
+use crate::{ray::Ray, Object, intersection::Intersections, bounds::BoundingBox};
 use super::{shape::Hittable, Group};
 
 #[derive(Clone, Debug, PartialEq, Default)]
@@ -17,7 +17,7 @@ impl Hittable for Mesh {
         DVec3::default()
     }
 
-    fn bounds(&self) -> Bounds {
+    fn bounds(&self) -> BoundingBox {
         self.triangle_group.bounds()
     }
 }

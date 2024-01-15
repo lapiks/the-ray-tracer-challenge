@@ -2,7 +2,7 @@ use std::mem::swap;
 
 use glam::{DVec3, dvec3};
 
-use crate::{ray::Ray, Object, intersection::{Intersections, Intersection}, bounds::Bounds};
+use crate::{ray::Ray, Object, intersection::{Intersections, Intersection}, bounds::BoundingBox};
 use super::shape::Hittable;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -59,8 +59,8 @@ impl Hittable for Cube {
         }
     }
 
-    fn bounds(&self) -> Bounds {
-        Bounds::new(
+    fn bounds(&self) -> BoundingBox {
+        BoundingBox::new(
             dvec3(-1.0, -1.0, -1.0),
             dvec3(1.0, 1.0, 1.0)
         )

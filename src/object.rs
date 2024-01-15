@@ -4,7 +4,7 @@ use crate::{
     shapes::shape::{Shape, Hittable}, 
     ray::Ray, 
     intersection::Intersections, 
-    material::Material, transformations::{Transform, TransformBuilder, Transformable}, bounds::Bounds
+    material::Material, transformations::{Transform, TransformBuilder, Transformable}, bounds::BoundingBox
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -13,7 +13,7 @@ pub struct Object {
     material: Material,
     transform: Transform,
     shadow: bool,
-    bounds: Bounds,
+    bounds: BoundingBox,
 }
 
 impl Object {
@@ -119,7 +119,7 @@ impl Object {
         &self.transform.inverse_matrix
     }
 
-    pub fn bounds(&self) -> &Bounds {
+    pub fn bounds(&self) -> &BoundingBox {
         &self.bounds
     }
 

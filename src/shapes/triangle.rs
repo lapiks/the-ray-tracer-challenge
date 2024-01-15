@@ -1,6 +1,6 @@
 use glam::{DVec3, dvec3};
 
-use crate::{ray::Ray, intersection::{Intersections, Intersection}, Object, bounds::Bounds};
+use crate::{ray::Ray, intersection::{Intersections, Intersection}, Object, bounds::BoundingBox};
 use super::shape::Hittable;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -72,8 +72,8 @@ impl Hittable for Triangle {
         self.normal
     }
 
-    fn bounds(&self) -> Bounds {
-        Bounds::new(
+    fn bounds(&self) -> BoundingBox {
+        BoundingBox::new(
             dvec3(
                 f64::min(f64::min(self.p1.x, self.p2.x), self.p3.x),
                 f64::min(f64::min(self.p1.y, self.p2.y), self.p3.y),

@@ -2,7 +2,7 @@ use std::f64::EPSILON;
 
 use glam::{DVec3, dvec3};
 
-use crate::{ray::Ray, intersection::{Intersections, Intersection}, Object, bounds::Bounds};
+use crate::{ray::Ray, intersection::{Intersections, Intersection}, Object, bounds::BoundingBox};
 use super::shape::Hittable;
 
 /// infinite xz plane 
@@ -28,8 +28,8 @@ impl Hittable for Plane {
         DVec3::new(0.0, 1.0, 0.0)
     }
 
-    fn bounds(&self) -> Bounds {
-        Bounds::new(
+    fn bounds(&self) -> BoundingBox {
+        BoundingBox::new(
             dvec3(f64::NEG_INFINITY, 0.0, f64::NEG_INFINITY),
             dvec3(f64::INFINITY, 0.0, f64::INFINITY),
         )

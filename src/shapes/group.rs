@@ -1,6 +1,6 @@
 use glam::DVec3;
 
-use crate::{ray::Ray, Object, intersection::Intersections, bounds::Bounds};
+use crate::{ray::Ray, Object, intersection::Intersections, bounds::BoundingBox};
 use super::shape::Hittable;
 
 #[derive(Clone, Debug, PartialEq, Default)]
@@ -23,10 +23,10 @@ impl Hittable for Group {
         DVec3::default()
     }
 
-    fn bounds(&self) -> Bounds {
+    fn bounds(&self) -> BoundingBox {
         self.objects
             .iter()
-            .fold(Bounds::default(), |bounds, object| {
+            .fold(BoundingBox::default(), |bounds, object| {
                 bounds.expand(object.bounds())
             })
     }

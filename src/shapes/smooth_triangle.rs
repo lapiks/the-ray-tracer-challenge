@@ -1,6 +1,6 @@
 use glam::DVec3;
 
-use crate::{ray::Ray, intersection::Intersections, Object, bounds::Bounds};
+use crate::{ray::Ray, intersection::Intersections, Object, bounds::BoundingBox};
 use super::{shape::Hittable, Triangle};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -33,7 +33,7 @@ impl Hittable for SmoothTriangle {
         self.n1 * (1.0 - u - v)
     }
 
-    fn bounds(&self) -> Bounds {
+    fn bounds(&self) -> BoundingBox {
         self.triangle.bounds()
     }
 }

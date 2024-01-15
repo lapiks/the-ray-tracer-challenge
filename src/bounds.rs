@@ -5,12 +5,12 @@ use glam::{DVec3, DMat4, dvec3};
 use crate::ray::Ray;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Bounds {
+pub struct BoundingBox {
     min: DVec3,
     max: DVec3,
 }
 
-impl Default for Bounds {
+impl Default for BoundingBox {
     fn default() -> Self {
         Self { 
             min: DVec3::splat(f64::INFINITY), 
@@ -19,7 +19,7 @@ impl Default for Bounds {
     }
 }
 
-impl Bounds {
+impl BoundingBox {
     pub fn new(min: DVec3, max: DVec3) -> Self{
         Self {
             min, max
@@ -34,7 +34,7 @@ impl Bounds {
         self.max
     }
 
-    pub fn expand(self, other: &Bounds) -> Self {
+    pub fn expand(self, other: &BoundingBox) -> Self {
         self
         .add_point(other.min)
         .add_point(other.max)
@@ -119,7 +119,7 @@ mod tests {
 
     #[test]
     fn creating_a_new_bounds() {
-        let bb = Bounds::new(
+        let bb = BoundingBox::new(
             dvec3(1.0, 0.0, 0.0), 
             dvec3(0.0, 1.0, 0.0), 
         );

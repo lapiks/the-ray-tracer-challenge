@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use glam::DVec3;
 
-use crate::{ray::Ray, Object, intersection::Intersections, bounds::Bounds};
+use crate::{ray::Ray, Object, intersection::Intersections, bounds::BoundingBox};
 use super::shape::Hittable;
 
 #[derive(Clone, Debug)]
@@ -20,8 +20,8 @@ impl Hittable for TestShape {
         point
     }
 
-    fn bounds(&self) -> crate::bounds::Bounds {
-        Bounds::default()
+    fn bounds(&self) -> crate::bounds::BoundingBox {
+        BoundingBox::default()
     }
 }
 
