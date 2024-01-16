@@ -126,7 +126,7 @@ mod tests {
 
     use glam::dvec3;
 
-    use crate::{Object, shapes::{Sphere, Shape, Group}, transformations::Transform};
+    use crate::{Object, shapes::{Sphere, Shape, Group, test_shape::TestShape}, transformations::Transform};
 
     use super::*;
     
@@ -301,5 +301,82 @@ mod tests {
             let r = Ray::new(data.0, data.1.normalize());
             assert_eq!(bb.intersects(&r), data.2);
         }
+    }
+
+    #[test]
+    fn intersecting_a_ray_with_a_non_cubic_bounding_box() {
+        let bb = BoundingBox::new(
+            dvec3(5.0, -2.0, 0.0),
+            dvec3(11.0, 4.0, 7.0)
+        );
+
+        let datas = vec![
+            (dvec3(15.0, 1.0, 2.0), dvec3(-1.0, 0.0, 0.0), true),
+            (dvec3(-5.0, -1.0, 4.0), dvec3(1.0, 0.0, 0.0), true),
+            (dvec3(7.0, 6.0, 5.0), dvec3(0.0, -1.0, 0.0), true),
+            (dvec3(9.0, -5.0, 6.0), dvec3(0.0, 1.0, 0.0), true),
+            (dvec3(8.0, 2.0, 12.0), dvec3(0.0, 0.0, -1.0), true),
+            (dvec3(6.0, 0.0, -5.0), dvec3(0.0, 0.0, 1.0), true),
+            (dvec3(8.0, 1.0, 3.5), dvec3(0.0, 0.0, 1.0), true),
+            (dvec3(9.0, -1.0, -8.0), dvec3(2.0, 4.0, 6.0), false),
+            (dvec3(8.0, 3.0, -4.0), dvec3(6.0, 2.0, 4.0), false),
+            (dvec3(9.0, -1.0, -2.0), dvec3(4.0, 6.0, 2.0), false),
+            (dvec3(4.0, 0.0, 9.0), dvec3(0.0, 0.0, -1.0), false),
+            (dvec3(8.0, 6.0, -1.0), dvec3(0.0, -1.0, 0.0), false),
+            (dvec3(12.0, 5.0, 4.0), dvec3(-1.0, 0.0, 0.0), false),
+        ];
+        
+        for data in datas {
+            let r = Ray::new(data.0, data.1.normalize());
+            assert_eq!(bb.intersects(&r), data.2);
+        }
+    }
+
+    #[test]
+    fn intersecting_ray_on_group_doenst_test_children_if_boxed_is_missed() {
+        let child = Object::new(Shape::TestShape(TestShape::default()));
+        let object = Object::new(Shape::Group(Group::default().with_objects(vec![child])));
+        let r = Ray::new(
+            dvec3(0.0, 0.0, -5.0),
+            dvec3(0.0, 1.0, 0.0)  
+        );
+        object.intersect(&r);
+        assert!(
+            match object
+            .shape()
+            .as_group()
+            .unwrap()
+            .objects()[0]
+            .shape() {
+                Shape::TestShape(s) => {
+                    s.saved_ray().is_none()
+                }
+                _ => false
+            }
+        )
+    }
+
+    #[test]
+    fn intersecting_ray_on_group_tests_children_if_boxed_is_hit() {
+        let child = Object::new(Shape::TestShape(TestShape::default()));
+        let object = Object::new(Shape::Group(Group::default().with_objects(vec![child])));
+        let r = Ray::new(
+            dvec3(0.0, 0.0, -5.0),
+            dvec3(0.0, 0.0, 1.0)  
+        );
+        object.intersect(&r);
+        assert!(
+            match object
+            .shape()
+            .as_group()
+            .unwrap()
+            .objects()[0]
+            .shape() {
+                Shape::TestShape(s) => {
+                    s.saved_ray().is_some()
+                }
+                _ => false
+            }
+        )
     }
 }

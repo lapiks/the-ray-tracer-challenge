@@ -40,6 +40,10 @@ impl TestShape {
     pub fn new() -> Self {
         Self::default()
     }
+
+    pub fn saved_ray(&self) -> Option<Ray> {
+        *self.saved_ray.lock().unwrap()
+    }
 }
 
 impl PartialEq for TestShape {

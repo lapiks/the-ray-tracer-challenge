@@ -16,7 +16,7 @@ pub mod shapes {
     pub mod smooth_triangle;
     pub mod mesh;
     pub mod group;
-    mod test_shape;
+    pub mod test_shape;
 }
 
 pub mod lights {
