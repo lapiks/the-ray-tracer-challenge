@@ -1,4 +1,4 @@
-use std::mem::swap;
+use std::{mem::swap, f64::EPSILON};
 
 use glam::{DVec3, DMat4, dvec3};
 
@@ -34,11 +34,54 @@ impl BoundingBox {
         self.max
     }
 
+    pub fn size(&self) -> DVec3 {
+        dvec3(
+            f64::abs(self.max.x - self.min.x),
+            f64::abs(self.max.y - self.min.y),
+            f64::abs(self.max.z - self.min.z)
+        )
+    }
+
     pub fn merge(self, other: &BoundingBox) -> Self {
         self
         .add_point(other.min)
         .add_point(other.max)
     }
+
+    pub fn split(&self) -> (BoundingBox, BoundingBox) {
+        let size = self.size();
+        let dx = size.x;
+        let dy = size.y;
+        let dz = size.z;
+
+        let greatest = f64::max(dx, f64::max(dy, dz));
+
+        let mut x0 = self.min.x;
+        let mut y0 = self.min.y;
+        let mut z0 = self.min.z;
+        let mut x1 = self.max.x;
+        let mut y1 = self.max.y;
+        let mut z1 = self.max.z;
+
+        if f64::abs(greatest - dx) < EPSILON {
+            x0 += dx / 2.0;
+            x1 = x0;
+        } else if f64::abs(greatest - dy) < EPSILON {
+            y0 += dy / 2.0;
+            y1 = y0;
+        } else {
+            z0 += dz / 2.0;
+            z1 = z0;
+        }
+
+        let mid_min = dvec3(x0, y0, z0);
+        let mid_max = dvec3(x1, y1, z1);
+
+        (
+            BoundingBox::new(self.min, mid_max),
+            BoundingBox::new(mid_min, self.max)
+        )
+}
 
     pub fn add_point(mut self, new_point: DVec3) -> Self {
         self.min = dvec3(
@@ -378,5 +421,57 @@ mod tests {
                 _ => false
             }
         )
+    }
+
+    #[test]
+    fn splitting_a_perfect_cube() {
+        let bb = BoundingBox::new(
+            dvec3(-1.0, -4.0, -5.0),
+            dvec3(9.0, 6.0, 5.0)
+        );
+        let (left, right) = bb.split();
+        assert_eq!(left.min, dvec3(-1.0, -4.0, -5.0)); 
+        assert_eq!(left.max, dvec3(4.0, 6.0, 5.0)); 
+        assert_eq!(right.min, dvec3(4.0, -4.0, -5.0)); 
+        assert_eq!(right.max, dvec3(9.0, 6.0, 5.0)); 
+    }
+
+    #[test]
+    fn splitting_a_x_wide_box() {
+        let bb = BoundingBox::new(
+            dvec3(-1.0, -2.0, -3.0),
+            dvec3(9.0, 5.5, 3.0)
+        );
+        let (left, right) = bb.split();
+        assert_eq!(left.min, dvec3(-1.0, -2.0, -3.0)); 
+        assert_eq!(left.max, dvec3(4.0, 5.5, 3.0)); 
+        assert_eq!(right.min, dvec3(4.0, -2.0, -3.0)); 
+        assert_eq!(right.max, dvec3(9.0, 5.5, 3.0)); 
+    }
+
+    #[test]
+    fn splitting_a_y_wide_box() {
+        let bb = BoundingBox::new(
+            dvec3(-1.0, -2.0, -3.0),
+            dvec3(5.0, 8.0, 3.0)
+        );
+        let (left, right) = bb.split();
+        assert_eq!(left.min, dvec3(-1.0, -2.0, -3.0)); 
+        assert_eq!(left.max, dvec3(5.0, 3.0, 3.0)); 
+        assert_eq!(right.min, dvec3(-1.0, 3.0, -3.0)); 
+        assert_eq!(right.max, dvec3(5.0, 8.0, 3.0)); 
+    }
+
+    #[test]
+    fn splitting_a_z_wide_box() {
+        let bb = BoundingBox::new(
+            dvec3(-1.0, -2.0, -3.0),
+            dvec3(5.0, 3.0, 7.0)
+        );
+        let (left, right) = bb.split();
+        assert_eq!(left.min, dvec3(-1.0, -2.0, -3.0)); 
+        assert_eq!(left.max, dvec3(5.0, 3.0, 2.0)); 
+        assert_eq!(right.min, dvec3(-1.0, -2.0, 2.0)); 
+        assert_eq!(right.max, dvec3(5.0, 3.0, 7.0)); 
     }
 }
