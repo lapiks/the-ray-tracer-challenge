@@ -97,9 +97,7 @@ impl Group {
             }
         }
         for child in &mut self.objects {
-            if let Some(child_group) = child.shape_mut().as_group_mut() {
-                child_group.divide(threshold);
-            }
+            *child = child.clone().divide(threshold); //todo: improve
         }
     }
 }

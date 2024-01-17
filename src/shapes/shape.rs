@@ -33,6 +33,7 @@ impl Shape {
     pub fn divide(&mut self, threshold: usize) {
         match self {
             Shape::Group(g) => g.divide(threshold),
+            Shape::Mesh(m) => m.divide(threshold),
             _ => ()
         }
     }

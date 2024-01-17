@@ -39,6 +39,10 @@ impl Mesh {
     pub fn triangles_mut(&mut self) -> &mut Vec<Object> {
         self.triangle_group.objects_mut()
     }
+
+    pub fn divide(&mut self, threshold: usize) {
+        self.triangle_group.divide(threshold);
+    }
 }
 
 #[cfg(test)]
