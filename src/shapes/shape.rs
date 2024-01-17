@@ -22,6 +22,20 @@ impl Shape {
             _ => None
         }
     }
+
+    pub fn as_group_mut(&mut self) -> Option<&mut Group> {
+        match self {
+            Shape::Group(g) => Some(g),
+            _ => None
+        }
+    }
+
+    pub fn divide(&mut self, threshold: usize) {
+        match self {
+            Shape::Group(g) => g.divide(threshold),
+            _ => ()
+        }
+    }
 }
 
 pub trait Hittable {

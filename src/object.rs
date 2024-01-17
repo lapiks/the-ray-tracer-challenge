@@ -95,8 +95,17 @@ impl Object {
         .with_rotation_z(angle)
     }
 
+    pub fn divide(mut self, threshold: usize) -> Self{
+        self.shape.divide(threshold);
+        self
+    }
+
     pub fn shape(&self) -> &Shape {
         &self.shape
+    }
+
+    pub fn shape_mut(&mut self) -> &mut Shape {
+        &mut self.shape
     }
 
     pub fn material(&self) -> &Material {
