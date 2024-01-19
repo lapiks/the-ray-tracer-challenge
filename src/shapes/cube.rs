@@ -41,10 +41,13 @@ impl Hittable for Cube {
         if tmin > tmax {
             Intersections::new()
         } else {
-            let mut xs = Intersections::new();
-            xs.push(Intersection::new(tmin, object));
-            xs.push(Intersection::new(tmax, object));
-            xs
+            Intersections::new()
+            .with_intersections(
+                vec![
+                    Intersection::new(tmin, object),
+                    Intersection::new(tmax, object)
+                ]
+            )
         }
     }
 

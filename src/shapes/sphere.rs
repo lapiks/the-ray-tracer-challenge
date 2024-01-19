@@ -8,8 +8,6 @@ pub struct Sphere {}
 
 impl Hittable for Sphere {
     fn intersect<'a>(&self, ray: &Ray, object: &'a Object) -> Intersections<'a> {
-        let mut xs = Intersections::new();
-
         let sphere_to_ray = ray.origin;
         let a = ray.direction.dot(ray.direction);
         let b = 2.0 * ray.direction.dot(sphere_to_ray);
@@ -17,25 +15,25 @@ impl Hittable for Sphere {
         let c = sphere_to_ray.dot(sphere_to_ray) - 1.0;
         let discriminant = b*b - 4.0 * a * c;
         if discriminant < 0.0 {
-            return xs
+            return Intersections::new()
         } 
 
         let sqrt_disc = discriminant.sqrt();
         let inv_denom = 1.0 / (2.0 * a);
 
-        xs.push(
-            Intersection::new(
-                (-b - sqrt_disc) * inv_denom, 
-                object
-            )
-        );
-        xs.push(
-            Intersection::new(
-                (-b + sqrt_disc) * inv_denom, 
-                object
-            )
-        );
-        xs
+        Intersections::new()
+        .with_intersections(
+            vec![
+                Intersection::new(
+                    (-b - sqrt_disc) * inv_denom, 
+                    object
+                ),
+                Intersection::new(
+                    (-b + sqrt_disc) * inv_denom, 
+                    object
+                )
+            ]
+        )
     }
 
     fn normal_at(&self, point: DVec3, _: f64, _: f64) -> DVec3 {

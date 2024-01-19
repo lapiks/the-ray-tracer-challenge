@@ -3,6 +3,7 @@ pub mod shapes {
     pub use sphere::Sphere;
     pub use plane::Plane;
     pub use cube::Cube;
+    pub use cylinder::Cylinder;
     pub use group::Group;
     pub use triangle::Triangle;
     pub use smooth_triangle::SmoothTriangle;
@@ -12,6 +13,7 @@ pub mod shapes {
     pub mod sphere;
     pub mod plane;
     pub mod cube;
+    pub mod cylinder;
     pub mod triangle;
     pub mod smooth_triangle;
     pub mod mesh;

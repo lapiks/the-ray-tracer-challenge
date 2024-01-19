@@ -1,13 +1,14 @@
 use glam::DVec3;
 
 use crate::{ray::Ray, intersection::Intersections, Object, bounds::BoundingBox};
-use super::{Sphere, test_shape::TestShape, Plane, Cube, Group, Triangle, SmoothTriangle, Mesh};
+use super::{Sphere, test_shape::TestShape, Plane, Cube, Group, Triangle, SmoothTriangle, Mesh, Cylinder};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Shape {
     Sphere(Sphere), 
     Plane(Plane),
     Cube(Cube),
+    Cylinder(Cylinder),
     Triangle(Triangle),
     SmoothTriangle(SmoothTriangle),
     Mesh(Mesh),
@@ -51,6 +52,7 @@ impl Hittable for Shape {
             Shape::Sphere(s) => s.intersect(ray, object),
             Shape::Plane(p) => p.intersect(ray, object),
             Shape::Cube(c) => c.intersect(ray, object),
+            Shape::Cylinder(c) => c.intersect(ray, object),
             Shape::Triangle(t) => t.intersect(ray, object),
             Shape::SmoothTriangle(t) => t.intersect(ray, object),
             Shape::Mesh(m) => m.intersect(ray, object),
@@ -64,6 +66,7 @@ impl Hittable for Shape {
             Shape::Sphere(s) => s.normal_at(point, u, v),
             Shape::Plane(p) => p.normal_at(point, u, v),
             Shape::Cube(c) => c.normal_at(point, u, v),
+            Shape::Cylinder(c) => c.normal_at(point, u, v),
             Shape::Triangle(t) => t.normal_at(point, u, v),
             Shape::SmoothTriangle(t) => t.normal_at(point, u, v),
             Shape::Mesh(m) => m.normal_at(point, u, v),
@@ -77,6 +80,7 @@ impl Hittable for Shape {
             Shape::Sphere(s) => s.bounds(),
             Shape::Plane(p) => p.bounds(),
             Shape::Cube(c) => c.bounds(),
+            Shape::Cylinder(c) => c.bounds(),
             Shape::Triangle(t) => t.bounds(),
             Shape::SmoothTriangle(t) => t.bounds(),
             Shape::Mesh(m) => m.bounds(),
