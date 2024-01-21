@@ -1,4 +1,4 @@
-use std::mem::swap;
+use std::{mem::swap, f64::EPSILON};
 
 use glam::{DVec3, dvec3};
 
@@ -16,7 +16,7 @@ impl Hittable for Cylinder {
     fn intersect<'a>(&self, ray: &Ray, object: &'a Object) -> Intersections<'a> {
         let a = ray.direction.x * ray.direction.x + ray.direction.z * ray.direction.z;
         if f64::abs(a) < f64::EPSILON {
-            return Intersections::new();
+            return self.intersect_caps(ray, object);
         }
 
         let b = 2.0 * ray.origin.x * ray.direction.x +
@@ -46,19 +46,26 @@ impl Hittable for Cylinder {
             xs.push(Intersection::new(t1, object));
         }
 
-        Intersections::new()
-        .with_intersections(xs)
+        let mut intersections = Intersections::new()
+        .with_intersections(xs);
+
+        intersections.append(self.intersect_caps(ray, object));
+        intersections
     }
 
     fn normal_at(&self, point: DVec3, _: f64, _: f64) -> DVec3 {
-        dvec3(point.x, 0.0, point.z)
+        let dist = point.x * point.x + point.z * point.z;
+        if dist < 1.0 && point.y >= self.max - EPSILON {
+            dvec3(0.0, 1.0, 0.0)
+        } else if dist < 1.0 && point.y <= self.min + EPSILON {
+            dvec3(0.0, -1.0, 0.0)
+        } else {
+            dvec3(point.x, 0.0, point.z)
+        }
     }
 
     fn bounds(&self) -> BoundingBox {
-        BoundingBox::new(
-            dvec3(-1.0, -1.0, -1.0),
-            dvec3(1.0, 1.0, 1.0)
-        )
+        BoundingBox::default()
     }
 }
 
@@ -85,6 +92,43 @@ impl Cylinder {
     pub fn with_max(mut self, max: f64) -> Self {
         self.max = max;
         self
+    }
+
+    pub fn with_closed(mut self, closed: bool) -> Self {
+        self.closed = closed;
+        self
+    }
+
+    fn check_cap(ray: &Ray, t: f64) -> bool {
+        let x = ray.origin.x + t * ray.direction.x;
+        let z = ray.origin.z + t * ray.direction.z;
+
+        (x * x + z * z) <= 1.0
+    }
+
+    fn intersect_caps<'a>(&self, ray: &Ray, object: &'a Object) -> Intersections<'a> {
+        if !self.closed || f64::abs(ray.direction.y) < f64::EPSILON {
+            return Intersections::new();
+        }
+
+        let mut xs = Vec::default();
+
+        let t = (self.min - ray.origin.y) / ray.direction.y;
+        if Cylinder::check_cap(ray, t) {
+            xs.push(
+                Intersection::new(t, object)
+            );
+        }
+
+        let t = (self.max - ray.origin.y) / ray.direction.y;
+        if Cylinder::check_cap(ray, t) {
+            xs.push(
+                Intersection::new(t, object)
+            );
+        }
+
+        Intersections::new()
+        .with_intersections(xs)
     }
 }
 
@@ -162,6 +206,7 @@ mod tests {
                 Cylinder::new()
                 .with_min(1.0)
                 .with_max(2.0)
+                .with_closed(false)
             )
         );
         {
@@ -208,6 +253,64 @@ mod tests {
             let r = Ray::new(
                 dvec3(0.0, 1.5, -2.0), 
                 dvec3(0.0, 0.0, 1.0)
+            );
+            let xs = cyl.intersect(&r);
+            assert_eq!(xs.count(), 2);
+        }
+    }
+
+    #[test]
+    fn the_default_closed_value_for_a_cylinder() {
+        let cyl = Cylinder::default();
+        assert_eq!(cyl.closed, true);
+    }
+
+    #[test]
+    fn intersecting_the_caps_of_a_closed_cylinder() {
+        let cyl = Object::new(
+            Shape::Cylinder(
+                Cylinder::new()
+                .with_min(1.0)
+                .with_max(2.0)
+                .with_closed(true)
+            )
+        );
+        {
+            let r = Ray::new(
+                dvec3(0.0, 3.0, 0.0), 
+                dvec3(0.0, -1.0, 0.0)
+            );
+            let xs = cyl.intersect(&r);
+            assert_eq!(xs.count(), 2);
+        }
+        {
+            let r = Ray::new(
+                dvec3(0.0, 3.0, -2.0), 
+                dvec3(0.0, -1.0, 2.0)
+            );
+            let xs = cyl.intersect(&r);
+            assert_eq!(xs.count(), 2);
+        }
+        {
+            let r = Ray::new(
+                dvec3(0.0, 4.0, -2.0), 
+                dvec3(0.0, -1.0, 1.0)
+            );
+            let xs = cyl.intersect(&r);
+            assert_eq!(xs.count(), 2);
+        }
+        {
+            let r = Ray::new(
+                dvec3(0.0, 0.0, -2.0), 
+                dvec3(0.0, 1.0, 2.0)
+            );
+            let xs = cyl.intersect(&r);
+            assert_eq!(xs.count(), 2);
+        }
+        {
+            let r = Ray::new(
+                dvec3(0.0, -1.0, -2.0), 
+                dvec3(0.0, 1.0, 1.0)
             );
             let xs = cyl.intersect(&r);
             assert_eq!(xs.count(), 2);
