@@ -22,7 +22,7 @@ Here is the book's cover image, rendered with the ray tracer.
 - [ ] cones
 - [x] object groups
 - [x] bounding boxes
-- [ ] Bounding Volume Hierarchies (BVH)
+- [x] Bounding Volume Hierarchies (BVH)
 - [x] triangles
 - [x] obj importing
 - [x] smooth triangles
