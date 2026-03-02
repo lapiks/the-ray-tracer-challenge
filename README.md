@@ -51,7 +51,8 @@ Here is the book's cover image, rendered with the ray tracer.
 ### Triangular meshes
 ![Alt text](examples/obj_loading.png?raw=true "obj-loading")
 
-### From the book
-![Alt text](examples/yaml_scenes/reflect-refract.png?raw=true "reflect-refract")
-
+### Area lights
 ![Alt text](examples/yaml_scenes/shadow-glamour-shot.png?raw=true "shadow-glamour-shot")
+
+### Yaml scene description import from the book
+![Alt text](examples/yaml_scenes/reflect-refract.png?raw=true "reflect-refract")
